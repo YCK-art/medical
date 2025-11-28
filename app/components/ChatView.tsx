@@ -153,7 +153,16 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     // Firebase에 사용자 메시지 저장 (Rewrite가 아닌 경우에만)
     if (user && currentConversationId && !skipUserMessage) {
       try {
-        await addMessageToConversation(currentConversationId, userMessage);
+        // ChatView의 Message를 BaseMessage로 변환
+        const baseMessage: BaseMessage = {
+          role: userMessage.role,
+          content: userMessage.content,
+          timestamp: userMessage.timestamp || new Date(),
+          references: userMessage.references,
+          followupQuestions: userMessage.followupQuestions,
+          feedback: userMessage.feedback,
+        };
+        await addMessageToConversation(currentConversationId, baseMessage);
       } catch (error) {
         console.error("사용자 메시지 저장 실패:", error);
       }
@@ -298,9 +307,28 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                 onConversationCreated(newConvId);
               }
 
+              // ChatView Message를 BaseMessage로 변환
+              const baseUserMessage: BaseMessage = {
+                role: userMessage.role,
+                content: userMessage.content,
+                timestamp: userMessage.timestamp || new Date(),
+                references: userMessage.references,
+                followupQuestions: userMessage.followupQuestions,
+                feedback: userMessage.feedback,
+              };
+
+              const baseAssistantMessage: BaseMessage = {
+                role: completedAssistantMessage.role,
+                content: completedAssistantMessage.content,
+                timestamp: completedAssistantMessage.timestamp || new Date(),
+                references: completedAssistantMessage.references,
+                followupQuestions: completedAssistantMessage.followupQuestions,
+                feedback: completedAssistantMessage.feedback,
+              };
+
               // 사용자 메시지와 AI 메시지 모두 저장
-              await addMessageToConversation(newConvId, userMessage);
-              await addMessageToConversation(newConvId, completedAssistantMessage);
+              await addMessageToConversation(newConvId, baseUserMessage);
+              await addMessageToConversation(newConvId, baseAssistantMessage);
 
               // 제목 생성 및 업데이트
               const title = await generateChatTitle(question);
@@ -314,8 +342,18 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                 onTitleUpdated();
               }
             } else if (currentConversationId) {
+              // ChatView Message를 BaseMessage로 변환
+              const baseAssistantMessage: BaseMessage = {
+                role: completedAssistantMessage.role,
+                content: completedAssistantMessage.content,
+                timestamp: completedAssistantMessage.timestamp || new Date(),
+                references: completedAssistantMessage.references,
+                followupQuestions: completedAssistantMessage.followupQuestions,
+                feedback: completedAssistantMessage.feedback,
+              };
+
               // 기존 대화에 AI 메시지만 추가
-              await addMessageToConversation(currentConversationId, completedAssistantMessage);
+              await addMessageToConversation(currentConversationId, baseAssistantMessage);
             }
           } catch (error) {
             console.error("Firebase 저장 실패:", error);
