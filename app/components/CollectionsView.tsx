@@ -350,7 +350,6 @@ export default function CollectionsView({ onNewChat, onSelectProject }: Collecti
       />
 
       {/* 프로젝트 삭제 확인 모달 */}
-      {console.log("Rendering DeleteProjectModal, isOpen:", deleteModalOpen, "projectToDelete:", projectToDelete)}
       <DeleteProjectModal
         isOpen={deleteModalOpen}
         onClose={() => {
