@@ -1263,9 +1263,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
       </div>
 
       {/* 로그인 모달 - 쿼리 제한 도달 시 */}
-      {showLoginModal && (
-        <LoginModal onClose={() => setShowLoginModal(false)} />
-      )}
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </div>
   );
 }
