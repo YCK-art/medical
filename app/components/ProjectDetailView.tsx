@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ArrowLeft, ArrowUp, Edit2, FolderMinus, Trash2, MoreVertical } from "lucide-react";
+import { ArrowLeft, ArrowUp, Edit2, FolderMinus, Trash2, MoreVertical, Menu, Plus, SquarePen } from "lucide-react";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { getProject, removeConversationFromProject } from "@/lib/projectService";
@@ -16,6 +16,7 @@ interface ProjectDetailViewProps {
   onNewChat: () => void;
   onQuestionSubmit: (question: string) => void;
   onConversationDeleted?: () => void;
+  onToggleSidebar?: () => void;
 }
 
 interface ConversationItem {
@@ -25,7 +26,7 @@ interface ConversationItem {
   isFavorite?: boolean;
 }
 
-export default function ProjectDetailView({ projectId, onBack, onSelectChat, onNewChat, onQuestionSubmit, onConversationDeleted }: ProjectDetailViewProps) {
+export default function ProjectDetailView({ projectId, onBack, onSelectChat, onNewChat, onQuestionSubmit, onConversationDeleted, onToggleSidebar }: ProjectDetailViewProps) {
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
@@ -214,8 +215,28 @@ export default function ProjectDetailView({ projectId, onBack, onSelectChat, onN
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#1a1a1a]">
-      {/* Ruleout AI 헤더 */}
-      <div className="sticky top-0 z-10 border-b border-gray-700 p-4 bg-[rgba(26,26,26,0.7)] backdrop-blur-md">
+      {/* 모바일 상단 툴바 */}
+      <div className="md:hidden sticky top-0 z-10 border-b border-gray-700 px-3 py-2 bg-[rgba(26,26,26,0.9)] backdrop-blur-md">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={onToggleSidebar}
+            className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
+            aria-label="Toggle sidebar"
+          >
+            <Menu className="w-5 h-5 text-gray-300" />
+          </button>
+          <button
+            onClick={onNewChat}
+            className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
+            aria-label="New chat"
+          >
+            <SquarePen className="w-4 h-4 text-gray-300" />
+          </button>
+        </div>
+      </div>
+
+      {/* 데스크톱 헤더 */}
+      <div className="hidden md:block sticky top-0 z-10 border-b border-gray-700 p-4 bg-[rgba(26,26,26,0.7)] backdrop-blur-md">
         <div className="flex items-center max-w-7xl mx-auto">
           <div className="flex items-center space-x-1">
             <Image src="/image/clinical4-Photoroom.png" alt="Ruleout AI" width={32} height={32} />

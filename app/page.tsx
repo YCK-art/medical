@@ -9,6 +9,7 @@ import HistoryView from "./components/HistoryView";
 import CollectionsView from "./components/CollectionsView";
 import ProjectDetailView from "./components/ProjectDetailView";
 import FloatingLoginWidget from "./components/FloatingLoginWidget";
+import LoginModal from "./components/LoginModal";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { addConversationToProject } from "@/lib/projectService";
 import { getGuestQueriesRemaining } from "@/lib/guestLimit";
@@ -16,7 +17,8 @@ import { getGuestQueriesRemaining } from "@/lib/guestLimit";
 function HomeContent() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // 모바일에서는 기본적으로 사이드바 닫힘
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentView, setCurrentView] = useState<"home" | "chat" | "history" | "collections" | "projectDetail">("home");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
@@ -26,6 +28,25 @@ function HomeContent() {
   const [isGuestMode, setIsGuestMode] = useState(false);
   const [showFloatingWidget, setShowFloatingWidget] = useState(true);
   const [guestQueriesRemaining, setGuestQueriesRemaining] = useState(5);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // 데스크톱에서는 사이드바를 기본적으로 열림 상태로 설정
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        // md breakpoint
+        setIsSidebarOpen(true);
+      } else {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    // 초기 실행
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Guest 모드에서 남은 쿼리 수 업데이트
   useEffect(() => {
@@ -152,6 +173,7 @@ function HomeContent() {
         onShowHistory={handleShowHistory}
         onShowCollections={handleShowCollections}
         refreshKey={sidebarRefreshKey}
+        onShowLoginModal={() => setShowLoginModal(true)}
       />
       {currentView === "home" ? (
         <MainContent
@@ -164,11 +186,13 @@ function HomeContent() {
           onSelectChat={handleSelectChat}
           onNewChat={handleNewChat}
           onConversationDeleted={handleConversationDeleted}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
       ) : currentView === "collections" ? (
         <CollectionsView
           onNewChat={handleNewChat}
           onSelectProject={handleShowProjectDetail}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
       ) : currentView === "projectDetail" && currentProjectId ? (
         <ProjectDetailView
@@ -178,6 +202,7 @@ function HomeContent() {
           onNewChat={handleNewChat}
           onQuestionSubmit={(question) => handleQuestionSubmit(question, currentProjectId)}
           onConversationDeleted={handleConversationDeleted}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
       ) : (
         <ChatView
@@ -188,6 +213,7 @@ function HomeContent() {
           onTitleUpdated={handleTitleUpdated}
           isGuestMode={isGuestMode}
           onGuestQueryUpdate={(remaining) => setGuestQueriesRemaining(remaining)}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
       )}
 
@@ -195,6 +221,9 @@ function HomeContent() {
       {isGuestMode && !user && guestQueriesRemaining > 0 && showFloatingWidget && (
         <FloatingLoginWidget onClose={() => setShowFloatingWidget(false)} />
       )}
+
+      {/* Login Modal - 사이드바 외부에 렌더링 */}
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </div>
   );
 }

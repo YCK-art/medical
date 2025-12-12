@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Plus, MoreVertical, Edit2, FolderPlus, Trash2 } from "lucide-react";
+import { Search, Plus, MoreVertical, Edit2, FolderPlus, Trash2, Menu, SquarePen } from "lucide-react";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { getUserConversations, deleteConversation, updateConversationTitle, toggleFavorite } from "@/lib/chatService";
 import { ChatListItem } from "@/types/chat";
 import RenameChatModal from "./RenameChatModal";
@@ -14,10 +15,12 @@ interface HistoryViewProps {
   onSelectChat: (conversationId: string) => void;
   onNewChat: () => void;
   onConversationDeleted?: () => void;
+  onToggleSidebar?: () => void;
 }
 
-export default function HistoryView({ onSelectChat, onNewChat, onConversationDeleted }: HistoryViewProps) {
+export default function HistoryView({ onSelectChat, onNewChat, onConversationDeleted, onToggleSidebar }: HistoryViewProps) {
   const { user } = useAuth();
+  const { language } = useLanguage();
   const [conversations, setConversations] = useState<ChatListItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredConversations, setFilteredConversations] = useState<ChatListItem[]>([]);
@@ -28,6 +31,75 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
   const [conversationToMove, setConversationToMove] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [showToast, setShowToast] = useState(false);
+
+  // Multilingual content
+  const content = {
+    English: {
+      title: "Chat History",
+      newChat: "New Chat",
+      searchPlaceholder: "Search conversations...",
+      conversation: "conversation",
+      conversations: "conversations",
+      viewAll: "View All",
+      noResults: "No search results",
+      noHistory: "No conversation history",
+      date: "Date",
+      question: "Question",
+      rename: "Rename",
+      addToProject: "Add to Project",
+      delete: "Delete",
+      addedToProject: "Added to project",
+      timeAgo: {
+        minutesAgo: "m ago",
+        hoursAgo: "h ago",
+        daysAgo: "d ago"
+      }
+    },
+    한국어: {
+      title: "채팅 기록",
+      newChat: "새 채팅",
+      searchPlaceholder: "대화 검색...",
+      conversation: "대화",
+      conversations: "대화",
+      viewAll: "전체 보기",
+      noResults: "검색 결과 없음",
+      noHistory: "채팅 기록이 없습니다",
+      date: "날짜",
+      question: "질문",
+      rename: "이름 변경",
+      addToProject: "프로젝트에 추가",
+      delete: "삭제",
+      addedToProject: "프로젝트에 추가됨",
+      timeAgo: {
+        minutesAgo: "분 전",
+        hoursAgo: "시간 전",
+        daysAgo: "일 전"
+      }
+    },
+    日本語: {
+      title: "チャット履歴",
+      newChat: "新しいチャット",
+      searchPlaceholder: "会話を検索...",
+      conversation: "会話",
+      conversations: "会話",
+      viewAll: "すべて表示",
+      noResults: "検索結果なし",
+      noHistory: "チャット履歴がありません",
+      date: "日付",
+      question: "質問",
+      rename: "名前を変更",
+      addToProject: "プロジェクトに追加",
+      delete: "削除",
+      addedToProject: "プロジェクトに追加されました",
+      timeAgo: {
+        minutesAgo: "分前",
+        hoursAgo: "時間前",
+        daysAgo: "日前"
+      }
+    }
+  };
+
+  const currentContent = content[language as keyof typeof content];
 
   // Toast 상태 변경 디버깅
   useEffect(() => {
@@ -162,18 +234,38 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
     const diffDays = Math.floor(diffMs / 86400000);
 
     if (diffMins < 60) {
-      return `${diffMins}m ago`;
+      return `${diffMins}${currentContent.timeAgo.minutesAgo}`;
     } else if (diffHours < 24) {
-      return `${diffHours}h ago`;
+      return `${diffHours}${currentContent.timeAgo.hoursAgo}`;
     } else {
-      return `${diffDays}d ago`;
+      return `${diffDays}${currentContent.timeAgo.daysAgo}`;
     }
   };
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#1a1a1a]">
-      {/* Ruleout AI 헤더 */}
-      <div className="sticky top-0 z-10 border-b border-gray-700 p-4 bg-[rgba(26,26,26,0.7)] backdrop-blur-md">
+      {/* 모바일 상단 툴바 */}
+      <div className="md:hidden sticky top-0 z-10 border-b border-gray-700 px-3 py-2 bg-[rgba(26,26,26,0.9)] backdrop-blur-md">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={onToggleSidebar}
+            className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
+            aria-label="Toggle sidebar"
+          >
+            <Menu className="w-5 h-5 text-gray-300" />
+          </button>
+          <button
+            onClick={onNewChat}
+            className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
+            aria-label="New chat"
+          >
+            <SquarePen className="w-4 h-4 text-gray-300" />
+          </button>
+        </div>
+      </div>
+
+      {/* 데스크톱 헤더 */}
+      <div className="hidden md:block sticky top-0 z-10 border-b border-gray-700 p-4 bg-[rgba(26,26,26,0.7)] backdrop-blur-md">
         <div className="flex items-center max-w-5xl mx-auto">
           <div className="flex items-center space-x-1">
             <Image src="/image/clinical4-Photoroom.png" alt="Ruleout AI" width={32} height={32} />
@@ -186,13 +278,13 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
       <div className="p-8">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-semibold text-gray-200">Chat History</h1>
+            <h1 className="text-3xl font-semibold text-gray-200">{currentContent.title}</h1>
             <button
               onClick={onNewChat}
               className="flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-100 text-black rounded-lg transition-colors"
             >
               <Plus className="w-5 h-5" />
-              <span className="font-medium">New Chat</span>
+              <span className="font-medium">{currentContent.newChat}</span>
             </button>
           </div>
 
@@ -203,7 +295,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search conversations..."
+              placeholder={currentContent.searchPlaceholder}
               className="w-full bg-[#2a2a2a] border border-gray-700 rounded-lg pl-12 pr-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-gray-600"
             />
           </div>
@@ -211,14 +303,14 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
           {/* 대화 개수 */}
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-gray-400">
-              {filteredConversations.length} conversation{filteredConversations.length !== 1 ? 's' : ''}
+              {filteredConversations.length} {filteredConversations.length !== 1 ? currentContent.conversations : currentContent.conversation}
             </p>
             {filteredConversations.length !== conversations.length && (
               <button
                 onClick={() => setSearchQuery("")}
                 className="text-sm text-blue-400 hover:text-blue-300"
               >
-                View All
+                {currentContent.viewAll}
               </button>
             )}
           </div>
@@ -231,15 +323,15 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
           {filteredConversations.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500">
-                {searchQuery ? "No search results" : "No conversation history"}
+                {searchQuery ? currentContent.noResults : currentContent.noHistory}
               </p>
             </div>
           ) : (
             <div className="border-t border-gray-800">
               {/* 테이블 헤더 */}
               <div className="grid grid-cols-[200px_1fr_auto] gap-4 px-6 py-4 border-b border-gray-800">
-                <div className="text-sm font-medium text-gray-400">Date</div>
-                <div className="text-sm font-medium text-gray-400">Question</div>
+                <div className="text-sm font-medium text-gray-400">{currentContent.date}</div>
+                <div className="text-sm font-medium text-gray-400">{currentContent.question}</div>
                 <div className="w-8"></div>
               </div>
 
@@ -289,7 +381,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
                           className="w-full px-4 py-2 text-left text-sm text-gray-200 hover:bg-gray-700 transition-colors flex items-center space-x-2"
                         >
                           <Edit2 className="w-4 h-4" />
-                          <span>Rename</span>
+                          <span>{currentContent.rename}</span>
                         </button>
                         <button
                           onClick={(e) => {
@@ -299,7 +391,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
                           className="w-full px-4 py-2 text-left text-sm text-gray-200 hover:bg-gray-700 transition-colors flex items-center space-x-2"
                         >
                           <FolderPlus className="w-4 h-4" />
-                          <span>Add to Project</span>
+                          <span>{currentContent.addToProject}</span>
                         </button>
                         <button
                           onClick={(e) => {
@@ -309,7 +401,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
                           className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700 transition-colors flex items-center space-x-2"
                         >
                           <Trash2 className="w-4 h-4" />
-                          <span>Delete</span>
+                          <span>{currentContent.delete}</span>
                         </button>
                       </div>
                     )}
@@ -348,7 +440,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
 
       {/* Toast 알림 */}
       <Toast
-        message="Added to project"
+        message={currentContent.addedToProject}
         isVisible={showToast}
         onClose={() => setShowToast(false)}
       />

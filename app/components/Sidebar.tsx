@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { PanelLeft, MessageSquare, Clock, FolderOpen, User, ArrowUpCircle, Bell, Settings, HelpCircle, LogOut, ChevronRight, Plus, MoreVertical, Star, Edit2, FolderPlus, Trash2, ExternalLink } from "lucide-react";
+import { PanelLeft, MessageSquare, Clock, FolderOpen, User, ArrowUpCircle, Bell, Settings, HelpCircle, LogOut, ChevronRight, SquarePen, MoreVertical, Star, Edit2, FolderPlus, Trash2, ExternalLink } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { getUserConversations, deleteConversation, updateConversationTitle, toggleFavorite, getFavoriteConversations } from "@/lib/chatService";
 import { ChatListItem } from "@/types/chat";
 import { signOut as firebaseSignOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import MoveToProjectModal from "./MoveToProjectModal";
 import RenameChatModal from "./RenameChatModal";
-import LoginModal from "./LoginModal";
 import Toast from "./Toast";
 
 interface SidebarProps {
@@ -22,9 +22,10 @@ interface SidebarProps {
   onShowHistory: () => void;
   onShowCollections: () => void;
   refreshKey?: number;
+  onShowLoginModal: () => void;
 }
 
-export default function Sidebar({ isOpen, onToggle, currentConversationId, currentView, onNewChat, onSelectChat, onShowHistory, onShowCollections, refreshKey }: SidebarProps) {
+export default function Sidebar({ isOpen, onToggle, currentConversationId, currentView, onNewChat, onSelectChat, onShowHistory, onShowCollections, refreshKey, onShowLoginModal }: SidebarProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotificationMenu, setShowNotificationMenu] = useState(false);
   const [showLearnMoreSubmenu, setShowLearnMoreSubmenu] = useState(false);
@@ -33,17 +34,108 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
   const [moveModalConversationId, setMoveModalConversationId] = useState<string | null>(null);
   const [renameModalOpen, setRenameModalOpen] = useState(false);
   const [conversationToRename, setConversationToRename] = useState<{ id: string; title: string } | null>(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const notificationMenuRef = useRef<HTMLDivElement>(null);
   const learnMoreRef = useRef<HTMLDivElement>(null);
   const learnMoreTimerRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRefs = useRef<{[key: string]: HTMLDivElement | null}>({});
   const { user } = useAuth();
+  const { language } = useLanguage();
   const [conversations, setConversations] = useState<ChatListItem[]>([]);
   const [favoriteConversations, setFavoriteConversations] = useState<ChatListItem[]>([]);
   const router = useRouter();
   const [showToast, setShowToast] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<{[key: string]: 'top' | 'bottom'}>({});
+
+  // Multilingual content
+  const content = {
+    English: {
+      newChat: "New Chat",
+      history: "History",
+      collections: "Collections",
+      favorites: "Favorites",
+      noFavorites: "No favorites yet",
+      recentChats: "Recent Chats",
+      noHistory: "No chat history",
+      removeFromFavorites: "Remove From Favorites",
+      rename: "Rename",
+      addToProject: "Add to Project",
+      delete: "Delete",
+      favorite: "Favorite",
+      notifications: "Notifications",
+      noNotifications: "Your notifications will appear here.",
+      upgrade: "Upgrade",
+      settings: "Settings",
+      help: "Help",
+      upgradePlan: "Upgrade Plan",
+      learnMore: "Learn More",
+      aboutRuleout: "About Ruleout",
+      termsOfUse: "Terms of Use",
+      privacyPolicy: "Privacy Policy",
+      logOut: "Log Out",
+      logIn: "Log In",
+      profile: "Profile",
+      addedToProject: "Added to project"
+    },
+    한국어: {
+      newChat: "새 채팅",
+      history: "기록",
+      collections: "컬렉션",
+      favorites: "즐겨찾기",
+      noFavorites: "즐겨찾기가 없습니다",
+      recentChats: "최근 채팅",
+      noHistory: "채팅 기록이 없습니다",
+      removeFromFavorites: "즐겨찾기에서 제거",
+      rename: "이름 변경",
+      addToProject: "프로젝트에 추가",
+      delete: "삭제",
+      favorite: "즐겨찾기",
+      notifications: "알림",
+      noNotifications: "알림이 여기에 표시됩니다.",
+      upgrade: "업그레이드",
+      settings: "설정",
+      help: "도움말",
+      upgradePlan: "플랜 업그레이드",
+      learnMore: "더 알아보기",
+      aboutRuleout: "Ruleout 소개",
+      termsOfUse: "이용약관",
+      privacyPolicy: "개인정보처리방침",
+      logOut: "로그아웃",
+      logIn: "로그인",
+      profile: "프로필",
+      addedToProject: "프로젝트에 추가됨"
+    },
+    日本語: {
+      newChat: "新しいチャット",
+      history: "履歴",
+      collections: "コレクション",
+      favorites: "お気に入り",
+      noFavorites: "お気に入りはまだありません",
+      recentChats: "最近のチャット",
+      noHistory: "チャット履歴がありません",
+      removeFromFavorites: "お気に入りから削除",
+      rename: "名前を変更",
+      addToProject: "プロジェクトに追加",
+      delete: "削除",
+      favorite: "お気に入り",
+      notifications: "通知",
+      noNotifications: "通知はここに表示されます。",
+      upgrade: "アップグレード",
+      settings: "設定",
+      help: "ヘルプ",
+      upgradePlan: "プランをアップグレード",
+      learnMore: "詳しく見る",
+      aboutRuleout: "Ruleoutについて",
+      termsOfUse: "利用規約",
+      privacyPolicy: "プライバシーポリシー",
+      logOut: "ログアウト",
+      logIn: "ログイン",
+      profile: "プロフィール",
+      addedToProject: "プロジェクトに追加されました"
+    }
+  };
+
+  const currentContent = content[language as keyof typeof content];
 
   // 사용자 대화 목록 불러오기
   useEffect(() => {
@@ -103,10 +195,15 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
         setShowNotificationMenu(false);
       }
 
-      // 대화 드롭다운 닫기
+      // 대화 드롭다운 닫기 - 3개점 버튼 클릭은 제외
       if (activeDropdown) {
         const dropdownRef = dropdownRefs.current[activeDropdown];
-        if (dropdownRef && !dropdownRef.contains(event.target as Node)) {
+        const target = event.target as HTMLElement;
+
+        // 3개점 버튼이나 그 자식 요소를 클릭한 경우 무시
+        const isMoreButton = target.closest('button')?.querySelector('.lucide-more-vertical');
+
+        if (dropdownRef && !dropdownRef.contains(target) && !isMoreButton) {
           setActiveDropdown(null);
         }
       }
@@ -142,7 +239,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
 
   const handleLogin = () => {
     setShowProfileMenu(false);
-    setShowLoginModal(true);
+    onShowLoginModal();
   };
 
   const handleDeleteConversation = async (conversationId: string) => {
@@ -226,18 +323,31 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
   };
 
   return (
-    <div
-      className={`${
-        isOpen ? "w-64" : "w-12"
-      } transition-[width] duration-300 ease-in-out bg-[#1a1a1a] border-r border-gray-700 flex flex-col overflow-hidden`}
-    >
-      <div className={`flex flex-col h-full ${isOpen ? 'p-4' : 'px-2 py-4'}`}>
+    <>
+      {/* 모바일 오버레이 */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={onToggle}
+        />
+      )}
+
+      {/* 사이드바 */}
+      <div
+        className={`${
+          isOpen ? "w-64" : "w-12"
+        } transition-[width] duration-300 ease-in-out bg-[#1a1a1a] border-r border-gray-700 flex flex-col overflow-hidden
+        md:relative fixed inset-y-0 left-0 z-50
+        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        md:${isOpen ? "w-64" : "w-12"}`}
+      >
+      <div className="flex flex-col h-full p-2">
         {/* 상단 메뉴 항목들 */}
         <nav className="flex flex-col space-y-2 mb-4">
           {/* 토글 버튼 */}
           <button
             onClick={onToggle}
-            className={`group flex items-center ${isOpen ? 'space-x-3 px-3' : 'justify-center px-2'} py-2 rounded-lg hover:bg-gray-700 transition-colors`}
+            className="group relative flex items-center justify-start px-2 py-2 rounded-lg hover:bg-gray-700 transition-colors"
           >
             <PanelLeft className="w-4 h-4 flex-shrink-0 group-hover:text-[#4DB8C4] transition-colors" />
           </button>
@@ -245,42 +355,48 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
           {/* New Chat Button */}
           <button
             onClick={onNewChat}
-            className={`group flex items-center ${isOpen ? 'space-x-3 px-3' : 'justify-center px-2'} py-2 rounded-lg hover:bg-gray-700 transition-colors text-left`}
+            className="group relative flex items-center justify-start px-2 py-2 rounded-lg hover:bg-gray-700 transition-colors"
           >
-            <Plus className="w-4 h-4 flex-shrink-0 group-hover:text-[#4DB8C4] transition-colors" />
-            <span className={`whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>New Chat</span>
+            <SquarePen className="w-4 h-4 flex-shrink-0 group-hover:text-[#4DB8C4] transition-colors" />
+            <span className={`absolute left-10 whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+              {currentContent.newChat}
+            </span>
           </button>
 
           <button
             onClick={onShowHistory}
-            className={`group flex items-center ${isOpen ? 'space-x-3 px-3' : 'justify-center px-2'} py-2 rounded-lg transition-colors text-left ${
+            className={`group relative flex items-center justify-start px-2 py-2 rounded-lg transition-colors ${
               currentView === 'history' ? 'bg-gray-700' : 'hover:bg-gray-700'
             }`}
           >
             <Clock className="w-4 h-4 flex-shrink-0 group-hover:text-[#4DB8C4] transition-colors" />
-            <span className={`whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>History</span>
+            <span className={`absolute left-10 whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+              {currentContent.history}
+            </span>
           </button>
 
           <button
             onClick={onShowCollections}
-            className={`group flex items-center ${isOpen ? 'space-x-3 px-3' : 'justify-center px-2'} py-2 rounded-lg transition-colors text-left ${
+            className={`group relative flex items-center justify-start px-2 py-2 rounded-lg transition-colors ${
               currentView === 'collections' || currentView === 'projectDetail' ? 'bg-gray-700' : 'hover:bg-gray-700'
             }`}
           >
             <FolderOpen className="w-4 h-4 flex-shrink-0 group-hover:text-[#4DB8C4] transition-colors" />
-            <span className={`whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>Collections</span>
+            <span className={`absolute left-10 whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+              {currentContent.collections}
+            </span>
           </button>
         </nav>
 
         {isOpen && (
           <>
             {/* Favorites Section */}
-            <div className="mb-6">
-              <h3 className="text-sm text-gray-400 mb-2 px-1">Favorites</h3>
+            <div className="mb-6 animate-fadeIn">
+              <h3 className="text-sm text-gray-400 mb-2 px-1">{currentContent.favorites}</h3>
               <div className="space-y-0">
                 {favoriteConversations.length === 0 ? (
                   <div className="px-3 py-2 text-xs text-gray-600 text-center">
-                    No favorites yet
+                    {currentContent.noFavorites}
                   </div>
                 ) : (
                   favoriteConversations.map((conversation) => (
@@ -297,7 +413,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                             currentConversationId === conversation.id && currentView === 'chat' ? 'bg-gray-700' : ''
                           }`}
                         >
-                          <div className="text-sm text-gray-300 truncate">
+                          <div className="text-sm text-gray-300 truncate whitespace-nowrap overflow-hidden">
                             {conversation.title}
                           </div>
                         </button>
@@ -307,7 +423,23 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setActiveDropdown(activeDropdown === conversation.id ? null : conversation.id);
+                              const newDropdownState = activeDropdown === conversation.id ? null : conversation.id;
+                              setActiveDropdown(newDropdownState);
+
+                              // 드롭다운 위치 계산
+                              if (newDropdownState) {
+                                const buttonRect = e.currentTarget.getBoundingClientRect();
+                                const viewportHeight = window.innerHeight;
+                                const buttonMiddle = buttonRect.top + buttonRect.height / 2;
+
+                                // 버튼이 화면 하단 40%에 있으면 위로 펼침
+                                const isInLowerPortion = buttonMiddle > (viewportHeight * 0.6);
+
+                                setDropdownPosition(prev => ({
+                                  ...prev,
+                                  [conversation.id]: isInLowerPortion ? 'top' : 'bottom'
+                                }));
+                              }
                             }}
                             className="p-1 hover:bg-gray-600 rounded transition-colors flex-shrink-0"
                           >
@@ -320,7 +452,11 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                       {activeDropdown === conversation.id && (
                         <div
                           ref={(el) => { dropdownRefs.current[conversation.id] = el; }}
-                          className="absolute right-2 top-full mt-1 bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg z-50 min-w-[200px]"
+                          className={`absolute right-2 bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg z-50 min-w-[200px] ${
+                            dropdownPosition[conversation.id] === 'top'
+                              ? 'bottom-full mb-1'
+                              : 'top-full mt-1'
+                          }`}
                         >
                           <div className="py-1">
                             {/* Remove From Favorites */}
@@ -332,7 +468,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                               className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
                             >
                               <Star className="w-4 h-4" style={{ color: '#20808D' }} />
-                              <span className="text-sm text-gray-200">Remove From Favorites</span>
+                              <span className="text-sm text-gray-200">{currentContent.removeFromFavorites}</span>
                             </button>
 
                             {/* Rename */}
@@ -344,7 +480,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                               className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
                             >
                               <Edit2 className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-200">Rename</span>
+                              <span className="text-sm text-gray-200">{currentContent.rename}</span>
                             </button>
 
                             {/* Add to Project */}
@@ -357,7 +493,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                               className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
                             >
                               <FolderPlus className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-200">Add to Project</span>
+                              <span className="text-sm text-gray-200">{currentContent.addToProject}</span>
                             </button>
 
                             {/* Divider */}
@@ -372,7 +508,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                               className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
                             >
                               <Trash2 className="w-4 h-4 text-red-400" />
-                              <span className="text-sm text-red-400">Delete</span>
+                              <span className="text-sm text-red-400">{currentContent.delete}</span>
                             </button>
                           </div>
                         </div>
@@ -384,12 +520,12 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
             </div>
 
             {/* Recent Chats Section */}
-            <div className="flex-1 overflow-y-auto mb-4">
-              <h3 className="text-sm text-gray-400 mb-2 px-1">Recent Chats</h3>
+            <div className="flex-1 overflow-y-auto mb-4 animate-fadeIn">
+              <h3 className="text-sm text-gray-400 mb-2 px-1">{currentContent.recentChats}</h3>
               <div className="space-y-0">
                 {user && conversations.filter(conv => !conv.isFavorite).length === 0 ? (
                   <div className="px-3 py-4 text-sm text-gray-500 text-center">
-                    No chat history
+                    {currentContent.noHistory}
                   </div>
                 ) : (
                   conversations.filter(conv => {
@@ -412,7 +548,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                             currentConversationId === conversation.id && currentView === 'chat' ? 'bg-gray-700' : ''
                           }`}
                         >
-                          <div className="text-sm text-gray-300 truncate">
+                          <div className="text-sm text-gray-300 truncate whitespace-nowrap overflow-hidden">
                             {conversation.title}
                           </div>
                         </button>
@@ -422,7 +558,23 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setActiveDropdown(activeDropdown === conversation.id ? null : conversation.id);
+                              const newDropdownState = activeDropdown === conversation.id ? null : conversation.id;
+                              setActiveDropdown(newDropdownState);
+
+                              // 드롭다운 위치 계산
+                              if (newDropdownState) {
+                                const buttonRect = e.currentTarget.getBoundingClientRect();
+                                const viewportHeight = window.innerHeight;
+                                const buttonMiddle = buttonRect.top + buttonRect.height / 2;
+
+                                // 버튼이 화면 하단 40%에 있으면 위로 펼침
+                                const isInLowerPortion = buttonMiddle > (viewportHeight * 0.6);
+
+                                setDropdownPosition(prev => ({
+                                  ...prev,
+                                  [conversation.id]: isInLowerPortion ? 'top' : 'bottom'
+                                }));
+                              }
                             }}
                             className="p-1 hover:bg-gray-600 rounded transition-colors flex-shrink-0"
                           >
@@ -435,7 +587,11 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                       {activeDropdown === conversation.id && (
                         <div
                           ref={(el) => { dropdownRefs.current[conversation.id] = el; }}
-                          className="absolute right-2 top-full mt-1 bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg z-50 min-w-[180px]"
+                          className={`absolute right-2 bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg z-50 min-w-[180px] ${
+                            dropdownPosition[conversation.id] === 'top'
+                              ? 'bottom-full mb-1'
+                              : 'top-full mt-1'
+                          }`}
                         >
                           <div className="py-1">
                             {/* 즐겨찾기 */}
@@ -447,7 +603,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                               className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
                             >
                               <Star className="w-4 h-4" style={{ color: conversation.isFavorite ? '#20808D' : '#9ca3af' }} />
-                              <span className="text-sm text-gray-200">Favorite</span>
+                              <span className="text-sm text-gray-200">{currentContent.favorite}</span>
                             </button>
 
                             {/* Rename */}
@@ -459,7 +615,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                               className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
                             >
                               <Edit2 className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-200">Rename</span>
+                              <span className="text-sm text-gray-200">{currentContent.rename}</span>
                             </button>
 
                             {/* Add to Project */}
@@ -472,7 +628,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                               className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
                             >
                               <FolderPlus className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-200">Add to Project</span>
+                              <span className="text-sm text-gray-200">{currentContent.addToProject}</span>
                             </button>
 
                             {/* Divider */}
@@ -487,7 +643,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                               className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
                             >
                               <Trash2 className="w-4 h-4 text-red-400" />
-                              <span className="text-sm text-red-400">Delete</span>
+                              <span className="text-sm text-red-400">{currentContent.delete}</span>
                             </button>
                           </div>
                         </div>
@@ -510,17 +666,22 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
             <div className="relative" ref={notificationMenuRef}>
               {/* 알림 드롭다운 메뉴 (위쪽으로 나타남) */}
               {showNotificationMenu && (
-                <div className={`absolute bottom-full mb-2 bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg overflow-hidden z-50 ${
-                  isOpen ? 'left-0 w-56' : 'left-12 w-56'
-                }`}>
+                <div
+                  className="fixed bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg overflow-hidden w-56"
+                  style={{
+                    left: notificationMenuRef.current ? `${notificationMenuRef.current.getBoundingClientRect().left}px` : 'auto',
+                    bottom: notificationMenuRef.current ? `${window.innerHeight - notificationMenuRef.current.getBoundingClientRect().top + 8}px` : 'auto',
+                    zIndex: 9999
+                  }}
+                >
                   <div className="p-4">
-                    <h3 className="text-base font-semibold mb-3">Notifications</h3>
+                    <h3 className="text-base font-semibold mb-3">{currentContent.notifications}</h3>
                     <div className="flex flex-col items-center justify-center py-4">
                       <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center mb-3">
                         <Bell className="w-6 h-6 text-gray-500" />
                       </div>
                       <p className="text-gray-400 text-center text-sm">
-                        Your notifications will appear here.
+                        {currentContent.noNotifications}
                       </p>
                     </div>
                   </div>
@@ -529,10 +690,12 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
 
               <button
                 onClick={() => setShowNotificationMenu(!showNotificationMenu)}
-                className={`group flex items-center ${isOpen ? 'space-x-3 px-3 w-full' : 'justify-center px-2'} py-2 rounded-lg hover:bg-gray-700 transition-colors text-left`}
+                className="group relative flex items-center justify-start w-full px-2 py-2 rounded-lg hover:bg-gray-700 transition-colors"
               >
                 <Bell className="w-4 h-4 flex-shrink-0 group-hover:text-[#4DB8C4] transition-colors" />
-                <span className={`whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>Notifications</span>
+                <span className={`absolute left-10 whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  {currentContent.notifications}
+                </span>
               </button>
             </div>
           )}
@@ -540,19 +703,26 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
           {/* Upgrade Button */}
           <button
             onClick={() => router.push('/upgrade')}
-            className={`group flex items-center ${isOpen ? 'space-x-3 px-3 w-full' : 'justify-center px-2'} py-2 rounded-lg hover:bg-gray-700 transition-colors text-left`}
+            className="group relative flex items-center justify-start w-full px-2 py-2 rounded-lg hover:bg-gray-700 transition-colors"
           >
             <ArrowUpCircle className="w-4 h-4 flex-shrink-0 group-hover:text-[#4DB8C4] transition-colors" />
-            <span className={`whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>Upgrade</span>
+            <span className={`absolute left-10 whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+              {currentContent.upgrade}
+            </span>
           </button>
 
           {/* 프로필 버튼 */}
           <div className="relative" ref={profileMenuRef}>
             {/* 프로필 드롭다운 메뉴 (위쪽으로 나타남) */}
             {showProfileMenu && (
-              <div className={`absolute bottom-full mb-2 bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg overflow-hidden z-50 ${
-                isOpen ? 'left-0 right-0' : 'left-12 w-56'
-              }`}>
+              <div
+                className="fixed bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg overflow-hidden w-56"
+                style={{
+                  left: profileMenuRef.current ? `${profileMenuRef.current.getBoundingClientRect().left}px` : 'auto',
+                  bottom: profileMenuRef.current ? `${window.innerHeight - profileMenuRef.current.getBoundingClientRect().top + 8}px` : 'auto',
+                  zIndex: 9999
+                }}
+              >
                 <div className="py-2">
                   {/* Settings - 로그인한 경우에만 표시 */}
                   {user && (
@@ -564,13 +734,13 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                         }}
                         className="group w-full flex items-center justify-between px-4 py-1.5 hover:bg-gray-700 transition-colors text-left"
                       >
-                        <span className="text-sm text-gray-200">Settings</span>
+                        <span className="text-sm text-gray-200">{currentContent.settings}</span>
                         <Settings className="w-4 h-4 text-gray-400 group-hover:text-[#4DB8C4] transition-colors" strokeWidth={1.5} />
                       </button>
 
                       {/* Get help */}
                       <button className="w-full flex items-center justify-between px-4 py-1.5 hover:bg-gray-700 transition-colors text-left">
-                        <span className="text-sm text-gray-200">Help</span>
+                        <span className="text-sm text-gray-200">{currentContent.help}</span>
                       </button>
 
                       {/* Divider */}
@@ -586,7 +756,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                     }}
                     className="w-full flex items-center justify-between px-4 py-1.5 hover:bg-gray-700 transition-colors text-left"
                   >
-                    <span className="text-sm text-gray-200">Upgrade Plan</span>
+                    <span className="text-sm text-gray-200">{currentContent.upgradePlan}</span>
                   </button>
 
                   {/* Learn more */}
@@ -605,7 +775,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                       }}
                       className="group w-full flex items-center justify-between px-4 py-1.5 hover:bg-gray-700 transition-colors text-left"
                     >
-                      <span className="text-sm text-gray-200">Learn More</span>
+                      <span className="text-sm text-gray-200">{currentContent.learnMore}</span>
                       <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#4DB8C4] transition-colors" strokeWidth={1.5} />
                     </button>
 
@@ -639,7 +809,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                             }}
                             className="w-full px-3 py-1.5 hover:bg-gray-700 transition-colors text-left flex items-center justify-between"
                           >
-                            <span className="text-sm text-gray-200">About Ruleout</span>
+                            <span className="text-sm text-gray-200">{currentContent.aboutRuleout}</span>
                             <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
                           </button>
 
@@ -655,7 +825,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                             }}
                             className="w-full px-3 py-1.5 hover:bg-gray-700 transition-colors text-left flex items-center justify-between"
                           >
-                            <span className="text-sm text-gray-200">Terms of Use</span>
+                            <span className="text-sm text-gray-200">{currentContent.termsOfUse}</span>
                             <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
                           </button>
 
@@ -668,7 +838,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                             }}
                             className="w-full px-3 py-1.5 hover:bg-gray-700 transition-colors text-left flex items-center justify-between"
                           >
-                            <span className="text-sm text-gray-200">Privacy Policy</span>
+                            <span className="text-sm text-gray-200">{currentContent.privacyPolicy}</span>
                             <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
                           </button>
                         </div>
@@ -685,14 +855,14 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                       onClick={handleLogout}
                       className="w-full flex items-center justify-between px-4 py-1.5 hover:bg-gray-700 transition-colors text-left"
                     >
-                      <span className="text-sm text-gray-200">Log Out</span>
+                      <span className="text-sm text-gray-200">{currentContent.logOut}</span>
                     </button>
                   ) : (
                     <button
                       onClick={handleLogin}
                       className="w-full flex items-center justify-between px-4 py-1.5 hover:bg-gray-700 transition-colors text-left"
                     >
-                      <span className="text-sm text-gray-200">Log In</span>
+                      <span className="text-sm text-gray-200">{currentContent.logIn}</span>
                     </button>
                   )}
                 </div>
@@ -701,13 +871,13 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
 
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className={`group flex items-center ${isOpen ? 'space-x-3 px-3 w-full' : 'justify-center px-2'} py-2 rounded-lg hover:bg-gray-700 transition-colors text-left`}
+              className="group relative flex items-center justify-start w-full px-2 py-2 rounded-lg hover:bg-gray-700 transition-colors"
             >
               <div className="group-hover:ring-2 group-hover:ring-[#4DB8C4] rounded-full transition-all">
                 {renderProfileAvatar()}
               </div>
-              <span className={`whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>
-                {user ? (user.displayName || user.email) : 'Profile'}
+              <span className={`absolute left-10 whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                {user ? (user.displayName || user.email) : currentContent.profile}
               </span>
             </button>
           </div>
@@ -733,18 +903,13 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
         onRename={handleRename}
       />
 
-      {/* Login Modal */}
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-      />
-
       {/* Toast 알림 */}
       <Toast
-        message="Added to project"
+        message={currentContent.addedToProject}
         isVisible={showToast}
         onClose={() => setShowToast(false)}
       />
     </div>
+    </>
   );
 }

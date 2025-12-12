@@ -1,0 +1,139 @@
+
+> medical-guidelines-frontend@0.1.0 dev
+> next dev
+
+   ▲ Next.js 14.1.0
+   - Local:        http://localhost:3000
+   - Environments: .env.local
+
+ ✓ Ready in 1045ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1303ms (1364 modules)
+ ✓ Compiled in 208ms (623 modules)
+ ✓ Compiled /landing in 345ms (1420 modules)
+ ✓ Compiled /not-found in 208ms (1425 modules)
+ ✓ Compiled /api/generate-title in 152ms (911 modules)
+🎯 제목 생성 시작 (언어: English): What is the safe dosage of meloxicam for a 15kg do
+✅ 제목 생성 완료: Meloxicam Dosage for 15kg Dog with Osteoarthritis
+ ✓ Compiled /settings in 341ms (1435 modules)
+ ✓ Compiled in 468ms (1449 modules)
+ ✓ Compiled in 185ms (786 modules)
+ ✓ Compiled in 359ms (1449 modules)
+ ⨯ ./app/components/Sidebar.tsx
+Error: 
+  [31mx[0m Expression expected
+     ,-[[36;1;4m/Users/ksinfosys/medical/frontend/app/components/Sidebar.tsx[0m:324:1]
+ [2m324[0m |   };
+ [2m325[0m | 
+ [2m326[0m |   return (
+ [2m327[0m |     <>
+     : [31;1m     ^[0m
+ [2m328[0m |       {/* 모바일 오버레이 */}
+ [2m329[0m |       {isOpen && (
+ [2m330[0m |         <div
+     `----
+
+  [31mx[0m Expected ',', got '{'
+     ,-[[36;1;4m/Users/ksinfosys/medical/frontend/app/components/Sidebar.tsx[0m:326:1]
+ [2m326[0m |   return (
+ [2m327[0m |     <>
+ [2m328[0m |       {/* 모바일 오버레이 */}
+ [2m329[0m |       {isOpen && (
+     : [31;1m      ^[0m
+ [2m330[0m |         <div
+ [2m331[0m |           className="fixed inset-0 bg-black/50 z-40 md:hidden"
+ [2m332[0m |           onClick={onToggle}
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/components/Sidebar.tsx
+./app/page.tsx
+ ✓ Compiled in 805ms (1449 modules)
+ ✓ Compiled in 176ms (1449 modules)
+ ✓ Compiled in 274ms (1449 modules)
+ ✓ Compiled in 374ms (1449 modules)
+ ✓ Compiled in 226ms (1449 modules)
+ ✓ Compiled in 266ms (1451 modules)
+ ✓ Compiled in 324ms (1451 modules)
+ ✓ Compiled in 333ms (1451 modules)
+ ✓ Compiled in 304ms (1451 modules)
+ ✓ Compiled in 170ms (1451 modules)
+ ✓ Compiled in 333ms (1451 modules)
+ ✓ Compiled in 162ms (1451 modules)
+ ✓ Compiled in 344ms (1451 modules)
+ ✓ Compiled in 167ms (1451 modules)
+ ✓ Compiled in 190ms (1451 modules)
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 361 (line 19 column 2)
+    at JSON.parse (<anonymous>)
+    at loadManifest (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/load-manifest.js:35:27)
+    at loadManifestWithRetries (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/load-components.js:38:51)
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/load-components.js:77:100)
+    at async DevServer.findPageComponentsImpl (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/next-server.js:675:36)
+    at async DevServer.findPageComponents (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/dev/next-dev-server.js:565:20)
+    at async DevServer.renderPageComponent (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/base-server.js:1844:24)
+    at async DevServer.renderToResponseImpl (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/base-server.js:1894:32)
+    at async DevServer.pipeImpl (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/base-server.js:911:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/next-server.js:271:17)
+    at async DevServer.handleRequestImpl (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/base-server.js:807:17)
+    at async /Users/ksinfosys/medical/frontend/node_modules/next/dist/server/dev/next-dev-server.js:331:20
+    at async Span.traceAsyncFn (/Users/ksinfosys/medical/frontend/node_modules/next/dist/trace/trace.js:151:20)
+    at async DevServer.handleRequest (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/dev/next-dev-server.js:328:24)
+    at async invokeRender (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/lib/router-server.js:163:21)
+    at async handleRequest (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/lib/router-server.js:342:24)
+    at async requestHandlerImpl (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/lib/router-server.js:366:13)
+    at async Server.requestListener (/Users/ksinfosys/medical/frontend/node_modules/next/dist/server/lib/start-server.js:140:13) {
+  page: '/'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 573ms (1599 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/ksinfosys/medical/frontend/.next/cache/webpack/server-development/0.pack.gz_' -> '/Users/ksinfosys/medical/frontend/.next/cache/webpack/server-development/0.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/ksinfosys/medical/frontend/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/ksinfosys/medical/frontend/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 223ms (1611 modules)
+ ✓ Compiled /not-found in 154ms (1602 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 339ms (1611 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/ksinfosys/medical/frontend/.next/cache/webpack/server-development/0.pack.gz_' -> '/Users/ksinfosys/medical/frontend/.next/cache/webpack/server-development/0.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/ksinfosys/medical/frontend/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/ksinfosys/medical/frontend/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 307ms (1611 modules)
+ ✓ Compiled in 177ms (1611 modules)
+ ✓ Compiled in 191ms (1611 modules)
+ ✓ Compiled in 350ms (1611 modules)
+ ✓ Compiled in 238ms (1611 modules)
+ ✓ Compiled in 175ms (1611 modules)
+ ✓ Compiled in 204ms (1611 modules)
+ ✓ Compiled in 148ms (1611 modules)
+ ✓ Compiled in 135ms (1611 modules)
+ ✓ Compiled in 150ms (1611 modules)
+ ✓ Compiled in 173ms (1611 modules)
+ ✓ Compiled in 171ms (1611 modules)
+ ✓ Compiled in 138ms (1611 modules)
+ ✓ Compiled in 137ms (1611 modules)
+ ✓ Compiled in 203ms (1611 modules)
+ ✓ Compiled in 153ms (1611 modules)
+ ✓ Compiled in 292ms (1611 modules)
+ ✓ Compiled in 301ms (1611 modules)
+ ✓ Compiled in 158ms (1611 modules)
+ ✓ Compiled in 251ms (1611 modules)
+ ✓ Compiled in 223ms (1611 modules)
+ ✓ Compiled in 223ms (1611 modules)
+ ✓ Compiled in 187ms (1611 modules)
+ ✓ Compiled in 210ms (1611 modules)
+ ✓ Compiled in 261ms (1611 modules)
+ ✓ Compiled in 268ms (1611 modules)
+ ✓ Compiled in 505ms (1611 modules)
+ ✓ Compiled in 259ms (1611 modules)
+ ✓ Compiled in 152ms (1611 modules)
+ ✓ Compiled in 267ms (1611 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 638ms (1611 modules)
+ ✓ Compiled in 236ms (1611 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 241ms (1611 modules)
+ ✓ Compiled in 271ms (1611 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[?25h

@@ -6,16 +6,25 @@ export async function POST(request: NextRequest) {
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
+
+  let firstMessage = "";
+
   try {
     const body = await request.json();
-    const { firstMessage } = body;
+    firstMessage = body.firstMessage;
+
+    if (!firstMessage || !firstMessage.trim()) {
+      return NextResponse.json({ title: "새 대화" });
+    }
 
     // 질문 언어 감지 (간단한 방법: 한글이 포함되어 있는지 확인)
     const isKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(firstMessage);
 
+    console.log(`🎯 제목 생성 시작 (언어: ${isKorean ? '한국어' : 'English'}):`, firstMessage.slice(0, 50));
+
     // GPT를 사용하여 대화 제목 생성 (질문 언어로)
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -38,12 +47,17 @@ export async function POST(request: NextRequest) {
     let title = response.choices[0]?.message?.content?.trim() || firstMessage.slice(0, 20);
     title = title.replace(/^["']|["']$/g, ''); // 시작과 끝의 따옴표 제거
 
+    console.log(`✅ 제목 생성 완료:`, title);
+
     return NextResponse.json({ title });
   } catch (error) {
     console.error("Title generation API 오류:", error);
-    // 오류 시 첫 메시지의 앞 20자를 제목으로 사용
-    const body = await request.json();
-    const fallbackTitle = body.firstMessage.slice(0, 20) + (body.firstMessage.length > 20 ? "..." : "");
+    // 오류 시 firstMessage 변수 사용 (이미 파싱된 값)
+    const fallbackTitle = firstMessage
+      ? firstMessage.slice(0, 20) + (firstMessage.length > 20 ? "..." : "")
+      : "새 대화";
+
+    console.log(`⚠️  Fallback 제목 사용:`, fallbackTitle);
     return NextResponse.json({ title: fallbackTitle });
   }
 }

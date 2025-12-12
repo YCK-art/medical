@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ArrowUp, BookOpen, Copy, Check, Share2, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Loader2, MoreHorizontal, Bookmark, List } from "lucide-react";
+import { ArrowUp, ArrowDown, BookOpen, Copy, Check, Share2, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Loader2, MoreHorizontal, Bookmark, List, Menu } from "lucide-react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import jsPDF from "jspdf";
 import { Timestamp } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   createConversation,
   addMessageToConversation,
@@ -24,7 +25,8 @@ import {
   resetGuestQueryCount,
 } from "@/lib/guestLimit";
 import LoginModal from "./LoginModal";
-import type { Message as BaseMessage, Reference } from "@/types/chat";
+import ThinkingSteps from "./ThinkingSteps";
+import type { Message as BaseMessage, ThinkingStep } from "@/types/chat";
 
 // ChatView에서 사용하는 Message 타입 (timestamp를 optional로 확장)
 interface Message extends Omit<BaseMessage, 'timestamp'> {
@@ -40,10 +42,12 @@ interface ChatViewProps {
   onTitleUpdated?: () => void;
   isGuestMode?: boolean;
   onGuestQueryUpdate?: (remaining: number) => void;
+  onToggleSidebar?: () => void;
 }
 
-export default function ChatView({ initialQuestion, conversationId, onNewQuestion, onConversationCreated, onTitleUpdated, isGuestMode = false, onGuestQueryUpdate }: ChatViewProps) {
+export default function ChatView({ initialQuestion, conversationId, onNewQuestion, onConversationCreated, onTitleUpdated, isGuestMode = false, onGuestQueryUpdate, onToggleSidebar }: ChatViewProps) {
   const { user } = useAuth();
+  const { language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -52,11 +56,92 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const hasCalledAPI = useRef(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isLoadingConversation = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [guestQueriesRemaining, setGuestQueriesRemaining] = useState(5);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [copiedTableIndex, setCopiedTableIndex] = useState<string | null>(null);
+  const [loadingStatus, setLoadingStatus] = useState<string>("");
+  const currentThinkingSteps = useRef<ThinkingStep[]>([]);
+  const thinkingStartTime = useRef<number>(0);
+
+  // User 상태 로깅
+  useEffect(() => {
+    console.log("👤 ChatView - User 상태:", user ? `로그인됨 (${user.uid})` : "로그인 안됨");
+    console.log("🎭 ChatView - Guest 모드:", isGuestMode);
+    console.log("💬 ChatView - Conversation ID:", currentConversationId);
+  }, [user, isGuestMode, currentConversationId]);
+
+  // Multilingual content
+  const content = {
+    English: {
+      share: "Share",
+      export: "Export",
+      rewrite: "Rewrite",
+      copy: "Copy",
+      like: "Like",
+      dislike: "Dislike",
+      references: "References",
+      relatedQuestions: "Related Questions",
+      generatingAnswer: "Synthesizing relevant information",
+      translating: "Translating question",
+      embedding: "Converting to vector",
+      searching: "Searching veterinary literature and clinical guidelines",
+      stop: "Stop",
+      freeQueriesRemaining: "Free queries remaining:",
+      queryLimitReached: "Query limit reached. Please log in to continue.",
+      placeholder: "Ask a follow-up question...",
+      more: "More",
+      bookmark: "Bookmark",
+      finishedThinking: "Finished thinking"
+    },
+    한국어: {
+      share: "공유",
+      export: "내보내기",
+      rewrite: "다시 작성",
+      copy: "복사",
+      like: "좋아요",
+      dislike: "싫어요",
+      references: "참고문헌",
+      relatedQuestions: "관련 질문",
+      generatingAnswer: "관련 정보 종합 중",
+      translating: "질문 번역 중",
+      embedding: "벡터로 변환 중",
+      searching: "수의학 문헌 및 임상 가이드라인 검색 중",
+      stop: "중지",
+      freeQueriesRemaining: "남은 무료 쿼리:",
+      queryLimitReached: "쿼리 제한에 도달했습니다. 계속하려면 로그인하세요.",
+      placeholder: "후속 질문을 입력하세요...",
+      more: "더보기",
+      bookmark: "북마크",
+      finishedThinking: "사고 완료"
+    },
+    日本語: {
+      share: "共有",
+      export: "エクスポート",
+      rewrite: "書き直す",
+      copy: "コピー",
+      like: "いいね",
+      dislike: "よくないね",
+      references: "参考文献",
+      relatedQuestions: "関連質問",
+      generatingAnswer: "関連情報を統合中",
+      translating: "質問を翻訳中",
+      embedding: "ベクトルに変換中",
+      searching: "獣医学文献および臨床ガイドライン検索中",
+      stop: "停止",
+      freeQueriesRemaining: "残りの無料クエリ:",
+      queryLimitReached: "クエリ制限に達しました。続行するにはログインしてください。",
+      placeholder: "フォローアップの質問を入力...",
+      more: "もっと",
+      bookmark: "ブックマーク",
+      finishedThinking: "思考完了"
+    }
+  };
+
+  const currentContent = content[language as keyof typeof content];
 
   // Guest 모드에서 남은 쿼리 수 업데이트
   useEffect(() => {
@@ -77,19 +162,37 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     }
   }, [user, isGuestMode]);
 
-  // 스크롤을 맨 아래로 - 타이핑 중일 때만 스크롤
+  // 스크롤 위치 감지
   useEffect(() => {
-    // 대화 로드 시 즉시 스크롤 (애니메이션 없음)
-    if (isLoadingConversation.current) {
-      // 즉시 맨 아래로 점프
-      messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
-      isLoadingConversation.current = false;
-    } else if (isStreaming) {
-      // 타이핑 중일 때만 부드럽게 스크롤
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-    // Reference나 Related Questions 추가 시에는 스크롤하지 않음
-  }, [messages, isStreaming]);
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setShowScrollToBottom(!isNearBottom);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    handleScroll(); // 초기 상태 체크
+
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // 맨 아래로 스크롤하는 함수
+  const scrollToBottom = () => {
+    // DOM 업데이트 완료 후 스크롤 (setTimeout 사용)
+    setTimeout(() => {
+      const container = messagesContainerRef.current;
+      if (container) {
+        // scrollIntoView 대신 scrollTop 직접 제어로 자동 스크롤 방지
+        container.scrollTop = container.scrollHeight;
+      }
+    }, 100);
+  };
+
+  // 스크롤 관리는 명시적 사용자 액션에서만 수행
+  // 참고문헌 추가 시 자동 스크롤 방지를 위해 messages dependency useEffect 제거
 
   // 기존 대화 불러오기 또는 새 대화 시작
   useEffect(() => {
@@ -105,7 +208,15 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
           const conversation = await getConversation(conversationId);
           if (conversation && conversation.messages) {
             isLoadingConversation.current = true; // setMessages 직전에 플래그 설정
-            setMessages(conversation.messages);
+            // Firebase에서 가져온 메시지를 Message 타입으로 변환
+            const typedMessages = conversation.messages.map((msg: any) => ({
+              ...msg,
+              references: msg.references?.map((ref: any) => ({
+                ...ref,
+                text: ref.text || '' // text 속성이 없으면 빈 문자열
+              }))
+            })) as Message[];
+            setMessages(typedMessages);
             setCurrentConversationId(conversationId);
             setIsFavorite(conversation.isFavorite || false);
           }
@@ -137,12 +248,22 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
 
   // API 호출
   const queryAPI = async (question: string, isFirstMessage: boolean = false, skipUserMessage: boolean = false) => {
+    console.log("🚀 queryAPI 호출 시작");
+    console.log("   - 질문:", question.slice(0, 50));
+    console.log("   - isFirstMessage:", isFirstMessage);
+    console.log("   - skipUserMessage:", skipUserMessage);
+    console.log("   - user:", user ? `로그인됨 (${user.uid})` : "로그인 안됨");
+    console.log("   - currentConversationId:", currentConversationId);
+
     // Rewrite가 아닌 경우에만 사용자 메시지 추가
     const userMessage: Message = {
       role: "user",
       content: question,
       timestamp: new Date(),
     };
+
+    // 🚀 대화 히스토리 준비 - setMessages 전에 현재 messages 상태 캡처
+    const currentMessages = messages; // 현재 messages 상태 저장
 
     if (!skipUserMessage) {
       setMessages((prev) => [...prev, userMessage]);
@@ -153,14 +274,14 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     // Firebase에 사용자 메시지 저장 (Rewrite가 아닌 경우에만)
     if (user && currentConversationId && !skipUserMessage) {
       try {
-        // ChatView의 Message를 BaseMessage로 변환
+        // ChatView의 Message를 BaseMessage로 변환 (undefined 제거)
         const baseMessage: BaseMessage = {
           role: userMessage.role,
           content: userMessage.content,
           timestamp: userMessage.timestamp || new Date(),
-          references: userMessage.references,
-          followupQuestions: userMessage.followupQuestions,
-          feedback: userMessage.feedback,
+          ...(userMessage.references && { references: userMessage.references }),
+          ...(userMessage.followupQuestions && { followupQuestions: userMessage.followupQuestions }),
+          ...(userMessage.feedback && { feedback: userMessage.feedback }),
         };
         await addMessageToConversation(currentConversationId, baseMessage);
       } catch (error) {
@@ -172,21 +293,24 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
       // AbortController 생성
       abortControllerRef.current = new AbortController();
 
-      // 대화 히스토리 준비 (현재 messages에서 assistant 메시지만)
-      const conversationHistory = messages
-        .filter(msg => msg.role === "assistant")
-        .slice(-3) // 최근 3개 assistant 답변만
-        .flatMap((msg, idx) => {
-          // 각 assistant 답변에 대응하는 user 질문 찾기
-          const userMsg = messages[messages.indexOf(msg) - 1];
-          return userMsg ? [
-            { role: "user", content: userMsg.content },
-            { role: "assistant", content: msg.content }
-          ] : [{ role: "assistant", content: msg.content }];
-        });
+      // 🚀 대화 히스토리 준비 (캡처한 currentMessages 사용)
+      // 최근 3턴(6개 메시지)까지만 포함
+      const conversationHistory = currentMessages
+        .slice(-6) // 최근 6개 메시지만 (3턴)
+        .map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }));
+
+      console.log("📝 전송할 대화 히스토리:", conversationHistory.length, "개 메시지");
+      if (conversationHistory.length > 0) {
+        console.log("   마지막 메시지:", conversationHistory[conversationHistory.length - 1].role, conversationHistory[conversationHistory.length - 1].content.slice(0, 50));
+      }
 
       // 백엔드 SSE 스트리밍 호출 (대화 히스토리 포함)
-      const response = await fetch("http://localhost:8000/query-stream", {
+      console.log("🌐 프론트엔드에서 전송하는 언어:", language);
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      const response = await fetch(`${backendUrl}/query-stream`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -194,6 +318,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
         body: JSON.stringify({
           question: question,
           conversation_history: conversationHistory,
+          language: language, // 현재 선택된 언어 전송
         }),
         signal: abortControllerRef.current.signal, // AbortController 시그널 추가
       });
@@ -210,11 +335,26 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
       }
 
       let buffer = "";
+      let streamingAnswer = "";  // 실시간 스트리밍 답변
       let finalAnswer = "";
-      let finalReferences: Reference[] = [];
+      let finalReferences: any[] = [];
       let finalFollowupQuestions: string[] = [];
       let hasError = false;
       let errorMessage = "";
+      let isFirstChunk = true;
+
+      // 사고 과정 초기화
+      currentThinkingSteps.current = [];
+      thinkingStartTime.current = Date.now();
+
+      // 임시 assistant 메시지 생성 (실시간 업데이트용)
+      const tempAssistantMessage: Message = {
+        role: "assistant",
+        content: "",
+        isStreaming: true,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, tempAssistantMessage]);
 
       // SSE 스트림 읽기
       while (true) {
@@ -230,16 +370,168 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
             try {
               const data = JSON.parse(line.slice(6));
 
-              if (data.status === "done") {
-                finalAnswer = data.answer || "";
+              // 로딩 상태 업데이트 및 사고 과정 단계 수집
+              const now = Date.now();
+
+              if (data.status === "rewriting") {
+                setLoadingStatus("대화 맥락을 분석하여 질문 재작성 중...");
+                currentThinkingSteps.current.push({
+                  icon: "RefreshCw",
+                  text: "질문 재작성 중",
+                  timestamp: now
+                });
+                console.log("📝 Added rewriting step:", currentThinkingSteps.current);
+              } else if (data.status === "translating") {
+                // 이전 단계(rewriting)의 duration 계산
+                if (currentThinkingSteps.current.length > 0) {
+                  const lastStep = currentThinkingSteps.current[currentThinkingSteps.current.length - 1];
+                  if (!lastStep.duration) {
+                    lastStep.duration = now - lastStep.timestamp;
+                  }
+                }
+                setLoadingStatus(currentContent.translating);
+                currentThinkingSteps.current.push({
+                  icon: "Languages",
+                  text: currentContent.translating,
+                  timestamp: now
+                });
+                console.log("📝 Added translating step:", currentThinkingSteps.current);
+              } else if (data.status === "embedding") {
+                // 이전 단계(translating)의 duration 계산
+                if (currentThinkingSteps.current.length > 0) {
+                  const lastStep = currentThinkingSteps.current[currentThinkingSteps.current.length - 1];
+                  if (!lastStep.duration) {
+                    lastStep.duration = now - lastStep.timestamp;
+                  }
+                }
+                setLoadingStatus(currentContent.embedding);
+                currentThinkingSteps.current.push({
+                  icon: "Network",
+                  text: currentContent.embedding,
+                  timestamp: now
+                });
+                console.log("📝 Added embedding step:", currentThinkingSteps.current);
+              } else if (data.status === "searching") {
+                // 이전 단계(embedding)의 duration 계산
+                if (currentThinkingSteps.current.length > 0) {
+                  const lastStep = currentThinkingSteps.current[currentThinkingSteps.current.length - 1];
+                  if (!lastStep.duration) {
+                    lastStep.duration = now - lastStep.timestamp;
+                  }
+                }
+                setLoadingStatus(currentContent.searching);
+                currentThinkingSteps.current.push({
+                  icon: "Search",
+                  text: currentContent.searching,
+                  timestamp: now
+                });
+                console.log("📝 Added searching step:", currentThinkingSteps.current);
+              } else if (data.status === "generating") {
+                // 이전 단계(searching)의 duration 계산
+                if (currentThinkingSteps.current.length > 0) {
+                  const lastStep = currentThinkingSteps.current[currentThinkingSteps.current.length - 1];
+                  if (!lastStep.duration) {
+                    lastStep.duration = now - lastStep.timestamp;
+                  }
+                }
+                setLoadingStatus(currentContent.generatingAnswer);
+                currentThinkingSteps.current.push({
+                  icon: "Sparkles",
+                  text: currentContent.generatingAnswer,
+                  timestamp: now
+                });
+                console.log("📝 Added generating step:", currentThinkingSteps.current);
+              }
+
+              if (data.status === "streaming") {
+                // 실시간 스트리밍 청크 수신 (ChatGPT처럼 타이핑 효과)
+                streamingAnswer += data.chunk;
+
+                // 첫 번째 스트리밍 청크일 때 thinking steps 추가
+                if (isFirstChunk && currentThinkingSteps.current.length > 0) {
+                  isFirstChunk = false;
+
+                  // 마지막 단계(generating)의 duration 계산
+                  const now = Date.now();
+                  const lastStep = currentThinkingSteps.current[currentThinkingSteps.current.length - 1];
+                  if (!lastStep.duration) {
+                    lastStep.duration = now - lastStep.timestamp;
+                  }
+
+                  setMessages((prev) => {
+                    const newMessages = [...prev];
+                    const lastMsg = newMessages[newMessages.length - 1];
+                    if (lastMsg && lastMsg.role === "assistant") {
+                      lastMsg.thinkingSteps = [...currentThinkingSteps.current];
+                      console.log("✨ Added thinking steps at streaming start:", lastMsg.thinkingSteps);
+                    }
+                    return newMessages;
+                  });
+                }
+
+                // 실시간으로 UI 업데이트 (타이핑 애니메이션 효과)
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  const lastMsg = newMessages[newMessages.length - 1];
+                  if (lastMsg && lastMsg.role === "assistant") {
+                    lastMsg.content = streamingAnswer;
+                    lastMsg.isStreaming = true;
+                  }
+                  return newMessages;
+                });
+              } else if (data.status === "references_ready") {
+                // 🚀 스트리밍 완료 직후 참고문헌 즉시 표시
+                console.log("📚 References ready - 즉시 표시");
+                finalAnswer = data.answer || streamingAnswer;
                 finalReferences = data.references || [];
+                console.log("🔗 Received references immediately:", finalReferences);
+
+                // 참고문헌 즉시 UI 업데이트 (isStreaming = false로 설정하여 버튼과 참고문헌 표시)
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  const lastMsg = newMessages[newMessages.length - 1];
+                  if (lastMsg && lastMsg.role === "assistant") {
+                    lastMsg.content = finalAnswer;  // 재매핑된 답변으로 교체
+                    lastMsg.references = finalReferences;
+                    lastMsg.thinkingSteps = currentThinkingSteps.current.length > 0 ? [...currentThinkingSteps.current] : undefined;
+                    lastMsg.isStreaming = false;  // 스트리밍 완료 표시
+                    console.log("✅ References added immediately");
+                  }
+                  return newMessages;
+                });
+              } else if (data.status === "done") {
+                // 🚀 후속 질문만 추가 (References는 이미 references_ready에서 처리됨)
+                setLoadingStatus(""); // 로딩 완료
                 finalFollowupQuestions = data.followup_questions || [];
                 console.log("📊 Received follow-up questions:", finalFollowupQuestions);
-                console.log("🔗 Received references:", finalReferences);
-                console.log("🔗 Reference URLs:", finalReferences.map(r => ({ title: r.title, url: r.url })));
+
+                // 후속 질문만 추가 (모든 이전 메시지의 followupQuestions는 제거)
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  // 모든 이전 assistant 메시지에서 followupQuestions 제거
+                  for (let i = 0; i < newMessages.length - 1; i++) {
+                    if (newMessages[i].role === "assistant") {
+                      newMessages[i].followupQuestions = undefined;
+                    }
+                  }
+                  // 가장 최근 메시지에만 followupQuestions 추가
+                  const lastMsg = newMessages[newMessages.length - 1];
+                  if (lastMsg && lastMsg.role === "assistant") {
+                    lastMsg.followupQuestions = finalFollowupQuestions;
+                    console.log("✅ Follow-up questions added to latest message only");
+                  }
+                  return newMessages;
+                });
               } else if (data.status === "error") {
+                setLoadingStatus(""); // 에러 시에도 로딩 상태 초기화
                 hasError = true;
-                errorMessage = data.message || "관련 정보를 찾을 수 없습니다.";
+                // 백엔드에서 언어별 에러 메시지를 보내므로 그대로 사용
+                const fallbackMessages: { [key: string]: string } = {
+                  "한국어": "Ruleout은 수의사가 근거 기반 임상 결정을 내리도록 돕기 위해 설계되었습니다.\n\n다음과 같은 질문을 시도해보세요:\n\"급성 심부전이 의심되는 개에게 어떤 진단 검사를 지시해야 하나요?\"",
+                  "English": "Ruleout is designed to help veterinarians make evidence-based clinical decisions.\n\nTry asking a question like:\n\"What diagnostic tests should I order for a dog with suspected acute heart failure?\"",
+                  "日本語": "Ruleoutは、獣医師がエビデンスに基づいた臨床判断を下すのを支援するために設計されています。\n\n次のような質問を試してみてください：\n「急性心不全が疑われる犬にどのような診断検査を指示すべきですか？\""
+                };
+                errorMessage = data.message || fallbackMessages[language] || fallbackMessages["한국어"];
               }
             } catch (e) {
               console.error("SSE 파싱 오류:", e);
@@ -250,50 +542,29 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
 
       // 에러 처리
       if (hasError) {
-        const errorMsg: Message = {
-          role: "assistant",
-          content: errorMessage,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, errorMsg]);
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          const lastMsg = newMessages[newMessages.length - 1];
+          if (lastMsg && lastMsg.role === "assistant") {
+            lastMsg.content = errorMessage;
+            lastMsg.isStreaming = false;
+          }
+          return newMessages;
+        });
         return;
       }
 
-      // 타이핑 애니메이션으로 답변 표시
-      if (finalAnswer) {
-        console.log("💬 Creating message with followup questions:", finalFollowupQuestions);
-        const assistantMessage: Message = {
-          role: "assistant",
-          content: "",
-          references: finalReferences,
-          followupQuestions: finalFollowupQuestions,
-          isStreaming: true,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, assistantMessage]);
+      // 🚀 Firebase 저장 로직 (references와 followup questions 모두 받은 후)
+      if (finalAnswer && finalReferences.length > 0) {
+        console.log("💬 All data ready - saving to Firebase");
 
-        const typingSpeed = 4; // milliseconds between chunks (faster interval)
-        const charsPerChunk = 8; // Show 8 characters at a time for much faster speed
-        for (let i = 0; i <= finalAnswer.length; i += charsPerChunk) {
-          await new Promise((resolve) => setTimeout(resolve, typingSpeed));
-          const displayText = finalAnswer.slice(0, Math.min(i + charsPerChunk, finalAnswer.length));
-          setMessages((prev) => {
-            const newMessages = [...prev];
-            const lastMsg = newMessages[newMessages.length - 1];
-            if (lastMsg && lastMsg.role === "assistant") {
-              lastMsg.content = displayText;
-              lastMsg.isStreaming = displayText.length < finalAnswer.length;
-            }
-            return newMessages;
-          });
-        }
-
-        // 타이핑 완료 후 Firebase에 AI 메시지 저장
+        // Firebase에 AI 메시지 저장
         const completedAssistantMessage: Message = {
           role: "assistant",
           content: finalAnswer,
           references: finalReferences,
           followupQuestions: finalFollowupQuestions,
+          thinkingSteps: currentThinkingSteps.current.length > 0 ? [...currentThinkingSteps.current] : undefined,
           timestamp: new Date(),
         };
 
@@ -301,63 +572,81 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
           try {
             // 첫 메시지인 경우 대화 생성
             if (isFirstMessage && !currentConversationId) {
+              console.log("🆕 새 대화 생성 시작 - userId:", user.uid);
               const newConvId = await createConversation(user.uid);
+              console.log("✅ 대화 생성 완료 - conversationId:", newConvId);
+
               setCurrentConversationId(newConvId);
               if (onConversationCreated) {
                 onConversationCreated(newConvId);
               }
 
-              // ChatView Message를 BaseMessage로 변환
+              // ChatView Message를 BaseMessage로 변환 (undefined 제거)
               const baseUserMessage: BaseMessage = {
                 role: userMessage.role,
                 content: userMessage.content,
                 timestamp: userMessage.timestamp || new Date(),
-                references: userMessage.references,
-                followupQuestions: userMessage.followupQuestions,
-                feedback: userMessage.feedback,
+                ...(userMessage.references && { references: userMessage.references }),
+                ...(userMessage.followupQuestions && { followupQuestions: userMessage.followupQuestions }),
+                ...(userMessage.feedback && { feedback: userMessage.feedback }),
               };
 
               const baseAssistantMessage: BaseMessage = {
                 role: completedAssistantMessage.role,
                 content: completedAssistantMessage.content,
                 timestamp: completedAssistantMessage.timestamp || new Date(),
-                references: completedAssistantMessage.references,
-                followupQuestions: completedAssistantMessage.followupQuestions,
-                feedback: completedAssistantMessage.feedback,
+                ...(completedAssistantMessage.references && { references: completedAssistantMessage.references }),
+                ...(completedAssistantMessage.followupQuestions && { followupQuestions: completedAssistantMessage.followupQuestions }),
+                ...(completedAssistantMessage.feedback && { feedback: completedAssistantMessage.feedback }),
+                ...(completedAssistantMessage.thinkingSteps && { thinkingSteps: completedAssistantMessage.thinkingSteps }),
               };
 
               // 사용자 메시지와 AI 메시지 모두 저장
+              console.log("💾 사용자 메시지 저장 중...");
               await addMessageToConversation(newConvId, baseUserMessage);
+              console.log("💾 AI 메시지 저장 중...");
               await addMessageToConversation(newConvId, baseAssistantMessage);
+              console.log("✅ 메시지 저장 완료");
 
               // 제목 생성 및 업데이트
+              console.log("🎯 제목 생성 시작 - 질문:", question.slice(0, 50));
               const title = await generateChatTitle(question);
+              console.log("✅ 제목 생성 완료:", title);
+
+              console.log("💾 제목 업데이트 중...");
               await updateConversationTitle(newConvId, title);
+              console.log("✅ 제목 업데이트 완료");
 
               // Firebase 저장 완료 대기 (약간의 지연)
               await new Promise(resolve => setTimeout(resolve, 100));
 
               // 제목 업데이트 알림
               if (onTitleUpdated) {
+                console.log("🔄 Sidebar 새로고침 트리거");
                 onTitleUpdated();
               }
             } else if (currentConversationId) {
-              // ChatView Message를 BaseMessage로 변환
+              // ChatView Message를 BaseMessage로 변환 (undefined 제거)
               const baseAssistantMessage: BaseMessage = {
                 role: completedAssistantMessage.role,
                 content: completedAssistantMessage.content,
                 timestamp: completedAssistantMessage.timestamp || new Date(),
-                references: completedAssistantMessage.references,
-                followupQuestions: completedAssistantMessage.followupQuestions,
-                feedback: completedAssistantMessage.feedback,
+                ...(completedAssistantMessage.references && { references: completedAssistantMessage.references }),
+                ...(completedAssistantMessage.followupQuestions && { followupQuestions: completedAssistantMessage.followupQuestions }),
+                ...(completedAssistantMessage.feedback && { feedback: completedAssistantMessage.feedback }),
+                ...(completedAssistantMessage.thinkingSteps && { thinkingSteps: completedAssistantMessage.thinkingSteps }),
               };
 
               // 기존 대화에 AI 메시지만 추가
+              console.log("💾 기존 대화에 AI 메시지만 추가 - conversationId:", currentConversationId);
               await addMessageToConversation(currentConversationId, baseAssistantMessage);
+              console.log("✅ 메시지 추가 완료");
             }
           } catch (error) {
-            console.error("Firebase 저장 실패:", error);
+            console.error("❌ Firebase 저장 실패:", error);
           }
+        } else {
+          console.log("⚠️  로그인 안 됨 - Firebase에 저장하지 않음 (Guest 모드)");
         }
       }
     } catch (error: any) {
@@ -381,6 +670,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
       }
     } finally {
       setIsStreaming(false);
+      setLoadingStatus(""); // 로딩 상태 초기화
       abortControllerRef.current = null;
     }
   };
@@ -390,6 +680,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       setIsStreaming(false);
+      setLoadingStatus(""); // 로딩 상태 초기화
     }
   };
 
@@ -403,20 +694,17 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
       return;
     }
 
-    // Related Questions 섹션을 제거하기 위해 마지막 assistant 메시지의 followupQuestions를 제거
+    // 모든 이전 메시지들의 followupQuestions를 제거 (가장 최신 답변만 표시)
     setMessages((prev) => {
-      const newMessages = [...prev];
-      // 마지막 assistant 메시지 찾기
-      for (let i = newMessages.length - 1; i >= 0; i--) {
-        if (newMessages[i].role === "assistant") {
-          newMessages[i] = {
-            ...newMessages[i],
+      return prev.map((msg) => {
+        if (msg.role === "assistant" && msg.followupQuestions) {
+          return {
+            ...msg,
             followupQuestions: undefined,
           };
-          break;
         }
-      }
-      return newMessages;
+        return msg;
+      });
     });
 
     // Guest 모드에서 쿼리 카운트 증가
@@ -432,6 +720,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     // 약간의 딜레이 후 질문 전송 (UI 업데이트를 위해)
     setTimeout(async () => {
       await queryAPI(question, false);
+      // 후속 질문 클릭 시 입력창으로 스크롤
+      scrollToBottom();
     }, 50);
   };
 
@@ -553,6 +843,22 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
 
     const question = input.trim();
     setInput("");
+
+    // 모든 이전 메시지들의 followupQuestions를 제거 (가장 최신 답변만 표시)
+    setMessages((prev) => {
+      return prev.map((msg) => {
+        if (msg.role === "assistant" && msg.followupQuestions) {
+          return {
+            ...msg,
+            followupQuestions: undefined,
+          };
+        }
+        return msg;
+      });
+    });
+
+    // 질문 전송 즉시 맨 아래로 스크롤 (답변 기다리지 않음)
+    scrollToBottom();
 
     // Guest 모드에서 쿼리 카운트 증가
     if (isGuestMode && !user) {
@@ -797,6 +1103,42 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     printWindow.document.close();
   };
 
+  // 테이블 내용 복사 함수
+  const copyTableContent = async (tableElement: HTMLTableElement, tableId: string) => {
+    try {
+      // HTML 형식으로 복사 (테이블 구조 유지)
+      const tableHTML = tableElement.outerHTML;
+
+      // 텍스트 형식도 함께 준비 (폴백용)
+      let tableText = '';
+      const rows = tableElement.querySelectorAll('tr');
+      rows.forEach((row) => {
+        const cells = row.querySelectorAll('th, td');
+        const cellTexts: string[] = [];
+        cells.forEach((cell) => {
+          cellTexts.push(cell.textContent?.trim() || '');
+        });
+        tableText += cellTexts.join('\t') + '\n';
+      });
+
+      // 클립보드에 HTML과 텍스트 모두 복사
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': new Blob([tableHTML], { type: 'text/html' }),
+          'text/plain': new Blob([tableText], { type: 'text/plain' })
+        })
+      ]);
+
+      // 복사 완료 표시
+      setCopiedTableIndex(tableId);
+      setTimeout(() => {
+        setCopiedTableIndex(null);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy table:', err);
+    }
+  };
+
   // Citation 문자열에서 모든 참고문헌 번호 추출
   const parseCitationNumbers = (citation: string): number[] => {
     const numbers: number[] = [];
@@ -844,11 +1186,69 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     });
   };
 
-  // Citation 처리 함수 (messageIndex를 파라미터로 받음)
-  const processCitations = (text: string, messageIndex: number) => {
-    const parts = text.split(/(\[\d+(?:-\d+)?(?:,\s*\d+(?:-\d+)?)*\])/g);
+  // 연속된 citation을 범위로 변환하는 함수
+  const formatCitationRange = (citation: string): string => {
+    // [1], [2], [3] -> [1-3]
+    // [1], [3], [5] -> [1,3,5] (연속되지 않음)
+    const content = citation.replace(/[\[\]]/g, '');
+    const parts = content.split(',').map(p => p.trim());
+    const numbers: number[] = [];
+
+    parts.forEach(part => {
+      if (part.includes('-')) {
+        const [start, end] = part.split('-').map(n => parseInt(n.trim()));
+        for (let i = start; i <= end; i++) {
+          numbers.push(i);
+        }
+      } else {
+        numbers.push(parseInt(part));
+      }
+    });
+
+    // 중복 제거 및 정렬
+    const uniqueNumbers = Array.from(new Set(numbers)).sort((a, b) => a - b);
+
+    // 연속된 숫자를 범위로 그룹화
+    const ranges: string[] = [];
+    let rangeStart = uniqueNumbers[0];
+    let rangeEnd = uniqueNumbers[0];
+
+    for (let i = 1; i <= uniqueNumbers.length; i++) {
+      if (i < uniqueNumbers.length && uniqueNumbers[i] === rangeEnd + 1) {
+        rangeEnd = uniqueNumbers[i];
+      } else {
+        if (rangeStart === rangeEnd) {
+          ranges.push(`${rangeStart}`);
+        } else if (rangeEnd === rangeStart + 1) {
+          // 2개만 연속일 경우 쉼표로 표시
+          ranges.push(`${rangeStart}`, `${rangeEnd}`);
+        } else {
+          // 3개 이상 연속일 경우 범위로 표시
+          ranges.push(`${rangeStart}-${rangeEnd}`);
+        }
+        if (i < uniqueNumbers.length) {
+          rangeStart = uniqueNumbers[i];
+          rangeEnd = uniqueNumbers[i];
+        }
+      }
+    }
+
+    return `[${ranges.join(',')}]`;
+  };
+
+  // Citation 처리 함수 (messageIndex와 isStreaming을 파라미터로 받음)
+  const processCitations = (text: string, messageIndex: number, isStreaming: boolean) => {
+    // 먼저 연속된 [숫자] 패턴을 하나로 합침: [3][4][5] -> [3,4,5]
+    const mergedText = text.replace(/(\[\d+\])(\[\d+\])+/g, (match) => {
+      const numbers = match.match(/\d+/g);
+      return numbers ? `[${numbers.join(',')}]` : match;
+    });
+
+    const parts = mergedText.split(/(\[\d+(?:-\d+)?(?:,\s*\d+(?:-\d+)?)*\])/g);
     return parts.map((part: string, index: number) => {
       if (/^\[\d+(?:-\d+)?(?:,\s*\d+(?:-\d+)?)*\]$/.test(part)) {
+        const formattedCitation = formatCitationRange(part);
+        // citation 내부의 괄호, 숫자, 하이픈, 쉼표 모두 민트색으로 표시
         return (
           <sup
             key={index}
@@ -856,7 +1256,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
             className="text-[0.65em] font-medium ml-0.5 cursor-pointer transition-colors"
             style={{ color: '#5AC8D8' }}
           >
-            {part}
+            {formattedCitation}
           </sup>
         );
       }
@@ -864,15 +1264,15 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     });
   };
 
-  // 재귀적으로 children 처리 (messageIndex를 파라미터로 받음)
-  const processChildrenWithCitations = (children: any, messageIndex: number): any => {
+  // 재귀적으로 children 처리 (messageIndex와 isStreaming을 파라미터로 받음)
+  const processChildrenWithCitations = (children: any, messageIndex: number, isStreaming: boolean): any => {
     if (typeof children === 'string') {
-      return processCitations(children, messageIndex);
+      return processCitations(children, messageIndex, isStreaming);
     }
     if (Array.isArray(children)) {
       return children.map((child, idx) => {
         if (typeof child === 'string') {
-          return <span key={idx}>{processCitations(child, messageIndex)}</span>;
+          return <span key={idx}>{processCitations(child, messageIndex, isStreaming)}</span>;
         }
         return child;
       });
@@ -880,10 +1280,10 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     return children;
   };
 
-  // Markdown 렌더링 시 citation 처리 (messageIndex를 받는 함수로 변경)
-  const createComponents = (messageIndex: number) => ({
+  // Markdown 렌더링 시 citation 처리 (messageIndex와 isStreaming을 받는 함수로 변경)
+  const createComponents = (messageIndex: number, isStreaming: boolean) => ({
     p: ({ children, ...props }: any) => {
-      return <p {...props}>{processChildrenWithCitations(children, messageIndex)}</p>;
+      return <p {...props}>{processChildrenWithCitations(children, messageIndex, isStreaming)}</p>;
     },
     h2: ({ children, ...props }: any) => (
       <h2 className="text-xl font-bold mt-6 mb-3 text-white" {...props}>{children}</h2>
@@ -899,45 +1299,89 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     ),
     li: ({ children, ...props }: any) => (
       <li className="text-gray-200 leading-relaxed pl-2" {...props}>
-        {processChildrenWithCitations(children, messageIndex)}
+        {processChildrenWithCitations(children, messageIndex, isStreaming)}
       </li>
     ),
-    table: ({ children, ...props }: any) => (
-      <div className="overflow-x-auto my-4">
-        <table className="min-w-full border border-gray-600" {...props}>{children}</table>
-      </div>
-    ),
+    table: ({ children, node, ...props }: any) => {
+      // 테이블의 고유 ID를 node position 기반으로 생성 (렌더링마다 일관성 유지)
+      const tableId = `table-${messageIndex}-${node?.position?.start?.line || 0}`;
+      const isCopied = copiedTableIndex === tableId;
+      return (
+        <div className="relative group overflow-x-auto my-4">
+          <table className="min-w-full border border-gray-600" {...props}>{children}</table>
+          {/* 복사 버튼 - 스트리밍 완료 후에만 표시 (깜빡임 방지) */}
+          {!isStreaming && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const tableElement = e.currentTarget.parentElement?.querySelector('table') as HTMLTableElement;
+                if (tableElement) {
+                  copyTableContent(tableElement, tableId);
+                }
+              }}
+              className={`absolute bottom-2 right-2 transition-all duration-200 p-2 rounded-lg z-10 bg-gray-700 hover:bg-gray-600 ${
+                isCopied ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              }`}
+              title={isCopied ? "Copied!" : "Copy table"}
+            >
+              {isCopied ? (
+                <Check className="w-4 h-4 text-green-400" />
+              ) : (
+                <Copy className="w-4 h-4 text-gray-300" />
+              )}
+            </button>
+          )}
+        </div>
+      );
+    },
     thead: ({ children, ...props }: any) => (
       <thead className="bg-gray-700" {...props}>{children}</thead>
     ),
+    tbody: ({ children, ...props }: any) => (
+      <tbody {...props}>{children}</tbody>
+    ),
+    tr: ({ children, ...props }: any) => (
+      <tr className="hover:bg-[#4DB8C4]/10 transition-colors duration-150" {...props}>{children}</tr>
+    ),
     th: ({ children, ...props }: any) => (
-      <th className="border border-gray-600 px-4 py-2 text-left font-semibold" {...props}>{processChildrenWithCitations(children, messageIndex)}</th>
+      <th className="border border-gray-600 px-4 py-2 text-left font-semibold" {...props}>{processChildrenWithCitations(children, messageIndex, isStreaming)}</th>
     ),
     td: ({ children, ...props }: any) => (
-      <td className="border border-gray-600 px-4 py-2" {...props}>{processChildrenWithCitations(children, messageIndex)}</td>
+      <td className="border border-gray-600 px-4 py-2" {...props}>{processChildrenWithCitations(children, messageIndex, isStreaming)}</td>
     ),
   });
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#1a1a1a]">
       {/* 헤더 */}
-      <div className="sticky top-0 z-10 border-b border-gray-700 p-4 bg-[rgba(26,26,26,0.7)] backdrop-blur-md">
+      <div className="sticky top-0 z-10 border-b border-gray-700 px-4 py-2 md:py-4 bg-[rgba(26,26,26,0.7)] backdrop-blur-md">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-2">
+            {/* 모바일 햄버거 메뉴 */}
+            {onToggleSidebar && (
+              <button
+                onClick={onToggleSidebar}
+                className="md:hidden p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Toggle sidebar"
+              >
+                <Menu className="w-5 h-5 text-gray-300" />
+              </button>
+            )}
             <Image src="/image/clinical4-Photoroom.png" alt="Ruleout AI" width={32} height={32} />
             <span className="text-lg font-semibold">Ruleout AI</span>
           </div>
           <div className="flex items-center space-x-2">
             <button
               className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              title="More"
+              title={currentContent.more}
             >
               <MoreHorizontal className="w-5 h-5 text-gray-400" />
             </button>
             <button
               onClick={handleToggleFavorite}
               className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              title="Bookmark"
+              title={currentContent.bookmark}
             >
               <Bookmark
                 className="w-5 h-5"
@@ -947,17 +1391,17 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
             </button>
             <button
               className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-700 rounded-lg transition-colors"
-              title="Share"
+              title={currentContent.share}
             >
               <Share2 className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-400">Share</span>
+              <span className="text-sm text-gray-400">{currentContent.share}</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* 메시지 영역 */}
-      <div className="flex-1 overflow-y-auto px-8 py-12">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-8 py-12">
         <div className="max-w-4xl mx-auto space-y-12">
           {messages.map((message, index) => (
             <div key={index}>
@@ -980,11 +1424,20 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                       className="rounded-full flex-shrink-0 mt-1"
                     />
                     <div className="flex-1 min-w-0">
+                      {/* 사고 과정 (Thinking Steps) - 스트리밍 시작되면 바로 표시 */}
+                      {message.thinkingSteps && message.thinkingSteps.length > 0 && (
+                        <ThinkingSteps
+                          steps={message.thinkingSteps}
+                          finishedText={currentContent.finishedThinking}
+                          isDark={true}
+                        />
+                      )}
+
                       {/* AI 답변 */}
                       <div className="text-gray-200 prose prose-invert max-w-none">
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
-                          components={createComponents(index)}
+                          components={createComponents(index, message.isStreaming || false)}
                         >
                           {message.content}
                         </ReactMarkdown>
@@ -997,7 +1450,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                           <div className="flex items-center space-x-2">
                             <button className="flex items-center space-x-2 px-3 py-1.5 hover:bg-gray-700 rounded-lg transition-colors">
                               <Share2 className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-400">Share</span>
+                              <span className="text-sm text-gray-400">{currentContent.share}</span>
                             </button>
                             <button
                               onClick={() => handleExportToPDF(messages[index - 1]?.content || "", message)}
@@ -1006,7 +1459,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                               <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                               </svg>
-                              <span className="text-sm text-gray-400">Export</span>
+                              <span className="text-sm text-gray-400">{currentContent.export}</span>
                             </button>
                             <button
                               onClick={() => handleRewrite(index)}
@@ -1014,7 +1467,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                               disabled={isStreaming}
                             >
                               <RotateCcw className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-400">Rewrite</span>
+                              <span className="text-sm text-gray-400">{currentContent.rewrite}</span>
                             </button>
                           </div>
 
@@ -1023,7 +1476,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                             <button
                               onClick={() => handleCopyAnswer(message, index)}
                               className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                              title="Copy"
+                              title={currentContent.copy}
                             >
                               {copiedIndex === index ? (
                                 <Check className="w-4 h-4" style={{ color: '#20808D' }} />
@@ -1033,7 +1486,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                             </button>
                             <button
                               className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                              title="Like"
+                              title={currentContent.like}
                               onClick={() => handleMessageFeedback(index, 'like')}
                             >
                               <ThumbsUp
@@ -1045,7 +1498,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                             </button>
                             <button
                               className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                              title="Dislike"
+                              title={currentContent.dislike}
                               onClick={() => handleMessageFeedback(index, 'dislike')}
                             >
                               <ThumbsDown
@@ -1071,7 +1524,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                           >
                             <BookOpen className="w-5 h-5 text-gray-400" />
                             <h3 className="text-base font-medium text-gray-300">
-                              References ({message.references.length})
+                              {currentContent.references} ({message.references.length})
                             </h3>
                             {referencesCollapsed[index] ? (
                               <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -1127,7 +1580,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                                   <div className="flex items-center space-x-1 ml-4">
                                     <button
                                       className="p-1.5 hover:bg-gray-700 rounded transition-colors"
-                                      title="Like"
+                                      title={currentContent.like}
                                       onClick={() => handleReferenceFeedback(index, refIdx, 'like')}
                                     >
                                       <ThumbsUp
@@ -1139,7 +1592,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                                     </button>
                                     <button
                                       className="p-1.5 hover:bg-gray-700 rounded transition-colors"
-                                      title="Dislike"
+                                      title={currentContent.dislike}
                                       onClick={() => handleReferenceFeedback(index, refIdx, 'dislike')}
                                     >
                                       <ThumbsDown
@@ -1163,7 +1616,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                           <div className="rounded-xl border border-gray-700 bg-gray-800/30 p-5">
                             <h3 className="text-lg font-medium text-gray-300 mb-4 flex items-center gap-2">
                               <List className="w-5 h-5" />
-                              Related Questions
+                              {currentContent.relatedQuestions}
                             </h3>
                             <div className="divide-y divide-gray-700">
                               {message.followupQuestions.map((question, qIdx) => (
@@ -1200,7 +1653,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                 />
                 <div className="flex items-center space-x-2 text-gray-400">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <div>Generating answer...</div>
+                  <div className="text-sm">{loadingStatus || currentContent.generatingAnswer}</div>
                 </div>
               </div>
 
@@ -1214,26 +1667,37 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                   backgroundColor: 'transparent'
                 }}
               >
-                Stop
+                {currentContent.stop}
               </button>
             </div>
           )}
-
-          <div ref={messagesEndRef} />
         </div>
       </div>
 
       {/* 입력 영역 */}
       <div className="p-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto relative">
+          {/* 맨 아래로 스크롤 버튼 */}
+          {showScrollToBottom && (
+            <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
+              <button
+                onClick={scrollToBottom}
+                className="flex items-center justify-center w-10 h-10 bg-[#2a2a2a] hover:bg-[#3a3a3a] border border-gray-700 rounded-full shadow-lg transition-all"
+                title="Scroll to bottom"
+              >
+                <ArrowDown className="w-5 h-5 text-gray-300" />
+              </button>
+            </div>
+          )}
+
           {/* Guest 모드 쿼리 카운터 */}
           {isGuestMode && !user && (
             <div className="mb-3 text-center">
               <p className="text-sm text-gray-400">
                 {guestQueriesRemaining > 0 ? (
-                  <>Free queries remaining: <span className="text-[#20808D] font-semibold">{guestQueriesRemaining}/5</span></>
+                  <>{currentContent.freeQueriesRemaining} <span className="text-[#20808D] font-semibold">{guestQueriesRemaining}/5</span></>
                 ) : (
-                  <span className="text-orange-400">Query limit reached. Please log in to continue.</span>
+                  <span className="text-orange-400">{currentContent.queryLimitReached}</span>
                 )}
               </p>
             </div>
@@ -1241,18 +1705,33 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
 
           <form onSubmit={handleSubmit}>
             <div className="flex items-center bg-[#2a2a2a] rounded-2xl border border-gray-700 px-6 pr-2 py-2.5 hover:border-gray-600 transition-colors">
-              <input
-                type="text"
+              <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a follow-up question..."
-                className="flex-1 bg-transparent outline-none text-white placeholder-gray-500"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
+                placeholder={currentContent.placeholder}
+                className="flex-1 bg-transparent outline-none text-white placeholder-gray-500 resize-none max-h-[200px] overflow-y-auto"
                 disabled={isStreaming}
+                rows={1}
+                style={{
+                  height: '24px',
+                  lineHeight: '24px'
+                }}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = '24px';
+                  target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+                }}
               />
               <button
                 type="submit"
                 disabled={isStreaming || !input.trim()}
-                className="w-12 h-12 flex items-center justify-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110"
+                className="w-12 h-12 flex items-center justify-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110 flex-shrink-0 self-start"
                 style={{ backgroundColor: '#20808D' }}
               >
                 <ArrowUp className="w-5 h-5" />
