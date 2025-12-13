@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, BookOpen, Shield, Briefcase, HelpCircle, Target } from "lucide-react";
+import { ChevronDown, BookOpen, Shield, Briefcase, HelpCircle, Target, Menu, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -18,6 +18,8 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
   const { language } = useLanguage();
   const [isResourcesOpen, setIsResourcesOpen] = useState(false);
   const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
 
   const content = {
     English: {
@@ -163,8 +165,8 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
               </div>
             </div>
 
-            {/* Right Buttons */}
-            <div className="flex items-center space-x-4">
+            {/* Right Buttons - Desktop */}
+            <div className="hidden md:flex items-center space-x-4">
               <button
                 onClick={() => window.open('https://calendly.com/d/ctf4-n6s-3yp/ruleout-enterprise', '_blank')}
                 className={`px-4 py-2 transition-colors border rounded-lg ${
@@ -182,9 +184,165 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
                 {currentContent.getStarted}
               </button>
             </div>
+
+            {/* Hamburger Menu Button - Mobile */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className={`md:hidden p-2 ${
+                effectiveTheme === 'light' ? 'text-gray-900' : 'text-white'
+              }`}
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
       </nav>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div
+          className={`fixed top-[65px] left-0 right-0 bottom-0 z-40 md:hidden overflow-y-auto ${
+            effectiveTheme === 'light' ? 'bg-white' : 'bg-[#1a1a1a]'
+          }`}
+        >
+          <div className="px-6 py-4 space-y-4">
+            {/* Mobile Menu Items */}
+            <button
+              onClick={() => {
+                router.push('/features');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`w-full text-left py-3 px-4 rounded-lg transition-colors ${
+                effectiveTheme === 'light'
+                  ? 'text-gray-900 hover:bg-gray-100'
+                  : 'text-white hover:bg-[#2a2a2a]'
+              }`}
+            >
+              {currentContent.features}
+            </button>
+
+            <button
+              onClick={() => {
+                router.push('/enterprise');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`w-full text-left py-3 px-4 rounded-lg transition-colors ${
+                effectiveTheme === 'light'
+                  ? 'text-gray-900 hover:bg-gray-100'
+                  : 'text-white hover:bg-[#2a2a2a]'
+              }`}
+            >
+              {currentContent.enterprise}
+            </button>
+
+            <button
+              onClick={() => {
+                router.push('/pricing');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`w-full text-left py-3 px-4 rounded-lg transition-colors ${
+                effectiveTheme === 'light'
+                  ? 'text-gray-900 hover:bg-gray-100'
+                  : 'text-white hover:bg-[#2a2a2a]'
+              }`}
+            >
+              {currentContent.pricing}
+            </button>
+
+            {/* Resources Dropdown in Mobile */}
+            <div>
+              <button
+                onClick={() => setIsMobileResourcesOpen(!isMobileResourcesOpen)}
+                className={`w-full flex items-center justify-between py-3 px-4 rounded-lg transition-colors ${
+                  effectiveTheme === 'light'
+                    ? 'text-gray-900 hover:bg-gray-100'
+                    : 'text-white hover:bg-[#2a2a2a]'
+                }`}
+              >
+                <span>{currentContent.resources}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isMobileResourcesOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isMobileResourcesOpen && (
+                <div className={`mt-2 space-y-2 pl-4 ${effectiveTheme === 'light' ? 'border-l-2 border-gray-200' : 'border-l-2 border-gray-700'}`}>
+                  {resourceItems.map((item, index) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          if (item.id === "blog") {
+                            router.push('/blog');
+                          } else if (item.id === "careers") {
+                            router.push('/careers');
+                          } else if (item.id === "security") {
+                            router.push('/security');
+                          } else if (item.id === "mission") {
+                            router.push('/mission');
+                          }
+                          setIsMobileMenuOpen(false);
+                          setIsMobileResourcesOpen(false);
+                        }}
+                        className={`w-full flex items-center space-x-3 py-3 px-4 rounded-lg transition-colors text-left ${
+                          effectiveTheme === 'light'
+                            ? 'hover:bg-gray-100'
+                            : 'hover:bg-[#2a2a2a]'
+                        }`}
+                      >
+                        <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
+                          effectiveTheme === 'light' ? 'bg-[#20808D]/10' : 'bg-[#20808D]/20'
+                        }`}>
+                          <Icon className="w-4 h-4 text-[#20808D]" />
+                        </div>
+                        <div>
+                          <div className={`text-sm font-medium ${
+                            effectiveTheme === 'light' ? 'text-gray-900' : 'text-white'
+                          }`}>
+                            {item.label}
+                          </div>
+                          <div className={`text-xs ${
+                            effectiveTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
+                          }`}>
+                            {item.description}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className={`border-t ${effectiveTheme === 'light' ? 'border-gray-200' : 'border-gray-800'} my-4`}></div>
+
+            {/* Mobile Action Buttons */}
+            <button
+              onClick={() => {
+                window.open('https://calendly.com/d/ctf4-n6s-3yp/ruleout-enterprise', '_blank');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`w-full px-4 py-3 transition-colors border rounded-lg ${
+                effectiveTheme === 'light'
+                  ? 'text-gray-700 hover:text-gray-900 border-gray-300 hover:border-gray-400'
+                  : 'text-gray-300 hover:text-white border-gray-700 hover:border-gray-600'
+              }`}
+            >
+              {currentContent.contactSales}
+            </button>
+
+            <button
+              onClick={() => {
+                onLoginClick();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full px-4 py-3 bg-[#20808D] text-white rounded-lg hover:bg-[#1a6b77] transition-colors"
+            >
+              {currentContent.getStarted}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Dropdown Menu - 툴바 외부에서 렌더링 */}
       {isResourcesOpen && (
