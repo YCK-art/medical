@@ -431,11 +431,6 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
                         <div className="text-sm text-gray-400">
                           {formatDate(conversation.updatedAt)}
                         </div>
-                        {conversation.followupCount && conversation.followupCount > 0 && (
-                          <div className="text-sm text-gray-500 mt-1">
-                            + {conversation.followupCount} follow-up{conversation.followupCount > 1 ? 's' : ''}
-                          </div>
-                        )}
                       </button>
 
                       {/* 오른쪽: 3개점 메뉴 */}
