@@ -111,7 +111,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
     const loadConversations = async () => {
       if (user) {
         try {
-          const userConversations = await getUserConversations(user.uid, 100);
+          const userConversations = await getUserConversations(user.uid, 1000);
           setConversations(userConversations);
           setFilteredConversations(userConversations);
         } catch (error) {
@@ -181,18 +181,23 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
   };
 
   const handleDelete = async (conversationId: string) => {
+    console.log("🗑️ HistoryView - Delete clicked for conversation:", conversationId);
     try {
+      console.log("🗑️ HistoryView - Calling deleteConversation...");
       await deleteConversation(conversationId);
+      console.log("🗑️ HistoryView - Delete successful, updating local state...");
       setConversations(conversations.filter(conv => conv.id !== conversationId));
       setFilteredConversations(filteredConversations.filter(conv => conv.id !== conversationId));
       setActiveDropdown(null);
 
       // 사이드바 새로고침
       if (onConversationDeleted) {
+        console.log("🗑️ HistoryView - Calling onConversationDeleted callback...");
         onConversationDeleted();
       }
+      console.log("🗑️ HistoryView - Delete completed successfully");
     } catch (error) {
-      console.error("Conversation deletion error:", error);
+      console.error("❌ HistoryView - Conversation deletion error:", error);
     }
   };
 
@@ -397,6 +402,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
                           </button>
                           <button
                             onClick={(e) => {
+                              console.log("🖱️ HistoryView - Delete button clicked (desktop)");
                               e.stopPropagation();
                               handleDelete(conversation.id);
                             }}
@@ -473,6 +479,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
                             </button>
                             <button
                               onClick={(e) => {
+                                console.log("🖱️ HistoryView - Delete button clicked (mobile)");
                                 e.stopPropagation();
                                 handleDelete(conversation.id);
                               }}
