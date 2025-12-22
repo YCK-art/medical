@@ -29,7 +29,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
   const [moveToProjectModalOpen, setMoveToProjectModalOpen] = useState(false);
   const [conversationToRename, setConversationToRename] = useState<{ id: string; title: string } | null>(null);
   const [conversationToMove, setConversationToMove] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRefs = useRef<{[key: string]: HTMLDivElement | null}>({});
   const [showToast, setShowToast] = useState(false);
 
   // Multilingual content
@@ -138,8 +138,15 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
   // 드롭다운 외부 클릭 감지
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setActiveDropdown(null);
+      if (activeDropdown) {
+        const dropdownEl = dropdownRefs.current[activeDropdown];
+        if (dropdownEl && !dropdownEl.contains(event.target as Node)) {
+          // 3개점 버튼 클릭은 제외
+          const target = event.target as HTMLElement;
+          if (!target.closest('button[aria-label="More options"]')) {
+            setActiveDropdown(null);
+          }
+        }
       }
     };
 
@@ -377,7 +384,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
                       {/* 드롭다운 메뉴 */}
                       {activeDropdown === conversation.id && (
                         <div
-                          ref={dropdownRef}
+                          ref={(el) => { dropdownRefs.current[conversation.id] = el; }}
                           className="absolute right-0 top-full mt-1 w-48 bg-[#2a2a2a] border border-gray-700 rounded-lg shadow-lg z-50 py-1"
                         >
                           <button
@@ -454,7 +461,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
                         {/* 드롭다운 메뉴 */}
                         {activeDropdown === conversation.id && (
                           <div
-                            ref={dropdownRef}
+                            ref={(el) => { dropdownRefs.current[conversation.id] = el; }}
                             className="absolute right-0 top-full mt-1 w-48 bg-[#2a2a2a] border border-gray-700 rounded-lg shadow-lg z-50 py-1"
                           >
                             <button
