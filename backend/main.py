@@ -453,33 +453,37 @@ Provide a comprehensive, detailed clinical answer in {language} following the fo
 
                         # Citation 이후 버퍼 업데이트
                         buffer = buffer[match.end():]
-                    elif buffer and (buffer[-1] in '{:,0123456789}' or 'citation' in buffer[-15:] or '{' in buffer[-5:]):
+                    elif buffer and ('{{' in buffer[-10:] or buffer.endswith('{{')):
                         # Citation 시작 가능성 - 버퍼 유지
-                        # 🔥 불완전한 citation 태그 패턴 감지
-                        # {{, {citation, {{citation 등 모든 partial 패턴 체크
+                        # 🔥 ONLY buffer if we see '{{' pattern (NOT single '{')
+                        # This prevents false positives where GPT outputs '{' as regular text
 
-                        # buffer에서 마지막 '{' 위치 찾기
-                        last_brace_idx = buffer.rfind('{')
+                        # buffer에서 마지막 '{{' 위치 찾기
+                        last_double_brace_idx = buffer.rfind('{{')
 
-                        if last_brace_idx != -1 and last_brace_idx < len(buffer) - 1:
-                            # '{' 이후에 텍스트가 있음 - citation 시작 가능성 체크
-                            after_brace = buffer[last_brace_idx:]
+                        if last_double_brace_idx != -1:
+                            # '{{' 이후 텍스트 추출
+                            after_brace = buffer[last_double_brace_idx:]
 
-                            # Partial citation 패턴들
-                            partial_patterns = ['{', '{{', '{c', '{{c', '{ci', '{{ci', '{cit', '{{cit',
-                                              '{cita', '{{cita', '{citat', '{{citat', '{citati', '{{citati',
-                                              '{citatio', '{{citatio', '{citation', '{{citation',
-                                              '{{citation:', '{{citation:0', '{{citation:1']
+                            # Partial citation 패턴들 (MUST start with '{{', NOT single '{')
+                            partial_patterns = ['{{', '{{c', '{{ci', '{{cit', '{{cita', '{{citat',
+                                              '{{citati', '{{citatio', '{{citation', '{{citation:']
 
                             is_partial = any(after_brace.startswith(p) for p in partial_patterns)
 
                             if is_partial:
-                                # Partial citation - '{' 앞까지만 출력
-                                if last_brace_idx > 0:
-                                    safe_chunk = buffer[:last_brace_idx]
+                                # Partial citation - '{{' 앞까지만 출력
+                                if last_double_brace_idx > 0:
+                                    safe_chunk = buffer[:last_double_brace_idx]
                                     output_chunk += safe_chunk
                                     full_answer += safe_chunk
-                                    buffer = buffer[last_brace_idx:]  # '{' 부터 버퍼에 유지
+                                    buffer = buffer[last_double_brace_idx:]  # '{{' 부터 버퍼에 유지
+                                break
+                            else:
+                                # '{{' 이후가 citation 패턴이 아님 - 전부 출력
+                                output_chunk += buffer
+                                full_answer += buffer
+                                buffer = ""
                                 break
 
                         # 일반적인 긴 버퍼 처리
