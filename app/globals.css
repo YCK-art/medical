@@ -47,22 +47,22 @@
 }
 
 /* 영어 답변용 Noto Serif 폰트 클래스 */
-.font-baskervville {
+.font-noto-serif {
   font-family: 'Noto Serif', serif !important;
 }
 
-.font-baskervville * {
+.font-noto-serif * {
   font-family: 'Noto Serif', serif !important;
 }
 
-.font-baskervville strong,
-.font-baskervville b {
+.font-noto-serif strong,
+.font-noto-serif b {
   font-family: 'Noto Serif', serif !important;
   font-weight: 700 !important;
 }
 
-.font-baskervville em,
-.font-baskervville i {
+.font-noto-serif em,
+.font-noto-serif i {
   font-family: 'Noto Serif', serif !important;
   font-style: italic !important;
 }

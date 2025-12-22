@@ -1433,7 +1433,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                         {/* AI 답변 */}
                         <div
                           className={`text-gray-200 prose prose-invert max-w-none ${
-                            isEnglishText(message.content) ? 'font-baskervville' : ''
+                            isEnglishText(message.content) ? 'font-noto-serif' : ''
                           }`}
                         >
                           <ReactMarkdown
