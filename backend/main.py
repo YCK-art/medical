@@ -72,7 +72,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:3001",
-        "https://*.railway.app",
+        "https://medical-production-f4e4.up.railway.app",
+        "https://mindful-dream-production-76f5.up.railway.app",
         "https://ruleout.co",
         "https://www.ruleout.co"
     ],
