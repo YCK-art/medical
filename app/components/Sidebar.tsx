@@ -778,72 +778,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                       <span className="text-sm text-gray-200">{currentContent.learnMore}</span>
                       <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#4DB8C4] transition-colors" strokeWidth={1.5} />
                     </button>
-
-                    {/* Learn More Submenu */}
-                    {showLearnMoreSubmenu && (
-                      <div
-                        onMouseEnter={() => {
-                          if (learnMoreTimerRef.current) {
-                            clearTimeout(learnMoreTimerRef.current);
-                          }
-                          setShowLearnMoreSubmenu(true);
-                        }}
-                        onMouseLeave={() => {
-                          learnMoreTimerRef.current = setTimeout(() => {
-                            setShowLearnMoreSubmenu(false);
-                          }, 150);
-                        }}
-                        className="fixed bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg min-w-[180px] z-[100]"
-                        style={{
-                          left: learnMoreRef.current ? `${learnMoreRef.current.getBoundingClientRect().right}px` : 'auto',
-                          bottom: learnMoreRef.current ? `${window.innerHeight - learnMoreRef.current.getBoundingClientRect().bottom}px` : 'auto'
-                        }}
-                      >
-                        <div className="py-1">
-                          {/* About Ruleout */}
-                          <button
-                            onClick={() => {
-                              // TODO: About Ruleout 페이지로 이동
-                              setShowProfileMenu(false);
-                              setShowLearnMoreSubmenu(false);
-                            }}
-                            className="w-full px-3 py-1.5 hover:bg-gray-700 transition-colors text-left flex items-center justify-between"
-                          >
-                            <span className="text-sm text-gray-200">{currentContent.aboutRuleout}</span>
-                            <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
-                          </button>
-
-                          {/* Divider */}
-                          <div className="border-t border-gray-700 my-1"></div>
-
-                          {/* Terms of Use */}
-                          <button
-                            onClick={() => {
-                              // TODO: Terms of Use 페이지로 이동
-                              setShowProfileMenu(false);
-                              setShowLearnMoreSubmenu(false);
-                            }}
-                            className="w-full px-3 py-1.5 hover:bg-gray-700 transition-colors text-left flex items-center justify-between"
-                          >
-                            <span className="text-sm text-gray-200">{currentContent.termsOfUse}</span>
-                            <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
-                          </button>
-
-                          {/* Privacy Policy */}
-                          <button
-                            onClick={() => {
-                              // TODO: Privacy Policy 페이지로 이동
-                              setShowProfileMenu(false);
-                              setShowLearnMoreSubmenu(false);
-                            }}
-                            className="w-full px-3 py-1.5 hover:bg-gray-700 transition-colors text-left flex items-center justify-between"
-                          >
-                            <span className="text-sm text-gray-200">{currentContent.privacyPolicy}</span>
-                            <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Divider */}
@@ -910,6 +844,72 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
         onClose={() => setShowToast(false)}
       />
     </div>
+
+      {/* Learn More Submenu - 사이드바 컨테이너 완전히 밖으로 이동 */}
+      {showLearnMoreSubmenu && (
+        <div
+          onMouseEnter={() => {
+            if (learnMoreTimerRef.current) {
+              clearTimeout(learnMoreTimerRef.current);
+            }
+            setShowLearnMoreSubmenu(true);
+          }}
+          onMouseLeave={() => {
+            learnMoreTimerRef.current = setTimeout(() => {
+              setShowLearnMoreSubmenu(false);
+            }, 150);
+          }}
+          className="fixed bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg min-w-[180px] z-[10000]"
+          style={{
+            left: learnMoreRef.current ? `${learnMoreRef.current.getBoundingClientRect().right}px` : 'auto',
+            bottom: learnMoreRef.current ? `${window.innerHeight - learnMoreRef.current.getBoundingClientRect().bottom}px` : 'auto'
+          }}
+        >
+          <div className="py-1">
+            {/* About Ruleout */}
+            <button
+              onClick={() => {
+                // TODO: About Ruleout 페이지로 이동
+                setShowProfileMenu(false);
+                setShowLearnMoreSubmenu(false);
+              }}
+              className="w-full px-3 py-1.5 hover:bg-gray-700 transition-colors text-left flex items-center justify-between"
+            >
+              <span className="text-sm text-gray-200">{currentContent.aboutRuleout}</span>
+              <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+            </button>
+
+            {/* Divider */}
+            <div className="border-t border-gray-700 my-1"></div>
+
+            {/* Terms of Use */}
+            <button
+              onClick={() => {
+                // TODO: Terms of Use 페이지로 이동
+                setShowProfileMenu(false);
+                setShowLearnMoreSubmenu(false);
+              }}
+              className="w-full px-3 py-1.5 hover:bg-gray-700 transition-colors text-left flex items-center justify-between"
+            >
+              <span className="text-sm text-gray-200">{currentContent.termsOfUse}</span>
+              <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+            </button>
+
+            {/* Privacy Policy */}
+            <button
+              onClick={() => {
+                // TODO: Privacy Policy 페이지로 이동
+                setShowProfileMenu(false);
+                setShowLearnMoreSubmenu(false);
+              }}
+              className="w-full px-3 py-1.5 hover:bg-gray-700 transition-colors text-left flex items-center justify-between"
+            >
+              <span className="text-sm text-gray-200">{currentContent.privacyPolicy}</span>
+              <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
