@@ -73,6 +73,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
   const [copiedUserMessage, setCopiedUserMessage] = useState<number | null>(null);
   const userScrolledUp = useRef(false); // 사용자가 스크롤을 위로 올렸는지 추적
   const lastScrollHeight = useRef(0); // 이전 스크롤 높이 추적
+  const isComposingRef = useRef(false); // IME 입력 중인지 추적
 
   // User 상태 로깅
   useEffect(() => {
@@ -102,7 +103,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
       placeholder: "Ask a follow-up question...",
       more: "More",
       bookmark: "Bookmark",
-      finishedThinking: "Finished thinking"
+      finishedThinking: "Finished thinking",
+      newBadge: "New"
     },
     한국어: {
       share: "공유",
@@ -123,7 +125,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
       placeholder: "후속 질문을 입력하세요...",
       more: "더보기",
       bookmark: "북마크",
-      finishedThinking: "사고 완료"
+      finishedThinking: "사고 완료",
+      newBadge: "신규"
     },
     日本語: {
       share: "共有",
@@ -144,7 +147,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
       placeholder: "フォローアップの質問を入力...",
       more: "もっと",
       bookmark: "ブックマーク",
-      finishedThinking: "思考完了"
+      finishedThinking: "思考完了",
+      newBadge: "新規"
     }
   };
 
@@ -1378,8 +1382,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                 <Menu className="w-5 h-5 text-gray-300" />
               </button>
             )}
-            <Image src="/image/clinical4-Photoroom.png" alt="Ruleout AI" width={32} height={32} className="hidden md:block" />
-            <span className="text-lg font-semibold hidden md:block">Ruleout AI</span>
+            <Image src="/image/clinical4-Photoroom.png" alt="Ruleout" width={32} height={32} className="hidden md:block" />
+            <span className="text-lg font-semibold hidden md:block">Ruleout</span>
           </div>
           <div className="flex items-center space-x-2">
             <button
@@ -1602,9 +1606,23 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                                         <p className="text-sm text-white">{ref.authors}</p>
                                       )}
                                       {(ref.journal || ref.year) && (
-                                        <p className="text-sm text-gray-300">
-                                          {ref.journal && ref.journal !== 'Unknown' && `${ref.journal}. `}
-                                          {ref.year && ref.year !== 'Unknown' && ref.year}
+                                        <p className="text-sm text-gray-300 flex items-center gap-2">
+                                          <span>
+                                            {ref.journal && ref.journal !== 'Unknown' && `${ref.journal}. `}
+                                            {ref.year && ref.year !== 'Unknown' && ref.year}
+                                          </span>
+                                          {ref.year && (ref.year === '2024' || ref.year === '2025' || parseInt(ref.year) >= 2024) && (
+                                            <span
+                                              className="px-1.5 py-0 rounded-full text-xs font-medium"
+                                              style={{
+                                                backgroundColor: 'rgba(32, 128, 141, 0.25)',
+                                                color: '#4DB8C4',
+                                                fontSize: '0.65rem'
+                                              }}
+                                            >
+                                              {currentContent.newBadge}
+                                            </span>
+                                          )}
                                         </p>
                                       )}
                                       {ref.doi && ref.doi !== 'Unknown' && (
@@ -1764,12 +1782,28 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
           )}
 
           <form onSubmit={handleSubmit}>
-            <div className="flex items-center bg-[#2a2a2a] rounded-2xl border border-gray-700 px-4 md:px-6 pr-2 py-2 hover:border-gray-600 transition-colors">
+            <div className="flex items-center bg-[#2a2a2a] rounded-2xl border border-gray-700 px-4 md:px-6 pr-2 py-1 hover:border-gray-600 transition-colors">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onCompositionStart={() => {
+                  isComposingRef.current = true;
+                }}
+                onCompositionEnd={() => {
+                  // composition이 끝난 후 약간의 딜레이를 두고 플래그 해제
+                  // 이렇게 하면 Enter 키 이벤트보다 확실히 나중에 처리됨
+                  setTimeout(() => {
+                    isComposingRef.current = false;
+                  }, 0);
+                }}
                 onKeyDown={(e) => {
+                  // IME 입력 중이면 Enter를 무시
                   if (e.key === 'Enter' && !e.shiftKey) {
+                    // 두 가지 모두 체크: nativeEvent와 ref
+                    if (e.nativeEvent.isComposing || isComposingRef.current) {
+                      // IME 변환 중이면 그냥 리턴 (preventDefault 안 함)
+                      return;
+                    }
                     e.preventDefault();
                     handleSubmit(e);
                   }

@@ -48,6 +48,32 @@ if metadata_mapping_path.exists():
 else:
     print(f"⚠️  메타데이터 매핑 파일을 찾을 수 없습니다: {metadata_mapping_path}", file=sys.stderr, flush=True)
 
+# 언어 매핑 및 감지 함수
+def map_language(frontend_lang: str) -> str:
+    """프론트엔드 언어값을 백엔드 언어값으로 변환"""
+    language_map = {
+        "한국어": "Korean",
+        "日本語": "Japanese",
+        "English": "English"
+    }
+    return language_map.get(frontend_lang, "English")
+
+def detect_language_from_text(text: str) -> str:
+    """텍스트 내용으로부터 언어 감지"""
+    # 한국어 감지 (한글 유니코드 범위)
+    if any(0xAC00 <= ord(c) <= 0xD7A3 for c in text):
+        return "Korean"
+
+    # 일본어 감지 (히라가나, 카타카나, 한자)
+    if any((0x3040 <= ord(c) <= 0x309F) or  # 히라가나
+           (0x30A0 <= ord(c) <= 0x30FF) or  # 카타카나
+           (0x4E00 <= ord(c) <= 0x9FFF)     # 한자 (CJK)
+           for c in text):
+        return "Japanese"
+
+    # 기본값: 영어
+    return "English"
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "medical-guidelines-kr")
@@ -389,6 +415,13 @@ CONTENT & FORMATTING REQUIREMENTS
    - Write in {language}
    - Use professional veterinary medical terminology
    - Be precise and clinically relevant
+   - **CRITICAL for Korean/Japanese answers**: When translating medical terms from English references, include the English term in parentheses on FIRST mention only
+     - ✅ Disease names: "담즙성 구토 증후군(Bilious vomiting syndrome, BVS)"
+     - ✅ Drug names: "오클라시티닙(oclacitinib, Apoquel)"
+     - ✅ Medical procedures: "위 내시경(gastroscopy)"
+     - ✅ Anatomical terms: "십이지장(duodenum)"
+     - ❌ Common words: Do NOT translate everyday words like "dog", "morning", "food"
+     - After first mention, use Korean only (e.g., "BVS는..." not "BVS(담즙성 구토 증후군)는..." again)
 
 EXAMPLE STRUCTURE:
 
@@ -416,10 +449,67 @@ Available documents: 0 to {num_references-1}
         })
 
     # 현재 질문
+    # 🔥 한국어/일본어 답변용 특별 지시사항
+    non_english_instruction = ""
+    if language == "Korean":
+        non_english_instruction = """
+
+🔥 CRITICAL INSTRUCTIONS FOR KOREAN ANSWERS:
+You are translating from English veterinary literature to Korean. To preserve medical terminology richness and prevent information loss:
+
+1. **Always include English medical terms in parentheses on FIRST mention**:
+   - Disease names: "담즙성 구토 증후군(Bilious vomiting syndrome, BVS)"
+   - Drug names: "마로피탄(maropitant)", "오메프라졸(omeprazole)"
+   - Medical conditions: "위장염(gastroenteritis)", "췌장염(pancreatitis)"
+   - Diagnostic tests: "혈액 검사(blood work)", "초음파(ultrasound)"
+   - Anatomical terms: "십이지장(duodenum)", "담낭(gallbladder)"
+
+2. **Extract the exact English phrase from the reference documents** - don't paraphrase or simplify medical terms
+
+3. **After first mention, use Korean abbreviation or Korean term only**
+
+4. **Do NOT translate common words** like "dog", "morning", "vomit" - only medical terminology
+
+5. **Preserve ALL clinical details from the English text**: dosages, percentages, study findings, mechanisms
+
+GOOD EXAMPLE:
+"**거품 구토(foamy vomit)는 여러 기저 질환을 나타낼 수 있으며, 담즙성 구토 증후군(Bilious vomiting syndrome, BVS)은 특히 아침에 발생하는 특정 질환입니다.** BVS는 장시간 공복 후 발생하며, 소량씩 자주 급식하는 것으로 관리할 수 있습니다.{{citation:2,6}}"
+
+BAD EXAMPLE:
+"거품 구토는 여러 원인이 있을 수 있습니다. 담즙성 구토는..." (English term missing, less specific)
+"""
+    elif language == "Japanese":
+        non_english_instruction = """
+
+🔥 CRITICAL INSTRUCTIONS FOR JAPANESE ANSWERS:
+You are translating from English veterinary literature to Japanese. To preserve medical terminology richness and prevent information loss:
+
+1. **Always include English medical terms in parentheses on FIRST mention**:
+   - Disease names: "胆汁性嘔吐症候群(Bilious vomiting syndrome, BVS)"
+   - Drug names: "マロピタント(maropitant)", "オメプラゾール(omeprazole)"
+   - Medical conditions: "胃腸炎(gastroenteritis)", "膵炎(pancreatitis)"
+   - Diagnostic tests: "血液検査(blood work)", "超音波検査(ultrasound)"
+   - Anatomical terms: "十二指腸(duodenum)", "胆嚢(gallbladder)"
+
+2. **Extract the exact English phrase from the reference documents** - don't paraphrase or simplify medical terms
+
+3. **After first mention, use Japanese abbreviation or Japanese term only**
+
+4. **Do NOT translate common words** like "dog", "morning", "vomit" - only medical terminology
+
+5. **Preserve ALL clinical details from the English text**: dosages, percentages, study findings, mechanisms
+
+GOOD EXAMPLE:
+"**泡状嘔吐(foamy vomit)は複数の基礎疾患を示す可能性があり、胆汁性嘔吐症候群(Bilious vomiting syndrome, BVS)は特に朝に発生する特定の疾患です。** BVSは長時間の絶食後に発生し、少量ずつ頻繁に給餌することで管理できます。{{citation:2,6}}"
+
+BAD EXAMPLE:
+"泡状嘔吐は様々な原因があります。胆汁性嘔吐は..." (English term missing, less specific)
+"""
+
     user_message = f"""Question: {question}
 
 Context (Documents 0-{num_references-1}):
-{context_text}
+{context_text}{non_english_instruction}
 
 Provide a comprehensive, detailed clinical answer in {language} following the format above. Include specific clinical details, use bold for key points, and structure your answer in clear paragraphs with citations."""
 
@@ -671,18 +761,72 @@ async def query_stream(request: QueryRequest):
             print(f"\n{'='*80}", file=sys.stderr, flush=True)
             print(f"📨 New query received", file=sys.stderr, flush=True)
             print(f"   Question: {question}", file=sys.stderr, flush=True)
-            print(f"   Language: {language}", file=sys.stderr, flush=True)
+            print(f"   Language from frontend: {language}", file=sys.stderr, flush=True)
             print(f"   Previous context: {len(previous_context_chunks)} chunks", file=sys.stderr, flush=True)
             print(f"   History: {len(conversation_history)} messages", file=sys.stderr, flush=True)
 
-            # 1단계: 번역 (언어 감지)
-            detected_lang = "Korean" if any(ord(c) >= 0xAC00 and ord(c) <= 0xD7A3 for c in question) else "English"
+            # 1단계: 언어 감지
+            # 우선순위: 1) 프론트엔드 명시적 선택, 2) 텍스트 기반 자동 감지
+            if language:
+                detected_lang = map_language(language)
+                print(f"🌐 프론트엔드 언어 사용: {language} → {detected_lang}", file=sys.stderr, flush=True)
+            else:
+                detected_lang = detect_language_from_text(question)
+                print(f"🔍 텍스트 기반 언어 감지: {detected_lang}", file=sys.stderr, flush=True)
+
             yield create_sse_event({
                 "status": "translating",
                 "message": "질문 이해 중..."
             })
 
-            # 2단계: 임베딩
+            # 한국어 질문이면 영어로 번역 (DB가 영어이므로)
+            search_query = question
+            if detected_lang == "Korean":
+                print(f"🌐 한국어 질문 감지 - 영어로 번역 중...", file=sys.stderr, flush=True)
+
+                # 🔥 ENHANCED: Medical context-preserving translation
+                translation_prompt = f"""You are a veterinary medical translator. Translate this Korean veterinary question to English while PRESERVING ALL clinical context and nuances.
+
+CRITICAL RULES:
+1. **Preserve temporal context**: "아침에" → "in the morning", "밤에" → "at night", "식후" → "after eating"
+2. **Preserve symptom descriptions**:
+   - "우웩우웩" (retching sound) → "retched" or "dry heaving"
+   - "거품토" → "foamy vomit" or "frothy vomit"
+   - "물같은 설사" → "watery diarrhea"
+   - "피똥" → "bloody stool" or "hematochezia"
+3. **Preserve clinical patterns**: If the question mentions timing, frequency, or progression, keep those details
+4. **Use proper veterinary terminology**: Translate colloquial Korean to professional English medical terms
+5. **Preserve question intent**: If asking "what causes", keep it as diagnostic question; if asking "how to treat", keep it as treatment question
+
+Examples:
+- "강아지가 아침에 우웩우웩 거품토를 했는데 뭐가 원인임?"
+  → "My dog retched and vomited foam in the morning. What could be the cause?"
+
+- "고양이가 밥 먹고 나서 계속 토해요"
+  → "My cat keeps vomiting after eating meals"
+
+- "강아지 다리를 절뚝거려요. 어디가 아픈건가요?"
+  → "My dog is limping. Where might the pain be?"
+
+Now translate this Korean veterinary question:
+
+{question}
+
+Return ONLY the English translation that preserves all clinical details and context."""
+
+                translation_response = openai_client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{
+                        "role": "user",
+                        "content": translation_prompt
+                    }],
+                    temperature=0.2,  # Lower temperature for more consistent translation
+                    max_tokens=250  # Slightly more tokens to allow detailed translation
+                )
+                search_query = translation_response.choices[0].message.content.strip()
+                print(f"✅ 번역 완료: {question[:50]}... → {search_query[:50]}...", file=sys.stderr, flush=True)
+
+            # 2단계: 임베딩 (영어 쿼리로)
             yield create_sse_event({
                 "status": "embedding",
                 "message": "벡터 변환 중..."
@@ -690,7 +834,7 @@ async def query_stream(request: QueryRequest):
 
             query_embedding = openai_client.embeddings.create(
                 model="text-embedding-3-small",
-                input=question
+                input=search_query
             ).data[0].embedding
 
             # 3단계: 검색
@@ -699,10 +843,10 @@ async def query_stream(request: QueryRequest):
                 "message": "문헌 검색 중..."
             })
 
-            # Query expansion (3개 쿼리)
-            expansion_prompt = f"""Generate 2 alternative phrasings of this veterinary question in Korean:
+            # Query expansion (영어로, DB가 영어이므로)
+            expansion_prompt = f"""Generate 2 alternative phrasings of this veterinary question in English:
 
-Original: {question}
+Original: {search_query}
 
 Return only the alternative questions, one per line."""
 
@@ -713,7 +857,7 @@ Return only the alternative questions, one per line."""
                 max_tokens=100
             )
 
-            expanded_queries = [question]  # 원본 포함
+            expanded_queries = [search_query]  # 번역된 영어 쿼리 포함
             expansion_text = expansion_response.choices[0].message.content.strip()
             for line in expansion_text.split('\n'):
                 if line.strip():
@@ -721,7 +865,9 @@ Return only the alternative questions, one per line."""
 
             expanded_queries = expanded_queries[:3]  # 최대 3개
 
-            print(f"🔍 Query expansion: {len(expanded_queries)} queries", file=sys.stderr, flush=True)
+            print(f"🔍 Query expansion: {len(expanded_queries)} queries (English)", file=sys.stderr, flush=True)
+            for i, q in enumerate(expanded_queries):
+                print(f"   Query {i+1}: {q}", file=sys.stderr, flush=True)
 
             # 모든 쿼리 임베딩 생성
             all_embeddings = []
