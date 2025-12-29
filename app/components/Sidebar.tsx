@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { PanelLeft, MessageSquare, Clock, FolderOpen, User, ArrowUpCircle, Bell, Settings, HelpCircle, LogOut, ChevronRight, SquarePen, MoreVertical, Star, Edit2, FolderPlus, Trash2, ExternalLink } from "lucide-react";
+import { PanelLeft, MessageSquare, Clock, FolderOpen, User, ArrowUpCircle, Bell, Settings, HelpCircle, LogOut, ChevronRight, SquarePen, MoreVertical, Edit2, FolderPlus, Trash2, ExternalLink, Mic } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getUserConversations, deleteConversation, updateConversationTitle, toggleFavorite, getFavoriteConversations } from "@/lib/chatService";
+import { getUserConversations, deleteConversation, updateConversationTitle } from "@/lib/chatService";
 import { ChatListItem } from "@/types/chat";
 import { signOut as firebaseSignOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
@@ -16,8 +16,9 @@ interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   currentConversationId: string | null;
-  currentView: "home" | "chat" | "history" | "collections" | "projectDetail";
+  currentView: "home" | "chat" | "history" | "collections" | "projectDetail" | "visit" | "visitRecording";
   onNewChat: () => void;
+  onNewVisit?: () => void;
   onSelectChat: (conversationId: string) => void;
   onShowHistory: () => void;
   onShowCollections: () => void;
@@ -25,7 +26,7 @@ interface SidebarProps {
   onShowLoginModal: () => void;
 }
 
-export default function Sidebar({ isOpen, onToggle, currentConversationId, currentView, onNewChat, onSelectChat, onShowHistory, onShowCollections, refreshKey, onShowLoginModal }: SidebarProps) {
+export default function Sidebar({ isOpen, onToggle, currentConversationId, currentView, onNewChat, onNewVisit, onSelectChat, onShowHistory, onShowCollections, refreshKey, onShowLoginModal }: SidebarProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotificationMenu, setShowNotificationMenu] = useState(false);
   const [showLearnMoreSubmenu, setShowLearnMoreSubmenu] = useState(false);
@@ -42,7 +43,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
   const { user } = useAuth();
   const { language } = useLanguage();
   const [conversations, setConversations] = useState<ChatListItem[]>([]);
-  const [favoriteConversations, setFavoriteConversations] = useState<ChatListItem[]>([]);
   const router = useRouter();
   const [showToast, setShowToast] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{[key: string]: 'top' | 'bottom'}>({});
@@ -52,16 +52,13 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
     English: {
       newChat: "New Chat",
       history: "History",
+      newVisit: "New Visit",
       collections: "Collections",
-      favorites: "Favorites",
-      noFavorites: "No favorites yet",
       recentChats: "Recent Chats",
       noHistory: "No chat history",
-      removeFromFavorites: "Remove From Favorites",
       rename: "Rename",
       addToProject: "Add to Project",
       delete: "Delete",
-      favorite: "Favorite",
       notifications: "Notifications",
       noNotifications: "Your notifications will appear here.",
       upgrade: "Upgrade",
@@ -80,16 +77,13 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
     한국어: {
       newChat: "새 채팅",
       history: "기록",
+      newVisit: "새 진료",
       collections: "컬렉션",
-      favorites: "즐겨찾기",
-      noFavorites: "즐겨찾기가 없습니다",
       recentChats: "최근 채팅",
       noHistory: "채팅 기록이 없습니다",
-      removeFromFavorites: "즐겨찾기에서 제거",
       rename: "이름 변경",
       addToProject: "프로젝트에 추가",
       delete: "삭제",
-      favorite: "즐겨찾기",
       notifications: "알림",
       noNotifications: "알림이 여기에 표시됩니다.",
       upgrade: "업그레이드",
@@ -108,16 +102,13 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
     日本語: {
       newChat: "新しいチャット",
       history: "履歴",
+      newVisit: "新しい診療",
       collections: "コレクション",
-      favorites: "お気に入り",
-      noFavorites: "お気に入りはまだありません",
       recentChats: "最近のチャット",
       noHistory: "チャット履歴がありません",
-      removeFromFavorites: "お気に入りから削除",
       rename: "名前を変更",
       addToProject: "プロジェクトに追加",
       delete: "削除",
-      favorite: "お気に入り",
       notifications: "通知",
       noNotifications: "通知はここに表示されます。",
       upgrade: "アップグレード",
@@ -159,25 +150,15 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
           });
 
           setConversations(userConversations);
-
-          // Load favorite conversations
-          const favorites = await getFavoriteConversations(user.uid);
-          console.log("Loaded favorites:", favorites);
-          setFavoriteConversations(favorites);
         } catch (error: any) {
           // Firestore 인덱스가 생성 중일 때는 조용히 처리
           if (error?.code === 'failed-precondition' || error?.message?.includes('index')) {
             console.log("Firestore 인덱스 생성 대기 중...");
             setConversations([]);
-            setFavoriteConversations([]);
           } else {
             console.error("대화 목록 불러오기 실패:", error);
           }
         }
-      } else {
-        console.log("No user logged in, clearing conversations");
-        setConversations([]);
-        setFavoriteConversations([]);
       }
     };
 
@@ -231,7 +212,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
     try {
       await firebaseSignOut();
       setShowProfileMenu(false);
-      router.push("/landing");
+      router.push("/");
     } catch (error) {
       console.error("로그아웃 실패:", error);
     }
@@ -244,7 +225,9 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
+      // Firebase에서 삭제
       await deleteConversation(conversationId);
+
       // 대화 목록 새로고침
       setConversations(conversations.filter(c => c.id !== conversationId));
       setActiveDropdown(null);
@@ -275,35 +258,8 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
           ? { ...conv, title: newTitle }
           : conv
       ));
-      setFavoriteConversations(favoriteConversations.map(conv =>
-        conv.id === conversationToRename.id
-          ? { ...conv, title: newTitle }
-          : conv
-      ));
     } catch (error) {
       console.error("채팅 제목 변경 오류:", error);
-    }
-  };
-
-  const handleToggleFavorite = async (conversationId: string, isFavorite: boolean = false) => {
-    try {
-      console.log("Sidebar: Toggling favorite for", conversationId, "from", isFavorite, "to", !isFavorite);
-      await toggleFavorite(conversationId, isFavorite);
-
-      // Reload both lists
-      if (user) {
-        const userConversations = await getUserConversations(user.uid);
-        setConversations(userConversations);
-        console.log("Sidebar: Conversations updated:", userConversations.length);
-
-        const favorites = await getFavoriteConversations(user.uid);
-        setFavoriteConversations(favorites);
-        console.log("Sidebar: Favorites updated:", favorites.length, favorites);
-      }
-
-      setActiveDropdown(null);
-    } catch (error) {
-      console.error("Failed to toggle favorite:", error);
     }
   };
 
@@ -386,169 +342,46 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
               {currentContent.collections}
             </span>
           </button>
+
+          <button
+            onClick={onNewVisit || onNewChat}
+            className={`group relative flex items-center justify-start px-2 py-2 rounded-lg transition-colors ${
+              currentView === 'visit' ? 'bg-gray-700' : 'hover:bg-gray-700'
+            }`}
+          >
+            <Mic className="w-4 h-4 flex-shrink-0 group-hover:text-[#4DB8C4] transition-colors" />
+            <span className={`absolute left-10 whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+              {currentContent.newVisit}
+            </span>
+          </button>
         </nav>
 
         {isOpen && (
           <>
-            {/* Favorites Section */}
-            <div className="mb-6 animate-fadeIn flex-shrink-0 max-h-[30vh] overflow-y-auto">
-              <h3 className="text-sm text-gray-400 mb-2 px-1">{currentContent.favorites}</h3>
-              <div className="space-y-0">
-                {favoriteConversations.length === 0 ? (
-                  <div className="px-3 py-2 text-xs text-gray-600 text-center">
-                    {currentContent.noFavorites}
-                  </div>
-                ) : (
-                  favoriteConversations.map((conversation) => (
-                    <div
-                      key={conversation.id}
-                      className="relative"
-                      onMouseEnter={() => setHoveredConversation(conversation.id)}
-                      onMouseLeave={() => setHoveredConversation(null)}
-                    >
-                      <div className="flex items-center justify-between px-2 py-1 rounded-lg">
-                        <button
-                          onClick={() => onSelectChat(conversation.id)}
-                          className={`flex-1 min-w-0 pr-2 text-left rounded-lg px-2 py-1.5 -ml-2 hover:bg-gray-700 transition-colors ${
-                            currentConversationId === conversation.id && currentView === 'chat' ? 'bg-gray-700' : ''
-                          }`}
-                        >
-                          <div className="text-sm text-gray-300 truncate whitespace-nowrap overflow-hidden">
-                            {conversation.title}
-                          </div>
-                        </button>
-
-                        {/* 3점 메뉴 버튼 - hover 시에만 표시 */}
-                        {hoveredConversation === conversation.id && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const newDropdownState = activeDropdown === conversation.id ? null : conversation.id;
-                              setActiveDropdown(newDropdownState);
-
-                              // 드롭다운 위치 계산
-                              if (newDropdownState) {
-                                const buttonRect = e.currentTarget.getBoundingClientRect();
-                                const viewportHeight = window.innerHeight;
-                                const buttonMiddle = buttonRect.top + buttonRect.height / 2;
-
-                                // 버튼이 화면 하단 40%에 있으면 위로 펼침
-                                const isInLowerPortion = buttonMiddle > (viewportHeight * 0.6);
-
-                                setDropdownPosition(prev => ({
-                                  ...prev,
-                                  [conversation.id]: isInLowerPortion ? 'top' : 'bottom'
-                                }));
-                              }
-                            }}
-                            className="p-1 hover:bg-gray-600 rounded transition-colors flex-shrink-0"
-                          >
-                            <MoreVertical className="w-4 h-4 text-gray-400" />
-                          </button>
-                        )}
-                      </div>
-
-                      {/* 드롭다운 메뉴 - Favorites용 */}
-                      {activeDropdown === conversation.id && (
-                        <div
-                          ref={(el) => { dropdownRefs.current[conversation.id] = el; }}
-                          className={`absolute right-2 bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg z-50 min-w-[200px] ${
-                            dropdownPosition[conversation.id] === 'top'
-                              ? 'bottom-full mb-1'
-                              : 'top-full mt-1'
-                          }`}
-                        >
-                          <div className="py-1">
-                            {/* Remove From Favorites */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleToggleFavorite(conversation.id, conversation.isFavorite);
-                              }}
-                              className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
-                            >
-                              <Star className="w-4 h-4" style={{ color: '#20808D' }} />
-                              <span className="text-sm text-gray-200">{currentContent.removeFromFavorites}</span>
-                            </button>
-
-                            {/* Rename */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRenameClick(conversation.id, conversation.title);
-                              }}
-                              className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
-                            >
-                              <Edit2 className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-200">{currentContent.rename}</span>
-                            </button>
-
-                            {/* Add to Project */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setMoveModalConversationId(conversation.id);
-                                setActiveDropdown(null);
-                              }}
-                              className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
-                            >
-                              <FolderPlus className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-200">{currentContent.addToProject}</span>
-                            </button>
-
-                            {/* Divider */}
-                            <div className="border-t border-gray-700 my-1"></div>
-
-                            {/* Delete */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteConversation(conversation.id);
-                              }}
-                              className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
-                            >
-                              <Trash2 className="w-4 h-4 text-red-400" />
-                              <span className="text-sm text-red-400">{currentContent.delete}</span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
             {/* Recent Chats Section */}
             <div className="flex-1 overflow-y-auto mb-4 animate-fadeIn min-h-0">
               <h3 className="text-sm text-gray-400 mb-2 px-1">{currentContent.recentChats}</h3>
               <div className="space-y-0">
-                {user && conversations.filter(conv => !conv.isFavorite).length === 0 ? (
+                {user && conversations.length === 0 ? (
                   <div className="px-3 py-4 text-sm text-gray-500 text-center">
                     {currentContent.noHistory}
                   </div>
                 ) : (
-                  conversations.filter(conv => {
-                    const shouldShow = !conv.isFavorite;
-                    if (conv.isFavorite) {
-                      console.log("Filtering out favorited chat from Recent:", conv.id, conv.title);
-                    }
-                    return shouldShow;
-                  }).map((conversation) => (
+                  conversations.map((conversation) => (
                     <div
                       key={conversation.id}
                       className="relative"
                       onMouseEnter={() => setHoveredConversation(conversation.id)}
                       onMouseLeave={() => setHoveredConversation(null)}
                     >
-                      <div className="flex items-center justify-between px-2 py-1 rounded-lg">
+                      <div className="flex items-center justify-between px-1.5 py-0.5 rounded-lg">
                         <button
                           onClick={() => onSelectChat(conversation.id)}
-                          className={`flex-1 min-w-0 pr-2 text-left rounded-lg px-2 py-1.5 -ml-2 hover:bg-gray-700 transition-colors ${
+                          className={`flex-1 min-w-0 pr-1.5 text-left rounded-lg px-2 py-1.5 -ml-1.5 hover:bg-gray-700 transition-colors ${
                             currentConversationId === conversation.id && currentView === 'chat' ? 'bg-gray-700' : ''
                           }`}
                         >
-                          <div className="text-sm text-gray-300 truncate whitespace-nowrap overflow-hidden">
+                          <div className="text-[13px] text-gray-300 truncate whitespace-nowrap overflow-hidden">
                             {conversation.title}
                           </div>
                         </button>
@@ -594,18 +427,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                           }`}
                         >
                           <div className="py-1">
-                            {/* 즐겨찾기 */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleToggleFavorite(conversation.id, conversation.isFavorite);
-                              }}
-                              className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-700 transition-colors text-left"
-                            >
-                              <Star className="w-4 h-4" style={{ color: conversation.isFavorite ? '#20808D' : '#9ca3af' }} />
-                              <span className="text-sm text-gray-200">{currentContent.favorite}</span>
-                            </button>
-
                             {/* Rename */}
                             <button
                               onClick={(e) => {

@@ -332,10 +332,10 @@ export default function BlogPage() {
             <div className="flex flex-col items-center mb-8">
               <div className="flex items-center space-x-1 mb-6">
                 <Image
-                  src="/image/clinical4-Photoroom.png"
+                  src="/image/logo_candidate1 복사본.png"
                   alt="Ruleout Logo"
-                  width={36}
-                  height={36}
+                  width={28}
+                  height={28}
                   className="object-contain"
                 />
                 <span className="text-2xl font-bold text-white">Ruleout</span>

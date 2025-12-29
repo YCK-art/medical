@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ArrowUp, ArrowDown, BookOpen, Copy, Check, Share2, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Loader2, MoreHorizontal, Bookmark, List, Menu } from "lucide-react";
+import { ArrowUp, ArrowDown, BookOpen, Copy, Check, Share2, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Loader2, MoreHorizontal, Bookmark, List, Menu, ChevronsLeft, Volume2, VolumeX } from "lucide-react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -18,13 +18,7 @@ import {
   toggleFavorite,
   updateMessage,
 } from "@/lib/chatService";
-import {
-  canGuestQuery,
-  incrementGuestQueryCount,
-  getGuestQueriesRemaining,
-  resetGuestQueryCount,
-} from "@/lib/guestLimit";
-import LoginModal from "./LoginModal";
+import { uploadAudioFile, saveRecording, formatDate, formatTime as formatRecordingDateTime } from "@/lib/recordingService";
 import ThinkingSteps from "./ThinkingSteps";
 import CitationBanner from "./CitationBanner";
 import OutOfScopeBanner from "./OutOfScopeBanner";
@@ -42,12 +36,15 @@ interface ChatViewProps {
   onNewQuestion: () => void;
   onConversationCreated?: (conversationId: string) => void;
   onTitleUpdated?: () => void;
-  isGuestMode?: boolean;
-  onGuestQueryUpdate?: (remaining: number) => void;
   onToggleSidebar?: () => void;
+  onToggleRecordingsSidebar?: () => void;
+  isVisitMode?: boolean;
+  isSidebarOpen?: boolean;
+  isRecordingsSidebarOpen?: boolean;
+  selectedRecording?: any;
 }
 
-export default function ChatView({ initialQuestion, conversationId, onNewQuestion, onConversationCreated, onTitleUpdated, isGuestMode = false, onGuestQueryUpdate, onToggleSidebar }: ChatViewProps) {
+export default function ChatView({ initialQuestion, conversationId, onNewQuestion, onConversationCreated, onTitleUpdated, onToggleSidebar, onToggleRecordingsSidebar, isVisitMode = false, isSidebarOpen = false, isRecordingsSidebarOpen = false, selectedRecording }: ChatViewProps) {
   const { user } = useAuth();
   const { language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -61,8 +58,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isLoadingConversation = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [guestQueriesRemaining, setGuestQueriesRemaining] = useState(5);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [copiedTableIndex, setCopiedTableIndex] = useState<string | null>(null);
   const [loadingStatus, setLoadingStatus] = useState<string>("");
@@ -75,12 +70,82 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
   const lastScrollHeight = useRef(0); // 이전 스크롤 높이 추적
   const isComposingRef = useRef(false); // IME 입력 중인지 추적
 
+  // Recording states
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStep, setProcessingStep] = useState<'transcribing' | 'aligning' | 'diarizing' | 'finalizing' | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Transcript results
+  interface TranscriptSegment {
+    speaker: 'vet' | 'caregiver';
+    text: string;
+    start: number; // seconds
+    end: number;
+  }
+  const [transcriptSegments, setTranscriptSegments] = useState<TranscriptSegment[]>([]);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1.0);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+
+  // Smooth audio progress update using requestAnimationFrame
+  useEffect(() => {
+    const updateProgress = () => {
+      if (audioRef.current && isPlaying) {
+        setCurrentTime(audioRef.current.currentTime);
+        animationFrameRef.current = requestAnimationFrame(updateProgress);
+      }
+    };
+
+    if (isPlaying) {
+      animationFrameRef.current = requestAnimationFrame(updateProgress);
+    }
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isPlaying]);
+
+  // Load selected recording from sidebar
+  useEffect(() => {
+    if (selectedRecording) {
+      console.log('📋 Loading selected recording:', selectedRecording);
+      setTranscriptSegments(selectedRecording.transcript || []);
+      setAudioUrl(selectedRecording.audioUrl || null);
+      // Clear any existing recording state
+      setIsRecording(false);
+      setIsProcessing(false);
+      setRecordingTime(0);
+    } else {
+      // selectedRecording이 null이면 상태 리셋 (New Visit 클릭 시)
+      console.log('🏠 Resetting to home screen (selectedRecording is null)');
+      setTranscriptSegments([]);
+      setAudioUrl(null);
+      setIsRecording(false);
+      setIsProcessing(false);
+      setRecordingTime(0);
+      setIsPlaying(false);
+      setCurrentTime(0);
+      setDuration(0);
+    }
+  }, [selectedRecording]);
+
   // User 상태 로깅
   useEffect(() => {
     console.log("👤 ChatView - User 상태:", user ? `로그인됨 (${user.uid})` : "로그인 안됨");
-    console.log("🎭 ChatView - Guest 모드:", isGuestMode);
     console.log("💬 ChatView - Conversation ID:", currentConversationId);
-  }, [user, isGuestMode, currentConversationId]);
+  }, [user, currentConversationId]);
 
   // Multilingual content
   const content = {
@@ -154,24 +219,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
 
   const currentContent = content[language as keyof typeof content];
 
-  // Guest 모드에서 남은 쿼리 수 업데이트
-  useEffect(() => {
-    if (isGuestMode) {
-      const remaining = getGuestQueriesRemaining();
-      setGuestQueriesRemaining(remaining);
-      if (onGuestQueryUpdate) {
-        onGuestQueryUpdate(remaining);
-      }
-    }
-  }, [isGuestMode, onGuestQueryUpdate]);
-
-  // 로그인 시 guest 쿼리 카운트 리셋
-  useEffect(() => {
-    if (user && isGuestMode) {
-      resetGuestQueryCount();
-      setGuestQueriesRemaining(5);
-    }
-  }, [user, isGuestMode]);
 
   // 스크롤 위치 감지
   useEffect(() => {
@@ -256,16 +303,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
           console.error("대화 불러오기 실패:", error);
           isLoadingConversation.current = false;
         }
-      } else if (initialQuestion && !hasCalledAPI.current) {
-        // Guest 모드에서 쿼리 카운트 증가
-        if (isGuestMode && !user) {
-          incrementGuestQueryCount();
-          const remaining = getGuestQueriesRemaining();
-          setGuestQueriesRemaining(remaining);
-          if (onGuestQueryUpdate) {
-            onGuestQueryUpdate(remaining);
-          }
-        }
+      } else if (initialQuestion && !hasCalledAPI.current && messages.length === 0) {
+        // 메시지가 없을 때만 새 대화 시작 (새로고침 시 중복 호출 방지)
 
         // 새 대화 시작
         hasCalledAPI.current = true;
@@ -276,6 +315,225 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
 
     loadConversation();
   }, [initialQuestion, conversationId]);
+
+  // Recording time counter
+  useEffect(() => {
+    if (isRecording) {
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+      setRecordingTime(0);
+    }
+
+    return () => {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    };
+  }, [isRecording]);
+
+  // Format recording time (MM:SS)
+  const formatRecordingTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Start recording
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const capturedRecordingTime = recordingTime; // Capture recording time before it resets
+        await processRecording(audioBlob, capturedRecordingTime);
+
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      console.log('🎙️ Recording started');
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      alert('Failed to access microphone. Please check your permissions.');
+    }
+  };
+
+  // Stop recording
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      console.log('🛑 Recording stopped');
+    }
+  };
+
+  // Process recording (transcribe + diarize)
+  const processRecording = async (audioBlob: Blob, capturedRecordingTime: number) => {
+    if (!user) {
+      alert('Please log in to save recordings.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setProcessingStep(null);
+
+    try {
+      // Backend API call for STT + diarization with SSE streaming
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'recording.webm');
+      // Don't specify language - let Whisper auto-detect
+      formData.append('num_speakers', '2');
+
+      console.log('🎙️ Starting transcription API with SSE...');
+      const transcriptionResponse = await fetch(`${backendUrl}/transcribe`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!transcriptionResponse.ok) {
+        throw new Error(`Transcription API failed: ${transcriptionResponse.statusText}`);
+      }
+
+      // Read SSE stream
+      const reader = transcriptionResponse.body?.getReader();
+      const decoder = new TextDecoder();
+      let transcriptionResult: any = null;
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = JSON.parse(line.slice(6));
+              console.log('📡 SSE event:', data);
+
+              if (data.status === 'step') {
+                // Update processing step based on backend progress
+                setProcessingStep(data.step);
+              } else if (data.status === 'complete') {
+                // Final result received
+                transcriptionResult = data;
+              } else if (data.status === 'error') {
+                throw new Error(data.message);
+              }
+            }
+          }
+        }
+      }
+
+      if (!transcriptionResult) {
+        throw new Error('No transcription result received');
+      }
+
+      console.log('📝 Transcription complete:', transcriptionResult);
+
+      const finalTranscript: TranscriptSegment[] = transcriptionResult.segments;
+
+      // Upload audio to Firebase Storage
+      console.log('📤 Uploading audio to Firebase Storage...');
+      const audioUrl = await uploadAudioFile(audioBlob, user.uid);
+
+      // Calculate duration from transcript (use capturedRecordingTime as fallback)
+      const duration = transcriptionResult.duration || capturedRecordingTime;
+      console.log('💾 Saving recording with duration:', duration, 'seconds (capturedRecordingTime:', capturedRecordingTime, ', transcriptionResult.duration:', transcriptionResult.duration, ')');
+
+      // Save recording metadata to Firestore
+      const now = new Date();
+      await saveRecording({
+        userId: user.uid,
+        date: formatDate(now),
+        time: formatRecordingDateTime(now),
+        duration,
+        audioUrl,
+        transcript: finalTranscript,
+        createdAt: Timestamp.now()
+      });
+
+      setTranscriptSegments(finalTranscript);
+      setAudioUrl(audioUrl);
+
+      console.log('✅ Processing complete');
+      setIsProcessing(false);
+      setProcessingStep(null);
+
+      // Trigger recordings sidebar refresh
+      console.log('🔄 Calling onTitleUpdated to refresh RecordingsSidebar...');
+      if (onTitleUpdated) {
+        onTitleUpdated(); // This triggers sidebarRefreshKey increment in parent
+        console.log('✅ onTitleUpdated called successfully');
+      } else {
+        console.warn('⚠️ onTitleUpdated is not defined!');
+      }
+    } catch (error) {
+      console.error('Error processing recording:', error);
+      setIsProcessing(false);
+      setProcessingStep(null);
+      alert('Failed to process recording. Please try again.');
+    }
+  };
+
+  // Audio player controls
+  const togglePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const seekToTime = (time: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+      setCurrentTime(time);
+    }
+  };
+
+  const toggleMute = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const changePlaybackRate = (rate: number) => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate;
+      setPlaybackRate(rate);
+      setShowSpeedMenu(false);
+    }
+  };
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   // API 호출
   const queryAPI = async (question: string, isFirstMessage: boolean = false, skipUserMessage: boolean = false) => {
@@ -720,8 +978,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
           } catch (error) {
             console.error("❌ Firebase 저장 실패:", error);
           }
-        } else {
-          console.log("⚠️  로그인 안 됨 - Firebase에 저장하지 않음 (Guest 모드)");
         }
       }
     } catch (error: any) {
@@ -763,12 +1019,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
   const handleFollowupQuestionClick = async (question: string) => {
     if (isStreaming) return;
 
-    // Guest 모드에서 제한 확인
-    if (isGuestMode && !user && !canGuestQuery()) {
-      setShowLoginModal(true); // 중앙 모달 표시
-      return;
-    }
-
     // 후속 질문 클릭 시 스크롤 플래그 리셋 (자동 스크롤 허용)
     userScrolledUp.current = false;
 
@@ -784,16 +1034,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
         return msg;
       });
     });
-
-    // Guest 모드에서 쿼리 카운트 증가
-    if (isGuestMode && !user) {
-      incrementGuestQueryCount();
-      const remaining = getGuestQueriesRemaining();
-      setGuestQueriesRemaining(remaining);
-      if (onGuestQueryUpdate) {
-        onGuestQueryUpdate(remaining);
-      }
-    }
 
     // 약간의 딜레이 후 질문 전송 (UI 업데이트를 위해)
     setTimeout(async () => {
@@ -913,12 +1153,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     e.preventDefault();
     if (!input.trim() || isStreaming) return;
 
-    // Guest 모드에서 제한 확인
-    if (isGuestMode && !user && !canGuestQuery()) {
-      setShowLoginModal(true); // 중앙 모달 표시
-      return;
-    }
-
     const question = input.trim();
     setInput("");
 
@@ -940,16 +1174,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
 
     // 질문 전송 즉시 맨 아래로 스크롤 (답변 기다리지 않음)
     scrollToBottom();
-
-    // Guest 모드에서 쿼리 카운트 증가
-    if (isGuestMode && !user) {
-      incrementGuestQueryCount();
-      const remaining = getGuestQueriesRemaining();
-      setGuestQueriesRemaining(remaining);
-      if (onGuestQueryUpdate) {
-        onGuestQueryUpdate(remaining);
-      }
-    }
 
     await queryAPI(question, false); // 후속 질문
   };
@@ -1382,40 +1606,448 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                 <Menu className="w-5 h-5 text-gray-300" />
               </button>
             )}
-            <Image src="/image/clinical4-Photoroom.png" alt="Ruleout" width={32} height={32} className="hidden md:block" />
+            <Image src="/image/logo_candidate1 복사본.png" alt="Ruleout" width={28} height={28} className="hidden md:block" />
             <span className="text-lg font-semibold hidden md:block">Ruleout</span>
           </div>
-          <div className="flex items-center space-x-2">
+          {isVisitMode ? (
             <button
+              onClick={onToggleRecordingsSidebar}
               className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              title={currentContent.more}
+              aria-label="Toggle recordings sidebar"
             >
-              <MoreHorizontal className="w-5 h-5 text-gray-400" />
+              <ChevronsLeft className="w-5 h-5 text-gray-300" />
             </button>
-            <button
-              onClick={handleToggleFavorite}
-              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              title={currentContent.bookmark}
-            >
-              <Bookmark
-                className="w-5 h-5"
-                style={{ color: isFavorite ? '#20808D' : '#9ca3af' }}
-                fill={isFavorite ? '#20808D' : 'none'}
-              />
-            </button>
-            <button
-              className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-700 rounded-lg transition-colors"
-              title={currentContent.share}
-            >
-              <Share2 className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-400">{currentContent.share}</span>
-            </button>
-          </div>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <button
+                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                title={currentContent.more}
+              >
+                <MoreHorizontal className="w-5 h-5 text-gray-400" />
+              </button>
+              <button
+                onClick={handleToggleFavorite}
+                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                title={currentContent.bookmark}
+              >
+                <Bookmark
+                  className="w-5 h-5"
+                  style={{ color: isFavorite ? '#20808D' : '#9ca3af' }}
+                  fill={isFavorite ? '#20808D' : 'none'}
+                />
+              </button>
+              <button
+                className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-700 rounded-lg transition-colors"
+                title={currentContent.share}
+              >
+                <Share2 className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-400">{currentContent.share}</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* 메시지 영역 */}
       <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 md:px-8 py-12">
+        {/* New Visit 초기 화면 - 메시지가 없고 transcript도 없을 때만 표시 */}
+        {messages.length === 0 && !isStreaming && !isProcessing && transcriptSegments.length === 0 && (
+          <div className="flex items-center justify-center h-full -mt-20">
+            {!isRecording ? (
+              // STEP 1: Ready to Record 화면
+              <div className="text-center space-y-10 max-w-3xl">
+                <h2 className="text-3xl md:text-4xl text-gray-300 mb-10" style={{ fontFamily: 'Hedvig Letters Serif, serif' }}>
+                  Ready to Record?
+                </h2>
+
+                {/* 마이크 버튼 */}
+                <div className="flex justify-center mb-10">
+                  <button
+                    onClick={startRecording}
+                    className="relative w-56 h-56 rounded-full flex items-center justify-center transition-all duration-300 hover:brightness-110 group overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(135deg, #20808D 0%, #4DB8C4 100%)',
+                      boxShadow: '0 10px 40px rgba(32, 128, 141, 0.3)'
+                    }}
+                  >
+                    {/* Shimmer effect on hover */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div
+                        className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                        style={{
+                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)'
+                        }}
+                      />
+                    </div>
+
+                    <svg
+                      className="w-28 h-28 text-white relative z-10"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* 안내 문구 */}
+                <p className="text-sm text-gray-400 leading-relaxed px-8 max-w-3xl mx-auto">
+                  Healthcare providers must obtain patient consent before recording and comply with applicable medical privacy laws and{' '}
+                  <a
+                    href="/privacy"
+                    className="underline hover:text-[#4DB8C4] transition-colors"
+                  >
+                    regulations
+                  </a>
+                  {' '}in their jurisdiction.
+                </p>
+              </div>
+            ) : (
+              // STEP 1: Recording in progress 화면
+              <div className="text-center space-y-8 max-w-3xl">
+                {/* Recording indicator */}
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="w-4 h-4 bg-red-500 rounded-full animate-pulse"></div>
+                  <span className="text-xl text-gray-300 font-medium">Recording</span>
+                </div>
+
+                {/* Timer */}
+                <div className="text-5xl font-mono text-gray-200 mb-8">
+                  {formatRecordingTime(recordingTime)}
+                </div>
+
+                {/* Waveform animation */}
+                <div className="flex items-center justify-center space-x-2 h-32 mb-8">
+                  {[...Array(40)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-1 rounded-full"
+                      style={{
+                        background: 'linear-gradient(135deg, #20808D 0%, #4DB8C4 100%)',
+                        height: `${Math.random() * 80 + 20}%`,
+                        animation: `waveform ${Math.random() * 0.5 + 0.5}s ease-in-out infinite alternate`,
+                        animationDelay: `${i * 0.05}s`
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Stop recording button */}
+                <button
+                  onClick={stopRecording}
+                  className="px-12 py-4 rounded-full text-white font-medium transition-all duration-300 hover:brightness-110"
+                  style={{
+                    background: 'linear-gradient(135deg, #20808D 0%, #4DB8C4 100%)',
+                    boxShadow: '0 8px 30px rgba(32, 128, 141, 0.4)'
+                  }}
+                >
+                  STOP RECORDING
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* STEP 2: Processing 화면 */}
+        {isProcessing && (
+          <div className="flex items-center justify-center h-full -mt-20">
+            <div className="text-center space-y-8 max-w-2xl">
+              <h2 className="text-3xl text-gray-300 mb-12" style={{ fontFamily: 'Hedvig Letters Serif, serif' }}>
+                Processing Recording
+              </h2>
+
+              {/* Processing steps - Vertical layout */}
+              <div className="flex flex-col items-start max-w-md mx-auto">
+                {/* Step 1: Transcribing */}
+                <div className="flex items-start">
+                  <div className="flex flex-col items-center mr-4">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      processingStep === 'transcribing' ? 'bg-[#4DB8C4] ring-4 ring-[#4DB8C4]/30' :
+                      ['aligning', 'diarizing', 'finalizing'].includes(processingStep || '') ? 'bg-[#20808D]' :
+                      'bg-gray-600'
+                    }`}>
+                      {['aligning', 'diarizing', 'finalizing'].includes(processingStep || '') ? (
+                        <Check className="w-6 h-6 text-white" />
+                      ) : processingStep === 'transcribing' ? (
+                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      ) : (
+                        <span className="text-white text-sm">1</span>
+                      )}
+                    </div>
+                    {/* Vertical line */}
+                    <div className={`w-0.5 h-16 mt-2 transition-all duration-300 ${
+                      ['aligning', 'diarizing', 'finalizing'].includes(processingStep || '') ? 'bg-[#20808D]' : 'bg-gray-600'
+                    }`}></div>
+                  </div>
+                  <div className="pt-3">
+                    <div className={`text-lg font-medium transition-all duration-300 ${
+                      processingStep === 'transcribing' ? 'text-[#4DB8C4]' :
+                      ['aligning', 'diarizing', 'finalizing'].includes(processingStep || '') ? 'text-[#20808D]' :
+                      'text-gray-500'
+                    }`}>
+                      Transcribing with Whisper
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 2: Aligning timestamps */}
+                <div className="flex items-start">
+                  <div className="flex flex-col items-center mr-4">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      processingStep === 'aligning' ? 'bg-[#4DB8C4] ring-4 ring-[#4DB8C4]/30' :
+                      ['diarizing', 'finalizing'].includes(processingStep || '') ? 'bg-[#20808D]' :
+                      'bg-gray-600'
+                    }`}>
+                      {['diarizing', 'finalizing'].includes(processingStep || '') ? (
+                        <Check className="w-6 h-6 text-white" />
+                      ) : processingStep === 'aligning' ? (
+                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      ) : (
+                        <span className="text-white text-sm">2</span>
+                      )}
+                    </div>
+                    {/* Vertical line */}
+                    <div className={`w-0.5 h-16 mt-2 transition-all duration-300 ${
+                      ['diarizing', 'finalizing'].includes(processingStep || '') ? 'bg-[#20808D]' : 'bg-gray-600'
+                    }`}></div>
+                  </div>
+                  <div className="pt-3">
+                    <div className={`text-lg font-medium transition-all duration-300 ${
+                      processingStep === 'aligning' ? 'text-[#4DB8C4]' :
+                      ['diarizing', 'finalizing'].includes(processingStep || '') ? 'text-[#20808D]' :
+                      'text-gray-500'
+                    }`}>
+                      Aligning timestamps
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 3: Speaker diarization */}
+                <div className="flex items-start">
+                  <div className="flex flex-col items-center mr-4">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      processingStep === 'diarizing' ? 'bg-[#4DB8C4] ring-4 ring-[#4DB8C4]/30' :
+                      processingStep === 'finalizing' ? 'bg-[#20808D]' :
+                      'bg-gray-600'
+                    }`}>
+                      {processingStep === 'finalizing' ? (
+                        <Check className="w-6 h-6 text-white" />
+                      ) : processingStep === 'diarizing' ? (
+                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      ) : (
+                        <span className="text-white text-sm">3</span>
+                      )}
+                    </div>
+                    {/* Vertical line */}
+                    <div className={`w-0.5 h-16 mt-2 transition-all duration-300 ${
+                      processingStep === 'finalizing' ? 'bg-[#20808D]' : 'bg-gray-600'
+                    }`}></div>
+                  </div>
+                  <div className="pt-3">
+                    <div className={`text-lg font-medium transition-all duration-300 ${
+                      processingStep === 'diarizing' ? 'text-[#4DB8C4]' :
+                      processingStep === 'finalizing' ? 'text-[#20808D]' :
+                      'text-gray-500'
+                    }`}>
+                      Identifying speakers
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 4: Finalizing */}
+                <div className="flex items-start">
+                  <div className="flex flex-col items-center mr-4">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      processingStep === 'finalizing' ? 'bg-[#4DB8C4] ring-4 ring-[#4DB8C4]/30' : 'bg-gray-600'
+                    }`}>
+                      {processingStep === 'finalizing' ? (
+                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      ) : (
+                        <span className="text-white text-sm">4</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="pt-3">
+                    <div className={`text-lg font-medium transition-all duration-300 ${
+                      processingStep === 'finalizing' ? 'text-[#4DB8C4]' : 'text-gray-500'
+                    }`}>
+                      Mapping speaker roles
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: Transcript Results */}
+        {transcriptSegments.length > 0 && audioUrl && (
+          <div className="md:max-w-4xl mx-auto pb-32">
+            {/* Transcript bubbles */}
+            <div className="space-y-4 mb-8">
+              {transcriptSegments.map((segment, index) => (
+                <div
+                  key={index}
+                  onClick={() => seekToTime(segment.start)}
+                  className={`flex ${segment.speaker === 'vet' ? 'justify-end' : 'justify-start'} cursor-pointer group`}
+                >
+                  <div className={`max-w-2xl px-6 py-4 rounded-2xl transition-all duration-200 ${
+                    segment.speaker === 'vet'
+                      ? 'bg-[#20808D]/20 border border-[#4DB8C4]/30 hover:bg-[#20808D]/30'
+                      : 'bg-gray-800 hover:bg-gray-750'
+                  }`}>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className={`text-xs font-medium ${
+                        segment.speaker === 'vet' ? 'text-[#4DB8C4]' : 'text-gray-400'
+                      }`}>
+                        {segment.speaker === 'vet' ? 'Vet' : 'Caregiver'}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {formatTime(segment.start)}
+                      </span>
+                    </div>
+                    <p className="text-gray-200 leading-relaxed">{segment.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Audio Player */}
+            <div
+              className="fixed bottom-0 bg-[#1a1a1a] border-t border-gray-700 p-4 z-30 transition-all duration-300"
+              style={{
+                left: isSidebarOpen ? '256px' : '0',  // Sidebar width is 256px (w-64)
+                right: '0'  // Don't adjust for right sidebar - it will overlay
+              }}
+            >
+              <div className="max-w-4xl mx-auto">
+                {/* Hidden audio element */}
+                <audio
+                  ref={audioRef}
+                  src={audioUrl}
+                  onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => setIsPlaying(false)}
+                />
+
+                {/* Controls */}
+                <div className="flex items-center space-x-3">
+                  {/* Play/Pause button */}
+                  <button
+                    onClick={togglePlayPause}
+                    className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:brightness-110 flex-shrink-0"
+                    style={{
+                      background: 'linear-gradient(135deg, #20808D 0%, #4DB8C4 100%)',
+                      boxShadow: '0 2px 8px rgba(32, 128, 141, 0.3)'
+                    }}
+                  >
+                    {isPlaying ? (
+                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" style={{ transform: 'translateX(1px)' }}>
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    )}
+                  </button>
+
+                  {/* Time display */}
+                  <span className="text-sm text-gray-400 flex-shrink-0 min-w-[40px]">
+                    {formatTime(currentTime)}
+                  </span>
+
+                  {/* Progress bar */}
+                  <div className="flex-1 flex items-center">
+                    <input
+                      type="range"
+                      min="0"
+                      max={duration || 0}
+                      value={currentTime}
+                      onChange={(e) => seekToTime(Number(e.target.value))}
+                      className="w-full h-1 bg-gray-700 rounded-full appearance-none cursor-pointer transition-all
+                        [&::-webkit-slider-thumb]:appearance-none
+                        [&::-webkit-slider-thumb]:w-3
+                        [&::-webkit-slider-thumb]:h-3
+                        [&::-webkit-slider-thumb]:rounded-full
+                        [&::-webkit-slider-thumb]:bg-[#4DB8C4]
+                        [&::-webkit-slider-thumb]:cursor-pointer
+                        [&::-webkit-slider-thumb]:transition-all
+                        [&::-webkit-slider-thumb]:shadow-md
+                        hover:[&::-webkit-slider-thumb]:w-3.5
+                        hover:[&::-webkit-slider-thumb]:h-3.5
+                        [&::-moz-range-thumb]:w-3
+                        [&::-moz-range-thumb]:h-3
+                        [&::-moz-range-thumb]:rounded-full
+                        [&::-moz-range-thumb]:bg-[#4DB8C4]
+                        [&::-moz-range-thumb]:border-0
+                        [&::-moz-range-thumb]:cursor-pointer
+                        [&::-moz-range-thumb]:transition-all
+                        hover:[&::-moz-range-thumb]:w-3.5
+                        hover:[&::-moz-range-thumb]:h-3.5"
+                      style={{
+                        background: `linear-gradient(to right, #4DB8C4 0%, #4DB8C4 ${(currentTime / (duration || 1)) * 100}%, #374151 ${(currentTime / (duration || 1)) * 100}%, #374151 100%)`
+                      }}
+                    />
+                  </div>
+
+                  {/* Total duration */}
+                  <span className="text-sm text-gray-400 flex-shrink-0 min-w-[40px]">
+                    {formatTime(duration)}
+                  </span>
+
+                  {/* Mute button */}
+                  <button
+                    onClick={toggleMute}
+                    className="p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
+                    aria-label={isMuted ? "Unmute" : "Mute"}
+                  >
+                    {isMuted ? (
+                      <VolumeX className="w-5 h-5 text-gray-300" />
+                    ) : (
+                      <Volume2 className="w-5 h-5 text-gray-300" />
+                    )}
+                  </button>
+
+                  {/* Playback speed button */}
+                  <div className="relative flex-shrink-0">
+                    <button
+                      onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                      className="px-3 py-2 hover:bg-gray-700 rounded-lg transition-colors text-sm text-gray-300 font-medium min-w-[60px]"
+                    >
+                      {playbackRate}x
+                    </button>
+
+                    {/* Speed dropdown menu */}
+                    {showSpeedMenu && (
+                      <div className="absolute bottom-full right-0 mb-2 bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg py-1 min-w-[80px]">
+                        {[0.5, 0.75, 1.0, 1.25, 1.75].map((speed) => (
+                          <button
+                            key={speed}
+                            onClick={() => changePlaybackRate(speed)}
+                            className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-700 transition-colors ${
+                              playbackRate === speed ? 'text-[#4DB8C4] font-semibold' : 'text-gray-300'
+                            }`}
+                          >
+                            {speed}x
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="md:max-w-4xl mx-auto space-y-12">
           {messages.map((message, index) => (
             <div key={index}>
@@ -1701,10 +2333,10 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
             <div className="flex flex-col items-center space-y-6">
               <div className="flex items-start space-x-3 w-full">
                 <Image
-                  src="/image/clinical4-Photoroom.png"
+                  src="/image/logo_candidate1 복사본.png"
                   alt="Ruleout AI"
-                  width={32}
-                  height={32}
+                  width={28}
+                  height={28}
                   className="rounded-full flex-shrink-0"
                 />
                 <div className="flex items-center space-x-2 text-gray-400">
@@ -1752,36 +2384,24 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
         </div>
       </div>
 
-      {/* 입력 영역 */}
-      <div className="p-4">
-        <div className="md:max-w-4xl mx-auto relative">
-          {/* 맨 아래로 스크롤 버튼 */}
-          {showScrollToBottom && (
-            <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
-              <button
-                onClick={() => scrollToBottom(true)}
-                className="flex items-center justify-center w-10 h-10 bg-[#2a2a2a] hover:bg-[#3a3a3a] border border-gray-700 rounded-full shadow-lg transition-all"
-                title="Scroll to bottom"
-              >
-                <ArrowDown className="w-5 h-5 text-gray-300" />
-              </button>
-            </div>
-          )}
+      {/* 입력 영역 - New Visit 홈화면에서는 숨김 */}
+      {!(isVisitMode && messages.length === 0) && (
+        <div className="p-4">
+          <div className="md:max-w-4xl mx-auto relative">
+            {/* 맨 아래로 스크롤 버튼 */}
+            {showScrollToBottom && (
+              <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
+                <button
+                  onClick={() => scrollToBottom(true)}
+                  className="flex items-center justify-center w-10 h-10 bg-[#2a2a2a] hover:bg-[#3a3a3a] border border-gray-700 rounded-full shadow-lg transition-all"
+                  title="Scroll to bottom"
+                >
+                  <ArrowDown className="w-5 h-5 text-gray-300" />
+                </button>
+              </div>
+            )}
 
-          {/* Guest 모드 쿼리 카운터 */}
-          {isGuestMode && !user && (
-            <div className="mb-3 text-center">
-              <p className="text-sm text-gray-400">
-                {guestQueriesRemaining > 0 ? (
-                  <>{currentContent.freeQueriesRemaining} <span className="text-[#20808D] font-semibold">{guestQueriesRemaining}/5</span></>
-                ) : (
-                  <span className="text-orange-400">{currentContent.queryLimitReached}</span>
-                )}
-              </p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit}>
             <div className="flex items-center bg-[#2a2a2a] rounded-2xl border border-gray-700 px-4 md:px-6 pr-2 py-1 hover:border-gray-600 transition-colors">
               <textarea
                 value={input}
@@ -1832,11 +2452,9 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
               </button>
             </div>
           </form>
+          </div>
         </div>
-      </div>
-
-      {/* 로그인 모달 - 쿼리 제한 도달 시 */}
-      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      )}
     </div>
   );
 }

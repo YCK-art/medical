@@ -43,7 +43,7 @@ export default function Footer() {
         features: "Features",
         updates: "Updates"
       },
-      copyright: "2024 Ruleout. All rights reserved."
+      copyright: "© 2026 Ruleout. All rights reserved."
     },
     한국어: {
       company: {
@@ -64,7 +64,7 @@ export default function Footer() {
         features: "기능",
         updates: "업데이트"
       },
-      copyright: "2024 Ruleout. All rights reserved."
+      copyright: "© 2026 Ruleout. All rights reserved."
     },
     日本語: {
       company: {
@@ -85,7 +85,7 @@ export default function Footer() {
         features: "機能",
         updates: "更新情報"
       },
-      copyright: "2024 Ruleout. All rights reserved."
+      copyright: "© 2026 Ruleout. All rights reserved."
     }
   };
 

@@ -190,10 +190,10 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
           {/* 로고 */}
           <div className="mb-6 flex items-center justify-center space-x-1">
             <Image
-              src="/image/clinical4-Photoroom.png"
+              src="/image/logo_candidate1 복사본.png"
               alt="Ruleout Pro Logo"
-              width={48}
-              height={48}
+              width={32}
+              height={32}
               className="object-contain translate-y-1"
             />
             <h1 className="text-3xl font-bold whitespace-nowrap">
@@ -281,10 +281,10 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
           {/* 로고 */}
           <div className="mb-8 flex items-center space-x-2">
             <Image
-              src="/image/clinical4-Photoroom.png"
+              src="/image/logo_candidate1 복사본.png"
               alt="Ruleout Pro Logo"
-              width={80}
-              height={80}
+              width={48}
+              height={48}
               className="object-contain translate-y-1"
             />
             <h1 className="text-5xl font-bold">

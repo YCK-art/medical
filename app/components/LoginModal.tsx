@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { signInWithGoogle } from "@/lib/auth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import EmailAuthModal from "./EmailAuthModal";
@@ -12,6 +13,7 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+  const router = useRouter();
   const { language } = useLanguage();
   const [showEmailAuth, setShowEmailAuth] = useState(false);
 
@@ -41,7 +43,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       or: "또는",
       email: "이메일로 계속하기",
       terms: "계속하면 Ruleout의",
-      termsOfService: "서비스 약관",
+      termsOfService: "이용약관",
       and: "및",
       privacyPolicy: "개인정보처리방침"
     },
@@ -69,6 +71,8 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     try {
       await signInWithGoogle();
       onClose();
+      // 로그인 후 채팅 페이지로 이동
+      router.push("/chat?reset=true");
     } catch (error) {
       console.error("로그인 실패:", error);
     }
@@ -95,9 +99,9 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center space-x-1 mb-6">
             <Image
-              src="/image/clinical4-Photoroom.png"
+              src="/image/logo_candidate1 복사본.png"
               alt="Ruleout Logo"
-              width={36}
+              width={28}
               height={36}
               className="object-contain"
             />
@@ -177,9 +181,9 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
           {/* Terms */}
           <p className="text-xs text-gray-500 text-center mt-4">
             {currentContent.terms}{" "}
-            <a href="#" className="text-[#20808D] hover:underline">{currentContent.termsOfService}</a>
+            <a href="/terms" className="text-[#20808D] hover:underline">{currentContent.termsOfService}</a>
             {" "}{currentContent.and}{" "}
-            <a href="#" className="text-[#20808D] hover:underline">{currentContent.privacyPolicy}</a>
+            <a href="/privacy" className="text-[#20808D] hover:underline">{currentContent.privacyPolicy}</a>
           </p>
         </div>
       </div>

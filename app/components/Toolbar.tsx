@@ -98,14 +98,14 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
           <div className="flex items-center justify-between">
             {/* 로고 */}
             <div
-              className="flex items-center space-x-1 cursor-pointer"
-              onClick={() => router.push('/landing')}
+              className="flex items-center gap-[7px] cursor-pointer"
+              onClick={() => router.push('/')}
             >
               <Image
-                src="/image/clinical4-Photoroom.png"
+                src="/image/logo_candidate1 복사본.png"
                 alt="Ruleout Logo"
-                width={36}
-                height={36}
+                width={28}
+                height={28}
                 className="object-contain"
               />
               <span className={`text-xl font-semibold ${

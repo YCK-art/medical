@@ -141,12 +141,12 @@ export default function FeaturesPage() {
   };
 
   return (
-    <div className={`min-h-screen ${effectiveTheme === "light" ? "bg-white text-gray-900" : "bg-[#1a1a1a] text-white"}`}>
+    <div className={`min-h-screen ${effectiveTheme === "light" ? "bg-white text-gray-900" : "bg-[#0f0f0f] text-white"}`}>
       {/* Toolbar */}
       <Toolbar onLoginClick={handleLogin} />
 
       {/* Hero Section */}
-      <div className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#1a1a1a]"} pt-32 pb-16`}>
+      <div className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#0f0f0f]"} pt-32 pb-16`}>
         <div className="max-w-7xl mx-auto px-6">
           {/* Title and Button */}
           <div className="mb-12">
@@ -165,7 +165,7 @@ export default function FeaturesPage() {
 
           {/* Product Screenshot */}
           <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-            <div className={`aspect-[16/9] ${effectiveTheme === "light" ? "bg-gray-200" : "bg-[#0a0a0a]"} flex items-center justify-center`}>
+            <div className={`aspect-[16/9] ${effectiveTheme === "light" ? "bg-gray-200" : "bg-[#1a1a1a]"} flex items-center justify-center`}>
               {/* Placeholder for product screenshot - Replace with actual image */}
               <div className={`w-full h-full flex items-center justify-center ${effectiveTheme === "light" ? "bg-gradient-to-br from-gray-100 to-gray-200" : "bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]"}`}>
                 <p className={`text-lg ${effectiveTheme === "light" ? "text-gray-500" : "text-gray-600"}`}>Product Screenshot</p>
@@ -176,7 +176,7 @@ export default function FeaturesPage() {
       </div>
 
       {/* Trusted By Section */}
-      <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#0a0a0a]"} py-16`}>
+      <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#141414]"} py-16`}>
         <div className="max-w-7xl mx-auto px-6">
           <p className={`text-center ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} mb-12`}>
             {currentContent.trusted}
@@ -196,9 +196,9 @@ export default function FeaturesPage() {
 
       {/* Feature Sections */}
       {currentContent.features.slice(0, 1).map((feature, index) => (
-        <div key={index} className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#1a1a1a]"} py-16`}>
+        <div key={index} className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#0f0f0f]"} py-16`}>
           <div className="max-w-7xl mx-auto px-6">
-            <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#0a0a0a]"} rounded-3xl p-8 md:p-12`}>
+            <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#1a1a1a]"} rounded-3xl p-8 md:p-12`}>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 {feature.imageRight ? (
                   <>
@@ -216,8 +216,8 @@ export default function FeaturesPage() {
                     {/* Right: Image Placeholder (9 columns) */}
                     <div className="lg:col-span-9">
                       <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                        <div className={`aspect-[16/10] ${effectiveTheme === "light" ? "bg-gray-200" : "bg-[#1a1a1a]"} flex items-center justify-center`}>
-                          <div className={`w-full h-full flex items-center justify-center ${effectiveTheme === "light" ? "bg-gradient-to-br from-gray-100 to-gray-200" : "bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]"}`}>
+                        <div className={`aspect-[16/10] ${effectiveTheme === "light" ? "bg-gray-200" : "bg-[#0f0f0f]"} flex items-center justify-center`}>
+                          <div className={`w-full h-full flex items-center justify-center ${effectiveTheme === "light" ? "bg-gradient-to-br from-gray-100 to-gray-200" : "bg-gradient-to-br from-[#141414] to-[#0a0a0a]"}`}>
                             <p className={`text-lg ${effectiveTheme === "light" ? "text-gray-500" : "text-gray-600"}`}>Feature Image</p>
                           </div>
                         </div>
@@ -229,8 +229,8 @@ export default function FeaturesPage() {
                     {/* Left: Image Placeholder (9 columns) */}
                     <div className="lg:col-span-9">
                       <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                        <div className={`aspect-[16/10] ${effectiveTheme === "light" ? "bg-gray-200" : "bg-[#1a1a1a]"} flex items-center justify-center`}>
-                          <div className={`w-full h-full flex items-center justify-center ${effectiveTheme === "light" ? "bg-gradient-to-br from-gray-100 to-gray-200" : "bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]"}`}>
+                        <div className={`aspect-[16/10] ${effectiveTheme === "light" ? "bg-gray-200" : "bg-[#0f0f0f]"} flex items-center justify-center`}>
+                          <div className={`w-full h-full flex items-center justify-center ${effectiveTheme === "light" ? "bg-gradient-to-br from-gray-100 to-gray-200" : "bg-gradient-to-br from-[#141414] to-[#0a0a0a]"}`}>
                             <p className={`text-lg ${effectiveTheme === "light" ? "text-gray-500" : "text-gray-600"}`}>Feature Image</p>
                           </div>
                         </div>
@@ -256,19 +256,19 @@ export default function FeaturesPage() {
       ))}
 
       {/* Three Column Cards Section */}
-      <div className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#1a1a1a]"} py-8`}>
+      <div className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#0f0f0f]"} py-8`}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {currentContent.cards.map((card, index) => (
-              <div key={index} className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#0a0a0a]"} rounded-2xl p-6`}>
+              <div key={index} className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#1a1a1a]"} rounded-2xl p-6`}>
                 <h3 className={`text-lg font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} mb-3`} style={{ fontFamily: "Pretendard, sans-serif" }}>
                   {card.title}
                 </h3>
                 <p className={`text-sm ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} mb-6`} style={{ fontFamily: "Pretendard, sans-serif" }}>
                   {card.description}
                 </p>
-                <div className={`aspect-[4/3] ${effectiveTheme === "light" ? "bg-gray-200" : "bg-[#1a1a1a]"} rounded-xl flex items-center justify-center`}>
-                  <div className={`w-full h-full flex items-center justify-center ${effectiveTheme === "light" ? "bg-gradient-to-br from-gray-100 to-gray-200" : "bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]"}`}>
+                <div className={`aspect-[4/3] ${effectiveTheme === "light" ? "bg-gray-200" : "bg-[#0f0f0f]"} rounded-xl flex items-center justify-center`}>
+                  <div className={`w-full h-full flex items-center justify-center ${effectiveTheme === "light" ? "bg-gradient-to-br from-gray-100 to-gray-200" : "bg-gradient-to-br from-[#141414] to-[#0a0a0a]"}`}>
                     <p className={`text-sm ${effectiveTheme === "light" ? "text-gray-500" : "text-gray-600"}`}>Image</p>
                   </div>
                 </div>
@@ -280,9 +280,9 @@ export default function FeaturesPage() {
 
       {/* Remaining Feature Sections */}
       {currentContent.features.slice(1).map((feature, index) => (
-        <div key={index} className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#1a1a1a]"} py-24`}>
+        <div key={index} className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#0f0f0f]"} py-24`}>
           <div className="max-w-7xl mx-auto px-6">
-            <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#0a0a0a]"} rounded-3xl p-8 md:p-12`}>
+            <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#1a1a1a]"} rounded-3xl p-8 md:p-12`}>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 {feature.imageRight ? (
                   <>
@@ -300,8 +300,8 @@ export default function FeaturesPage() {
                     {/* Right: Image Placeholder (9 columns) */}
                     <div className="lg:col-span-9">
                       <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                        <div className={`aspect-[16/10] ${effectiveTheme === "light" ? "bg-gray-200" : "bg-[#1a1a1a]"} flex items-center justify-center`}>
-                          <div className={`w-full h-full flex items-center justify-center ${effectiveTheme === "light" ? "bg-gradient-to-br from-gray-100 to-gray-200" : "bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]"}`}>
+                        <div className={`aspect-[16/10] ${effectiveTheme === "light" ? "bg-gray-200" : "bg-[#0f0f0f]"} flex items-center justify-center`}>
+                          <div className={`w-full h-full flex items-center justify-center ${effectiveTheme === "light" ? "bg-gradient-to-br from-gray-100 to-gray-200" : "bg-gradient-to-br from-[#141414] to-[#0a0a0a]"}`}>
                             <p className={`text-lg ${effectiveTheme === "light" ? "text-gray-500" : "text-gray-600"}`}>Feature Image</p>
                           </div>
                         </div>
@@ -313,8 +313,8 @@ export default function FeaturesPage() {
                     {/* Left: Image Placeholder (9 columns) */}
                     <div className="lg:col-span-9">
                       <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                        <div className={`aspect-[16/10] ${effectiveTheme === "light" ? "bg-gray-200" : "bg-[#1a1a1a]"} flex items-center justify-center`}>
-                          <div className={`w-full h-full flex items-center justify-center ${effectiveTheme === "light" ? "bg-gradient-to-br from-gray-100 to-gray-200" : "bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]"}`}>
+                        <div className={`aspect-[16/10] ${effectiveTheme === "light" ? "bg-gray-200" : "bg-[#0f0f0f]"} flex items-center justify-center`}>
+                          <div className={`w-full h-full flex items-center justify-center ${effectiveTheme === "light" ? "bg-gradient-to-br from-gray-100 to-gray-200" : "bg-gradient-to-br from-[#141414] to-[#0a0a0a]"}`}>
                             <p className={`text-lg ${effectiveTheme === "light" ? "text-gray-500" : "text-gray-600"}`}>Feature Image</p>
                           </div>
                         </div>

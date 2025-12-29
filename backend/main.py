@@ -13,14 +13,16 @@ import sys
 from typing import List, Dict, AsyncGenerator, Set, Tuple, Optional
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
 from openai import OpenAI
 from pinecone import Pinecone
+
+from app.transcription import get_transcription_service
 
 # 환경 변수 로드
 load_dotenv()
@@ -1012,6 +1014,84 @@ Return only the alternative questions, one per line."""
             yield create_sse_event({
                 "status": "error",
                 "message": "오류가 발생했습니다. 다시 시도해주세요."
+            })
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
+
+
+@app.post("/transcribe")
+async def transcribe_audio(
+    file: UploadFile = File(...),
+    language: str = Form(None),  # None for auto-detection
+    num_speakers: int = Form(2)
+):
+    """
+    Transcribe audio file with speaker diarization (SSE streaming)
+
+    Args:
+        file: Audio file (webm, mp3, wav, etc.)
+        language: Language code (ko, en, ja, etc.) or None for auto-detection
+        num_speakers: Expected number of speakers (default: 2 for vet + caregiver)
+
+    Returns:
+        SSE stream with progress updates and final result
+    """
+    import tempfile
+    import os
+
+    async def event_generator():
+        temp_path = None
+        try:
+            # Save uploaded file to temporary location
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_file:
+                content = await file.read()
+                temp_file.write(content)
+                temp_path = temp_file.name
+
+            print(f"📝 Transcribing audio file: {file.filename} ({len(content)} bytes)", file=sys.stderr, flush=True)
+
+            # Send initial status
+            yield create_sse_event({
+                "status": "started",
+                "message": "Starting transcription..."
+            })
+
+            # Use actual transcription service with progress callback
+            service = get_transcription_service()
+
+            # Generator to receive progress updates
+            for progress_event in service.transcribe_audio_streaming(
+                audio_path=temp_path,
+                language=language,
+                num_speakers=num_speakers
+            ):
+                yield create_sse_event(progress_event)
+
+            # Clean up temp file
+            os.unlink(temp_path)
+            print(f"✅ Transcription complete", file=sys.stderr, flush=True)
+
+        except Exception as e:
+            print(f"❌ Transcription error: {str(e)}", file=sys.stderr, flush=True)
+            import traceback
+            print(traceback.format_exc(), file=sys.stderr, flush=True)
+            # Clean up temp file if it exists
+            if temp_path and os.path.exists(temp_path):
+                try:
+                    os.unlink(temp_path)
+                except:
+                    pass
+            yield create_sse_event({
+                "status": "error",
+                "message": f"Transcription failed: {str(e)}"
             })
 
     return StreamingResponse(

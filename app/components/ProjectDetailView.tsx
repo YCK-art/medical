@@ -239,7 +239,7 @@ export default function ProjectDetailView({ projectId, onBack, onSelectChat, onN
       <div className="hidden md:block sticky top-0 z-10 border-b border-gray-700 p-4 bg-[rgba(26,26,26,0.7)] backdrop-blur-md">
         <div className="flex items-center max-w-7xl mx-auto">
           <div className="flex items-center space-x-1">
-            <Image src="/image/clinical4-Photoroom.png" alt="Ruleout AI" width={32} height={32} />
+            <Image src="/image/logo_candidate1 복사본.png" alt="Ruleout AI" width={28} height={28} />
             <span className="text-lg font-semibold">Ruleout AI</span>
           </div>
         </div>
