@@ -16,9 +16,11 @@ soundfile==0.12.1
 # Speech recognition - openai-whisper only (whisperx removed to avoid torch version conflicts)
 openai-whisper==20231117
 
-# PyTorch - MUST install before pyannote.audio
-torch==2.2.0
-torchaudio==2.2.0
+# PyTorch CPU-only - SIGNIFICANTLY smaller image size (200MB vs 2.5GB)
+# Railway servers don't have GPU, so CPU version is appropriate
+--index-url https://download.pytorch.org/whl/cpu
+torch==2.2.0+cpu
+torchaudio==2.2.0+cpu
 
 # Numerical libraries - compatible with torch 2.2.0 and openai-whisper
 numpy==1.26.4
