@@ -1051,10 +1051,16 @@ async def transcribe_audio(
         temp_path = None
         try:
             # Save uploaded file to temporary location
+            # Read content first
+            content = await file.read()
+
+            # Create temp file and ensure it's fully written and closed before transcription
             with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_file:
-                content = await file.read()
                 temp_file.write(content)
+                temp_file.flush()  # Ensure all data is written to disk
+                os.fsync(temp_file.fileno())  # Force write to disk (important for Railway)
                 temp_path = temp_file.name
+            # File is now closed but exists on disk, safe to read by other processes
 
             print(f"📝 Transcribing audio file: {file.filename} ({len(content)} bytes)", file=sys.stderr, flush=True)
 
