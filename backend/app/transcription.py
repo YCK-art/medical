@@ -103,13 +103,31 @@ class TranscriptionService:
                 import subprocess
                 wav_path = audio_path.replace('.webm', '.wav')
                 logger.info(f"Converting webm to wav: {wav_path}")
-                subprocess.run([
-                    'ffmpeg', '-i', audio_path,
-                    '-ar', '16000',  # 16kHz sample rate
-                    '-ac', '1',      # mono
-                    '-y',            # overwrite
-                    wav_path
-                ], check=True, capture_output=True)
+
+                # Check if input file exists and is readable
+                if not os.path.exists(audio_path):
+                    raise FileNotFoundError(f"Audio file not found: {audio_path}")
+                if not os.access(audio_path, os.R_OK):
+                    raise PermissionError(f"Audio file not readable: {audio_path}")
+
+                file_size = os.path.getsize(audio_path)
+                logger.info(f"Input file size: {file_size} bytes")
+
+                try:
+                    result = subprocess.run([
+                        'ffmpeg', '-i', audio_path,
+                        '-ar', '16000',  # 16kHz sample rate
+                        '-ac', '1',      # mono
+                        '-y',            # overwrite
+                        wav_path
+                    ], check=True, capture_output=True, text=True)
+                    logger.info("FFmpeg conversion successful")
+                except subprocess.CalledProcessError as e:
+                    logger.error(f"FFmpeg failed with return code {e.returncode}")
+                    logger.error(f"FFmpeg stdout: {e.stdout}")
+                    logger.error(f"FFmpeg stderr: {e.stderr}")
+                    raise RuntimeError(f"FFmpeg conversion failed: {e.stderr}")
+
                 processing_path = wav_path
             else:
                 processing_path = audio_path
