@@ -1,25 +1,25 @@
-fastapi>=0.115.0
-uvicorn[standard]>=0.32.0
-python-dotenv>=1.0.0
-openai>=1.54.0
-pinecone>=5.4.0
-pydantic>=2.10.0
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-dotenv==1.0.0
+openai==1.54.0
+pinecone==5.4.0
+pydantic==2.10.0
 
 # Audio processing for STT + Diarization
-python-multipart>=0.0.6
-ffmpeg-python>=0.2.0
-soundfile>=0.12.1
-librosa>=0.10.1
+python-multipart==0.0.6
+ffmpeg-python==0.2.0
+soundfile==0.12.1
+librosa==0.10.1
 
 # Speech recognition
-openai-whisper>=20231117
-git+https://github.com/m-bain/whisperx.git
+openai-whisper==20231117
+git+https://github.com/m-bain/whisperx.git@d32ec3e3012ec4c0934f4088424c32f3f038b249
 
-# Speaker diarization
-pyannote.audio>=3.1.1
-torch>=2.1.2
-torchaudio>=2.1.2
+# Speaker diarization - 호환 버전으로 고정
+pyannote.audio==3.3.2
+torch==2.5.1
+torchaudio==2.5.1
 
-# Utilities
-numpy>=1.26.3
-scipy>=1.11.4
+# Utilities - 호환 버전으로 고정
+numpy==1.26.4
+scipy==1.11.4
