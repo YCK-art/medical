@@ -1,6 +1,6 @@
 """
 Audio transcription and speaker diarization service
-Using Whisper + WhisperX + pyannote.audio
+Using openai-whisper + pyannote.audio (whisperx removed for compatibility)
 """
 
 import os
@@ -10,7 +10,6 @@ from typing import List, Dict, Any
 import torch
 import torch.serialization
 import whisper
-import whisperx
 from pyannote.audio import Pipeline
 import numpy as np
 
@@ -37,14 +36,6 @@ class TranscriptionService:
         # Load Whisper model (small model for better accuracy with medical terms)
         logger.info("Loading Whisper model...")
         self.whisper_model = whisper.load_model("small", device=self.device)
-
-        # Load WhisperX for alignment (matching Whisper model size)
-        logger.info("Loading WhisperX model...")
-        self.whisperx_model = whisperx.load_model(
-            "small",
-            self.device,
-            compute_type="float16" if self.device == "cuda" else "float32"
-        )
 
         # Load pyannote diarization pipeline
         # Note: Requires HuggingFace token for pyannote models
@@ -150,57 +141,24 @@ class TranscriptionService:
             detected_language = result.get("language", language or "en")
             logger.info(f"Detected/Using language: {detected_language}")
 
-            # WhisperX supported languages (common ones)
-            supported_languages = ['en', 'fr', 'de', 'es', 'it', 'ja', 'zh', 'nl', 'uk', 'pt', 'ar', 'cs', 'ru', 'pl', 'hu', 'fi', 'fa', 'el', 'tr', 'da', 'he', 'vi', 'ko', 'ur', 'te', 'hi', 'ca', 'ml', 'no', 'nn']
-
-            # Fallback to English if language is not supported by WhisperX
-            if detected_language not in supported_languages:
-                logger.warning(f"Language '{detected_language}' not supported by WhisperX alignment. Falling back to English.")
-                detected_language = 'en'
-
-            # Step 2: Align with WhisperX
-            logger.info("Step 2: Aligning timestamps with WhisperX...")
+            # Step 2: Use Whisper's word-level timestamps (no WhisperX needed)
+            logger.info("Step 2: Using Whisper word-level timestamps...")
             yield {
                 "status": "step",
                 "step": "aligning",
-                "message": "Aligning timestamps with WhisperX..."
+                "message": "Processing timestamps..."
             }
 
-            audio = whisperx.load_audio(processing_path)
-            try:
-                align_model, metadata = whisperx.load_align_model(
-                    language_code=detected_language,
-                    device=self.device
-                )
-                aligned_result = whisperx.align(
-                    result["segments"],
-                    align_model,
-                    metadata,
-                    audio,
-                    self.device,
-                    return_char_alignments=False
-                )
-            except Exception as align_error:
-                logger.error(f"Alignment failed for language '{detected_language}': {align_error}")
-                logger.info("Attempting alignment with English as fallback...")
-                try:
-                    align_model, metadata = whisperx.load_align_model(
-                        language_code='en',
-                        device=self.device
-                    )
-                    aligned_result = whisperx.align(
-                        result["segments"],
-                        align_model,
-                        metadata,
-                        audio,
-                        self.device,
-                        return_char_alignments=False
-                    )
-                except Exception as fallback_error:
-                    logger.error(f"Fallback alignment also failed: {fallback_error}")
-                    # If alignment fails completely, use original segments without alignment
-                    logger.warning("Using original Whisper segments without alignment")
-                    aligned_result = {"segments": result["segments"]}
+            # Whisper provides word-level timestamps directly when word_timestamps=True
+            # Re-run with word timestamps enabled for better alignment
+            transcribe_options["word_timestamps"] = True
+            result_with_words = self.whisper_model.transcribe(
+                processing_path,
+                **transcribe_options
+            )
+
+            # Use segments from result_with_words which have word-level timing
+            aligned_result = {"segments": result_with_words["segments"]}
 
             # Step 3: Speaker diarization
             logger.info("Step 3: Performing speaker diarization...")

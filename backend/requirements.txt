@@ -1,26 +1,28 @@
+# FastAPI & Core
 fastapi==0.115.0
 uvicorn[standard]==0.32.0
 python-dotenv==1.0.0
-openai==1.54.0
-pinecone==5.4.0
 pydantic==2.10.0
 
-# Audio processing for STT + Diarization
+# AI/ML APIs
+openai==1.54.0
+pinecone==5.4.0
+
+# Audio processing
 python-multipart==0.0.6
 ffmpeg-python==0.2.0
 soundfile==0.12.1
-librosa==0.10.1
 
-# Speech recognition (using faster-whisper directly instead of whisperx for compatibility)
+# Speech recognition - openai-whisper only (whisperx removed to avoid torch version conflicts)
 openai-whisper==20231117
-faster-whisper==1.2.1
-ctranslate2==4.6.2
 
-# Speaker diarization - 호환 버전으로 고정
-pyannote.audio==3.3.2
+# PyTorch - MUST install before pyannote.audio
 torch==2.2.0
 torchaudio==2.2.0
 
-# Utilities - 호환 버전으로 고정 (numpy 2.x for whisperx)
-numpy==2.0.2
-scipy==1.14.1
+# Numerical libraries - compatible with torch 2.2.0 and openai-whisper
+numpy==1.26.4
+scipy==1.11.4
+
+# Speaker diarization - installed last so it can use existing torch
+pyannote.audio==3.3.2
