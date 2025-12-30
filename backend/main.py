@@ -1047,14 +1047,35 @@ async def transcribe_audio(
     import tempfile
     import os
 
+    # Read file content BEFORE creating the generator
+    # This prevents issues with closed file handles in Railway
+    try:
+        file_content = await file.read()
+        filename = file.filename
+    except Exception as e:
+        # If file is already closed, try to read from file.file directly
+        print(f"⚠️  Failed to read from UploadFile, trying file.file: {e}", file=sys.stderr, flush=True)
+        try:
+            file.file.seek(0)
+            file_content = file.file.read()
+            filename = file.filename
+        except Exception as e2:
+            print(f"❌ Failed to read file: {e2}", file=sys.stderr, flush=True)
+            async def error_generator():
+                yield create_sse_event({
+                    "status": "error",
+                    "message": f"Failed to read uploaded file: {str(e2)}"
+                })
+            return StreamingResponse(
+                error_generator(),
+                media_type="text/event-stream"
+            )
+
     async def event_generator():
         temp_path = None
         try:
-            # Save uploaded file to temporary location
-            # Seek to beginning in case file was already read
-            await file.seek(0)
-            # Read content first
-            content = await file.read()
+            # Save uploaded file to temporary location using the pre-read content
+            content = file_content
 
             # Create temp file and ensure it's fully written and closed before transcription
             with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_file:
@@ -1064,7 +1085,7 @@ async def transcribe_audio(
                 temp_path = temp_file.name
             # File is now closed but exists on disk, safe to read by other processes
 
-            print(f"📝 Transcribing audio file: {file.filename} ({len(content)} bytes)", file=sys.stderr, flush=True)
+            print(f"📝 Transcribing audio file: {filename} ({len(content)} bytes)", file=sys.stderr, flush=True)
 
             # Send initial status
             yield create_sse_event({
