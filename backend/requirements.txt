@@ -11,9 +11,10 @@ ffmpeg-python==0.2.0
 soundfile==0.12.1
 librosa==0.10.1
 
-# Speech recognition
+# Speech recognition (using faster-whisper directly instead of whisperx for compatibility)
 openai-whisper==20231117
-git+https://github.com/m-bain/whisperx.git@d32ec3e3012ec4c0934f4088424c32f3f038b249
+faster-whisper==1.2.1
+ctranslate2==4.6.2
 
 # Speaker diarization - 호환 버전으로 고정
 pyannote.audio==3.3.2
