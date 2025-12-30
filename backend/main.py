@@ -1051,6 +1051,8 @@ async def transcribe_audio(
         temp_path = None
         try:
             # Save uploaded file to temporary location
+            # Seek to beginning in case file was already read
+            await file.seek(0)
             # Read content first
             content = await file.read()
 
