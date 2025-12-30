@@ -9,7 +9,7 @@ python-dotenv==1.0.0
 pydantic==2.10.0
 
 # AI/ML APIs
-openai==1.54.0
+openai>=1.55.0  # Use latest to avoid httpx 'proxies' compatibility issue
 pinecone==5.4.0
 
 # Audio processing
