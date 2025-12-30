@@ -20,6 +20,6 @@ pyannote.audio==3.3.2
 torch==2.2.0
 torchaudio==2.2.0
 
-# Utilities - 호환 버전으로 고정
-numpy==1.26.4
-scipy==1.11.4
+# Utilities - 호환 버전으로 고정 (numpy 2.x for whisperx)
+numpy==2.0.2
+scipy==1.14.1
