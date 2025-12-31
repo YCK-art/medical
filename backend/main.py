@@ -106,8 +106,10 @@ app.add_middleware(
         "https://www.ruleout.co"
     ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,
 )
 
 
@@ -1023,6 +1025,19 @@ Return only the alternative questions, one per line."""
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
             "X-Accel-Buffering": "no"
+        }
+    )
+
+
+@app.options("/transcribe")
+async def transcribe_options():
+    """Handle CORS preflight for /transcribe endpoint"""
+    return JSONResponse(
+        content={"status": "ok"},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
         }
     )
 
