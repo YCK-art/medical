@@ -9,6 +9,7 @@ import jsPDF from "jspdf";
 import { Timestamp } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getTranslation, getFontFamily } from "@/app/utils/translations";
 import {
   createConversation,
   addMessageToConversation,
@@ -392,7 +393,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     }
 
     setIsProcessing(true);
-    setProcessingStep(null);
+    setProcessingStep('transcribing'); // Start with first step immediately
 
     try {
       // Backend API call for STT + diarization with SSE streaming
@@ -1656,8 +1657,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
             {!isRecording ? (
               // STEP 1: Ready to Record 화면
               <div className="text-center space-y-10 max-w-3xl">
-                <h2 className="text-3xl md:text-4xl text-gray-300 mb-10" style={{ fontFamily: 'Hedvig Letters Serif, serif' }}>
-                  Ready to Record?
+                <h2 className="text-3xl md:text-4xl text-gray-300 mb-10" style={{ fontFamily: getFontFamily(language) }}>
+                  {getTranslation('recording.readyToRecord', language)}
                 </h2>
 
                 {/* 마이크 버튼 */}
@@ -1697,51 +1698,77 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                 </div>
 
                 {/* 안내 문구 */}
-                <p className="text-sm text-gray-400 leading-relaxed px-8 max-w-3xl mx-auto">
-                  Healthcare providers must obtain patient consent before recording and comply with applicable medical privacy laws and{' '}
-                  <a
-                    href="/privacy"
-                    className="underline hover:text-[#4DB8C4] transition-colors"
-                  >
-                    regulations
-                  </a>
-                  {' '}in their jurisdiction.
+                <p className="text-sm text-gray-400 leading-relaxed px-8 max-w-3xl mx-auto" style={{ fontFamily: language === '한국어' || language === '日本語' ? 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' : undefined }}>
+                  {language === 'English' ? (
+                    <>
+                      {getTranslation('recording.consentNotice', language)}{' '}
+                      <a
+                        href="/privacy"
+                        className="underline hover:text-[#4DB8C4] transition-colors"
+                      >
+                        {getTranslation('recording.regulations', language)}
+                      </a>
+                      {' '}in their jurisdiction.
+                    </>
+                  ) : (
+                    <>
+                      {getTranslation('recording.consentNotice', language)}{' '}
+                      <a
+                        href="/privacy"
+                        className="underline hover:text-[#4DB8C4] transition-colors"
+                      >
+                        {getTranslation('recording.regulations', language)}
+                      </a>
+                    </>
+                  )}
                 </p>
               </div>
             ) : (
               // STEP 1: Recording in progress 화면
-              <div className="text-center space-y-8 max-w-3xl">
-                {/* Recording indicator */}
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="w-4 h-4 bg-red-500 rounded-full animate-pulse"></div>
-                  <span className="text-xl text-gray-300 font-medium">Recording</span>
-                </div>
+              <div className="text-center space-y-10 max-w-3xl">
+                {/* Recording text */}
+                <h2 className="text-3xl text-gray-300" style={{ fontFamily: 'Hedvig Letters Serif, serif' }}>
+                  Recording
+                </h2>
 
                 {/* Timer */}
-                <div className="text-5xl font-mono text-gray-200 mb-8">
+                <div className="text-6xl text-gray-200 mb-8" style={{ fontFamily: 'Hedvig Letters Serif, serif', fontWeight: 400, letterSpacing: '0.05em' }}>
                   {formatRecordingTime(recordingTime)}
                 </div>
 
-                {/* Waveform animation */}
-                <div className="flex items-center justify-center space-x-2 h-32 mb-8">
-                  {[...Array(40)].map((_, i) => (
+                {/* Pulsing gradient orb animation */}
+                <div className="flex items-center justify-center mb-16">
+                  <div
+                    className="relative w-64 h-64"
+                    style={{
+                      animation: 'orbPulse 3s ease-in-out infinite'
+                    }}
+                  >
+                    {/* Main gradient orb */}
                     <div
-                      key={i}
-                      className="w-1 rounded-full"
+                      className="absolute inset-0 rounded-full"
                       style={{
-                        background: 'linear-gradient(135deg, #20808D 0%, #4DB8C4 100%)',
-                        height: `${Math.random() * 80 + 20}%`,
-                        animation: `waveform ${Math.random() * 0.5 + 0.5}s ease-in-out infinite alternate`,
-                        animationDelay: `${i * 0.05}s`
+                        background: 'radial-gradient(circle at 30% 30%, #4DB8C4 0%, #20808D 50%, #165761 100%)',
+                        filter: 'blur(2px)',
+                        animation: 'orbRotate 8s linear infinite'
                       }}
                     />
-                  ))}
+                    {/* Glow effect */}
+                    <div
+                      className="absolute inset-0 rounded-full"
+                      style={{
+                        background: 'radial-gradient(circle at 30% 30%, rgba(77, 184, 196, 0.6) 0%, rgba(32, 128, 141, 0.3) 50%, transparent 100%)',
+                        filter: 'blur(20px)',
+                        animation: 'orbGlow 2s ease-in-out infinite alternate'
+                      }}
+                    />
+                  </div>
                 </div>
 
                 {/* Stop recording button */}
                 <button
                   onClick={stopRecording}
-                  className="px-12 py-4 rounded-full text-white font-medium transition-all duration-300 hover:brightness-110"
+                  className="px-8 py-3 rounded-full text-white text-sm font-medium transition-all duration-300 hover:brightness-110"
                   style={{
                     background: 'linear-gradient(135deg, #20808D 0%, #4DB8C4 100%)',
                     boxShadow: '0 8px 30px rgba(32, 128, 141, 0.4)'
@@ -1758,8 +1785,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
         {isProcessing && (
           <div className="flex items-center justify-center h-full -mt-20">
             <div className="text-center space-y-8 max-w-2xl">
-              <h2 className="text-3xl text-gray-300 mb-12" style={{ fontFamily: 'Hedvig Letters Serif, serif' }}>
-                Processing Recording
+              <h2 className="text-3xl text-gray-300 mb-12" style={{ fontFamily: getFontFamily(language) }}>
+                {getTranslation('processing.title', language)}
               </h2>
 
               {/* Processing steps - Vertical layout */}
@@ -1790,8 +1817,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                       processingStep === 'transcribing' ? 'text-[#4DB8C4]' :
                       ['aligning', 'diarizing', 'finalizing'].includes(processingStep || '') ? 'text-[#20808D]' :
                       'text-gray-500'
-                    }`}>
-                      Transcribing with Whisper
+                    }`} style={{ fontFamily: language === '한국어' || language === '日本語' ? 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' : undefined }}>
+                      {getTranslation('processing.steps.transcribing', language)}
                     </div>
                   </div>
                 </div>
@@ -1822,8 +1849,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                       processingStep === 'aligning' ? 'text-[#4DB8C4]' :
                       ['diarizing', 'finalizing'].includes(processingStep || '') ? 'text-[#20808D]' :
                       'text-gray-500'
-                    }`}>
-                      Aligning timestamps
+                    }`} style={{ fontFamily: language === '한국어' || language === '日本語' ? 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' : undefined }}>
+                      {getTranslation('processing.steps.aligning', language)}
                     </div>
                   </div>
                 </div>
@@ -1854,8 +1881,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                       processingStep === 'diarizing' ? 'text-[#4DB8C4]' :
                       processingStep === 'finalizing' ? 'text-[#20808D]' :
                       'text-gray-500'
-                    }`}>
-                      Identifying speakers
+                    }`} style={{ fontFamily: language === '한국어' || language === '日本語' ? 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' : undefined }}>
+                      {getTranslation('processing.steps.diarizing', language)}
                     </div>
                   </div>
                 </div>
@@ -1876,8 +1903,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                   <div className="pt-3">
                     <div className={`text-lg font-medium transition-all duration-300 ${
                       processingStep === 'finalizing' ? 'text-[#4DB8C4]' : 'text-gray-500'
-                    }`}>
-                      Mapping speaker roles
+                    }`} style={{ fontFamily: language === '한국어' || language === '日本語' ? 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' : undefined }}>
+                      {getTranslation('processing.steps.finalizing', language)}
                     </div>
                   </div>
                 </div>
