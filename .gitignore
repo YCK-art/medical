@@ -56,3 +56,4 @@ data-pipeline/guidelines/
 data-pipeline/__pycache__/
 data-pipeline/*.log
 data-pipeline/*.json
+.env.local
