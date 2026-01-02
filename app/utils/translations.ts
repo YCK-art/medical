@@ -7,6 +7,11 @@ export const translations = {
       '한국어': '녹음 준비 완료?',
       '日本語': '録音準備完了？'
     },
+    betaInProgress: {
+      'English': 'Beta service is currently in preparation',
+      '한국어': '베타 서비스 준비 중입니다',
+      '日本語': 'ベータサービス準備中です'
+    },
     consentNotice: {
       'English': 'Healthcare providers must obtain patient consent before recording and comply with applicable medical privacy laws and',
       '한국어': '의료진은 녹음 전 환자 동의를 받아야 하며 관할 지역의 의료 개인정보 보호법 및 규정을 준수해야 합니다.',

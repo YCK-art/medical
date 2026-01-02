@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { ChevronLeft, User, Settings as SettingsIcon, Bell, ChevronDown, X, Globe } from "lucide-react";
+import { ChevronLeft, User, Settings as SettingsIcon, ChevronDown, X, Globe } from "lucide-react";
 import Image from "next/image";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const { user, loading, updateUserProfile } = useAuth();
   const { language, setLanguage } = useLanguage();
-  const [activeTab, setActiveTab] = useState<"account" | "preferences" | "notifications">("account");
+  const [activeTab, setActiveTab] = useState<"account" | "preferences">("account");
   const [showNameModal, setShowNameModal] = useState(false);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [newName, setNewName] = useState("");
@@ -542,7 +542,6 @@ export default function SettingsPage() {
   const tabs = [
     { id: "account" as const, label: currentContent.tabs.account, icon: User },
     { id: "preferences" as const, label: currentContent.tabs.preferences, icon: SettingsIcon },
-    { id: "notifications" as const, label: currentContent.tabs.notifications, icon: Bell },
   ];
 
   const handleChangeName = async () => {
@@ -747,10 +746,10 @@ export default function SettingsPage() {
                         {currentContent.account.permissions.proDescription}
                       </p>
                       <div className="flex items-center space-x-3">
-                        <button className="px-4 py-2 text-sm rounded-lg transition-colors" style={{ backgroundColor: '#20808D', color: 'white' }}>
+                        <button onClick={() => router.push('/pricing')} className="px-4 py-2 text-sm rounded-lg transition-colors" style={{ backgroundColor: '#20808D', color: 'white' }}>
                           {currentContent.account.permissions.upgradeNow}
                         </button>
-                        <button className="px-4 py-2 text-sm border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors">
+                        <button onClick={() => router.push('/pricing')} className="px-4 py-2 text-sm border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors">
                           {currentContent.account.permissions.learnMore}
                         </button>
                       </div>
@@ -926,71 +925,6 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Notifications Section (Mobile) */}
-              <div>
-                <h1 className="text-2xl font-semibold mb-6">{currentContent.notifications.title}</h1>
-                <div className="space-y-0">
-                  {/* Email notifications */}
-                  <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-300">{currentContent.notifications.email.label}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{currentContent.notifications.email.description}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#20808D]"></div>
-                    </label>
-                  </div>
-
-                  {/* Push notifications */}
-                  <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-300">{currentContent.notifications.push.label}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{currentContent.notifications.push.description}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#20808D]"></div>
-                    </label>
-                  </div>
-
-                  {/* New features */}
-                  <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-300">{currentContent.notifications.newFeatures.label}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{currentContent.notifications.newFeatures.description}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#20808D]"></div>
-                    </label>
-                  </div>
-
-                  {/* System updates */}
-                  <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-300">{currentContent.notifications.systemUpdates.label}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{currentContent.notifications.systemUpdates.description}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#20808D]"></div>
-                    </label>
-                  </div>
-
-                  {/* Tips and suggestions */}
-                  <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-300">{currentContent.notifications.tips.label}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{currentContent.notifications.tips.description}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#20808D]"></div>
-                    </label>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* 데스크톱: 탭 방식 */}
@@ -1084,10 +1018,10 @@ export default function SettingsPage() {
                         {currentContent.account.permissions.proDescription}
                       </p>
                       <div className="flex items-center space-x-3">
-                        <button className="px-4 py-2 text-sm rounded-lg transition-colors" style={{ backgroundColor: '#20808D', color: 'white' }}>
+                        <button onClick={() => router.push('/pricing')} className="px-4 py-2 text-sm rounded-lg transition-colors" style={{ backgroundColor: '#20808D', color: 'white' }}>
                           {currentContent.account.permissions.upgradeNow}
                         </button>
-                        <button className="px-4 py-2 text-sm border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors">
+                        <button onClick={() => router.push('/pricing')} className="px-4 py-2 text-sm border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors">
                           {currentContent.account.permissions.learnMore}
                         </button>
                       </div>
@@ -1295,126 +1229,10 @@ export default function SettingsPage() {
                       </label>
                     </div>
                   </div>
-
-                  {/* Advanced Section */}
-                  <div>
-                    <h2 className="text-lg font-semibold mb-4">{currentContent.preferences.advanced.title}</h2>
-                    <div className="space-y-0">
-                      {/* Model */}
-                      <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                        <div>
-                          <h3 className="text-sm font-medium text-gray-300">{currentContent.preferences.advanced.model}</h3>
-                        </div>
-                        <button className="px-4 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white text-sm hover:bg-gray-800 transition-colors min-w-[120px] text-left flex items-center justify-between">
-                          <span>{currentContent.preferences.advanced.openInNewTab}</span>
-                        </button>
-                      </div>
-
-                      {/* Image Generation Model */}
-                      <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                        <div>
-                          <h3 className="text-sm font-medium text-gray-300">{currentContent.preferences.advanced.imageGeneration}</h3>
-                        </div>
-                        <div className="relative image-gen-selector">
-                          <button onClick={() => setShowImageGenDropdown(!showImageGenDropdown)} className="flex items-center gap-2 px-4 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg text-gray-400 hover:text-white transition-colors min-w-[140px]">
-                            <span className="text-sm flex-1 text-left">{getImageGenDisplayText()}</span>
-                            <ChevronDown className={`w-4 h-4 transition-transform ${showImageGenDropdown ? 'rotate-180' : ''}`} />
-                          </button>
-                          {showImageGenDropdown && (
-                            <div className="absolute right-0 top-full mt-2 bg-[#2a2a2a] border border-gray-700 rounded-lg shadow-lg overflow-hidden min-w-[140px] z-10">
-                              <button onClick={() => { setSelectedImageGenType("default"); setShowImageGenDropdown(false); }} className={`w-full text-left px-4 py-2 text-sm ${selectedImageGenType === "default" ? "bg-gray-800 text-white" : "text-gray-400 hover:bg-gray-900"} transition-colors`}>{currentContent.preferences.advanced.default}</button>
-                              <button onClick={() => { setSelectedImageGenType("dalle3"); setShowImageGenDropdown(false); }} className={`w-full text-left px-4 py-2 text-sm ${selectedImageGenType === "dalle3" ? "bg-gray-800 text-white" : "text-gray-400 hover:bg-gray-900"} transition-colors`}>DALL-E 3</button>
-                              <button onClick={() => { setSelectedImageGenType("stable"); setShowImageGenDropdown(false); }} className={`w-full text-left px-4 py-2 text-sm ${selectedImageGenType === "stable" ? "bg-gray-800 text-white" : "text-gray-400 hover:bg-gray-900"} transition-colors`}>Stable Diffusion</button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* AI Data Usage */}
-                      <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                        <div className="flex-1 max-w-xl">
-                          <h3 className="text-sm font-medium text-gray-300">{currentContent.preferences.advanced.aiDataUsage}</h3>
-                          <p className="text-xs text-gray-500 mt-1">{currentContent.preferences.advanced.aiDataDescription}</p>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer ml-4">
-                          <input type="checkbox" className="sr-only peer" defaultChecked />
-                          <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#20808D]"></div>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
 
-            {/* Notifications Tab */}
-            {activeTab === "notifications" && (
-              <div>
-                <h1 className="text-2xl font-semibold mb-12">{currentContent.notifications.title}</h1>
-
-                <div className="space-y-0">
-                  {/* Email notifications */}
-                  <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-300">{currentContent.notifications.email.label}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{currentContent.notifications.email.description}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#20808D]"></div>
-                    </label>
-                  </div>
-
-                  {/* Push notifications */}
-                  <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-300">{currentContent.notifications.push.label}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{currentContent.notifications.push.description}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#20808D]"></div>
-                    </label>
-                  </div>
-
-                  {/* New features */}
-                  <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-300">{currentContent.notifications.newFeatures.label}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{currentContent.notifications.newFeatures.description}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#20808D]"></div>
-                    </label>
-                  </div>
-
-                  {/* System updates */}
-                  <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-300">{currentContent.notifications.systemUpdates.label}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{currentContent.notifications.systemUpdates.description}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#20808D]"></div>
-                    </label>
-                  </div>
-
-                  {/* Tips and suggestions */}
-                  <div className="flex items-center justify-between py-4 border-b border-gray-800">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-300">{currentContent.notifications.tips.label}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{currentContent.notifications.tips.description}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#20808D]"></div>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            )}
             </div>
           </div>
         </div>

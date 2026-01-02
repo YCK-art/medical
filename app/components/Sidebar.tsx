@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { PanelLeft, Clock, FolderOpen, User, ArrowUpCircle, Bell, Settings, ChevronRight, SquarePen, MoreHorizontal, Edit2, FolderPlus, Trash2, ExternalLink, Mic } from "lucide-react";
+import { PanelLeft, Clock, FolderOpen, User, ArrowUpCircle, Settings, ChevronRight, SquarePen, MoreHorizontal, Edit2, FolderPlus, Trash2, ExternalLink, Mic } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getUserConversations, deleteConversation, updateConversationTitle } from "@/lib/chatService";
@@ -28,7 +28,6 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onToggle, currentConversationId, currentView, onNewChat, onNewVisit, onSelectChat, onShowHistory, onShowCollections, refreshKey, onShowLoginModal }: SidebarProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showNotificationMenu, setShowNotificationMenu] = useState(false);
   const [showLearnMoreSubmenu, setShowLearnMoreSubmenu] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [hoveredConversation, setHoveredConversation] = useState<string | null>(null);
@@ -36,7 +35,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
   const [renameModalOpen, setRenameModalOpen] = useState(false);
   const [conversationToRename, setConversationToRename] = useState<{ id: string; title: string } | null>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
-  const notificationMenuRef = useRef<HTMLDivElement>(null);
   const learnMoreRef = useRef<HTMLDivElement>(null);
   const learnMoreTimerRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRefs = useRef<{[key: string]: HTMLDivElement | null}>({});
@@ -59,8 +57,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
       rename: "Rename",
       addToProject: "Add to Project",
       delete: "Delete",
-      notifications: "Notifications",
-      noNotifications: "Your notifications will appear here.",
       upgrade: "Upgrade",
       settings: "Settings",
       help: "Help",
@@ -84,8 +80,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
       rename: "이름 변경",
       addToProject: "프로젝트에 추가",
       delete: "삭제",
-      notifications: "알림",
-      noNotifications: "알림이 여기에 표시됩니다.",
       upgrade: "업그레이드",
       settings: "설정",
       help: "도움말",
@@ -109,8 +103,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
       rename: "名前を変更",
       addToProject: "プロジェクトに追加",
       delete: "削除",
-      notifications: "通知",
-      noNotifications: "通知はここに表示されます。",
       upgrade: "アップグレード",
       settings: "設定",
       help: "ヘルプ",
@@ -172,10 +164,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
         setShowProfileMenu(false);
       }
 
-      if (notificationMenuRef.current && !notificationMenuRef.current.contains(event.target as Node)) {
-        setShowNotificationMenu(false);
-      }
-
       // 대화 드롭다운 닫기 - 3개점 버튼 클릭은 제외
       if (activeDropdown) {
         const dropdownRef = dropdownRefs.current[activeDropdown];
@@ -190,14 +178,14 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
       }
     };
 
-    if (showProfileMenu || showNotificationMenu || activeDropdown) {
+    if (showProfileMenu || activeDropdown) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showProfileMenu, showNotificationMenu, activeDropdown]);
+  }, [showProfileMenu, activeDropdown]);
 
   // Learn More 타이머 정리
   useEffect(() => {
@@ -489,45 +477,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
 
         {/* 하단 버튼들 - 항상 아래에 고정 */}
         <div className="border-t border-gray-700 pt-4 space-y-2 mt-auto">
-          {/* 알람 버튼 - 로그인한 경우에만 표시 */}
-          {user && (
-            <div className="relative" ref={notificationMenuRef}>
-              {/* 알림 드롭다운 메뉴 (위쪽으로 나타남) */}
-              {showNotificationMenu && (
-                <div
-                  className="fixed bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg overflow-hidden w-56"
-                  style={{
-                    left: notificationMenuRef.current ? `${notificationMenuRef.current.getBoundingClientRect().left}px` : 'auto',
-                    bottom: notificationMenuRef.current ? `${window.innerHeight - notificationMenuRef.current.getBoundingClientRect().top + 8}px` : 'auto',
-                    zIndex: 9999
-                  }}
-                >
-                  <div className="p-4">
-                    <h3 className="text-base font-semibold mb-3">{currentContent.notifications}</h3>
-                    <div className="flex flex-col items-center justify-center py-4">
-                      <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center mb-3">
-                        <Bell className="w-6 h-6 text-gray-500" />
-                      </div>
-                      <p className="text-gray-400 text-center text-sm">
-                        {currentContent.noNotifications}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={() => setShowNotificationMenu(!showNotificationMenu)}
-                className="group relative flex items-center justify-start w-full px-2 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                <Bell className="w-4 h-4 flex-shrink-0 group-hover:text-[#4DB8C4] transition-colors" />
-                <span className={`absolute left-10 whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                  {currentContent.notifications}
-                </span>
-              </button>
-            </div>
-          )}
-
           {/* Upgrade Button */}
           <button
             onClick={() => router.push('/upgrade')}
@@ -697,7 +646,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
             {/* About Ruleout */}
             <button
               onClick={() => {
-                // TODO: About Ruleout 페이지로 이동
+                router.push('/mission');
                 setShowProfileMenu(false);
                 setShowLearnMoreSubmenu(false);
               }}
@@ -713,7 +662,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
             {/* Terms of Use */}
             <button
               onClick={() => {
-                // TODO: Terms of Use 페이지로 이동
+                router.push('/terms');
                 setShowProfileMenu(false);
                 setShowLearnMoreSubmenu(false);
               }}
@@ -726,7 +675,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
             {/* Privacy Policy */}
             <button
               onClick={() => {
-                // TODO: Privacy Policy 페이지로 이동
+                router.push('/privacy');
                 setShowProfileMenu(false);
                 setShowLearnMoreSubmenu(false);
               }}

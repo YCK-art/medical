@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, ChevronDown, BookText, Pill, Stethoscope, Sparkles, ArrowUpRight, Activity, Menu, SquarePen, RefreshCw } from "lucide-react";
+import { ArrowRight, ChevronDown, BookText, Pill, Stethoscope, ArrowUpRight, Activity, Menu, SquarePen, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -211,13 +211,6 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
         </div>
       </div>
 
-      {/* 상단 배너 - 모바일에서 숨김 */}
-      <div className="hidden md:flex px-6 py-3 items-center justify-center space-x-2 text-sm" style={{ backgroundColor: '#20808D' }}>
-        <Sparkles className="w-4 h-4" />
-        <span className="font-medium">{content[language].banner}</span>
-        <ArrowRight className="w-4 h-4" />
-      </div>
-
       {/* 메인 컨텐츠 */}
       <main className="flex-1 flex flex-col items-center px-4 md:px-8 overflow-y-auto">
         {/* 모바일: 상단 고정 레이아웃 */}
@@ -321,7 +314,7 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
         </div>
 
         {/* 데스크톱: 기존 레이아웃 (위로 밀리는 형태) */}
-        <div className="hidden md:flex md:flex-col md:items-center md:justify-center md:w-full md:max-w-3xl md:pt-48">
+        <div className="hidden md:flex md:flex-col md:items-center md:justify-center md:w-full md:max-w-3xl md:pt-64">
           {/* 로고 */}
           <div className="mb-8 flex items-center space-x-2">
             <Image

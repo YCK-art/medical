@@ -76,6 +76,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
   const [recordingTime, setRecordingTime] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState<'transcribing' | 'aligning' | 'diarizing' | 'finalizing' | null>(null);
+  const [showBetaBanner, setShowBetaBanner] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -346,6 +347,18 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
 
   // Start recording
   const startRecording = async () => {
+    // 베타 서비스 준비 중 배너 표시
+    setShowBetaBanner(true);
+
+    // 3초 후 배너 자동 숨김
+    setTimeout(() => {
+      setShowBetaBanner(false);
+    }, 3000);
+
+    // 실제 녹음은 시작하지 않음 (베타 서비스 준비 중이므로)
+    return;
+
+    /* 원래 녹음 코드 (베타 서비스 준비 완료 시 활성화)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -374,6 +387,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
       console.error('Error starting recording:', error);
       alert('Failed to access microphone. Please check your permissions.');
     }
+    */
   };
 
   // Stop recording
@@ -1648,6 +1662,15 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
           )}
         </div>
       </div>
+
+      {/* 베타 서비스 준비 중 배너 */}
+      {showBetaBanner && (
+        <div className="bg-[#20808D] px-4 py-3 text-center animate-slideDown">
+          <p className="text-white text-sm font-medium" style={{ fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' }}>
+            {getTranslation('recording.betaInProgress', language)}
+          </p>
+        </div>
+      )}
 
       {/* 메시지 영역 */}
       <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 md:px-8 py-12">
