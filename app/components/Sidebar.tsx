@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { PanelLeft, MessageSquare, Clock, FolderOpen, User, ArrowUpCircle, Bell, Settings, HelpCircle, LogOut, ChevronRight, SquarePen, MoreVertical, Edit2, FolderPlus, Trash2, ExternalLink, Mic } from "lucide-react";
+import { PanelLeft, Clock, FolderOpen, User, ArrowUpCircle, Bell, Settings, ChevronRight, SquarePen, MoreHorizontal, Edit2, FolderPlus, Trash2, ExternalLink, Mic } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getUserConversations, deleteConversation, updateConversationTitle } from "@/lib/chatService";
@@ -346,7 +346,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
           <button
             onClick={onNewVisit || onNewChat}
             className={`group relative flex items-center justify-start px-2 py-2 rounded-lg transition-colors ${
-              currentView === 'visit' ? 'bg-gray-700' : 'hover:bg-gray-700'
+              currentView === 'visit' || currentView === 'visitRecording' ? 'bg-gray-700' : 'hover:bg-gray-700'
             }`}
           >
             <Mic className="w-4 h-4 flex-shrink-0 group-hover:text-[#4DB8C4] transition-colors" />
@@ -370,21 +370,28 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                   conversations.map((conversation) => (
                     <div
                       key={conversation.id}
-                      className="relative"
+                      className="relative group/conversation"
                       onMouseEnter={() => setHoveredConversation(conversation.id)}
                       onMouseLeave={() => setHoveredConversation(null)}
                     >
-                      <div className="flex items-center justify-between px-1.5 py-0.5 rounded-lg">
-                        <button
-                          onClick={() => onSelectChat(conversation.id)}
-                          className={`flex-1 min-w-0 pr-1.5 text-left rounded-lg px-2 py-1.5 -ml-1.5 hover:bg-gray-700 transition-colors ${
-                            currentConversationId === conversation.id && currentView === 'chat' ? 'bg-gray-700' : ''
-                          }`}
-                        >
+                      <div
+                        className={`relative flex items-center px-2 py-2 rounded-lg cursor-pointer transition-colors ${
+                          currentConversationId === conversation.id && currentView === 'chat' ? 'bg-gray-700' : 'hover:bg-gray-700'
+                        }`}
+                        onClick={() => onSelectChat(conversation.id)}
+                      >
+                        {/* 텍스트 영역 - 호버 시 오른쪽 여백 추가 */}
+                        <div className={`flex-1 min-w-0 relative transition-all ${
+                          hoveredConversation === conversation.id ? 'pr-6' : ''
+                        }`}>
                           <div className="text-[13px] text-gray-300 truncate whitespace-nowrap overflow-hidden">
                             {conversation.title}
                           </div>
-                        </button>
+                          {/* Fade gradient - 3개점 아이콘이 보일 때만 표시 */}
+                          {hoveredConversation === conversation.id && (
+                            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-700 to-transparent pointer-events-none"></div>
+                          )}
+                        </div>
 
                         {/* 3점 메뉴 버튼 - hover 시에만 표시 */}
                         {hoveredConversation === conversation.id && (
@@ -409,9 +416,9 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                                 }));
                               }
                             }}
-                            className="p-1 hover:bg-gray-600 rounded transition-colors flex-shrink-0"
+                            className="p-0.5 rounded transition-colors flex-shrink-0 ml-1"
                           >
-                            <MoreVertical className="w-4 h-4 text-gray-400" />
+                            <MoreHorizontal className="w-4 h-4 text-gray-400" />
                           </button>
                         )}
                       </div>
