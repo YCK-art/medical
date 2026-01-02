@@ -298,7 +298,7 @@ async def generate_answer_stream(
 
     print(f"🤖 generate_answer_stream started", file=sys.stderr, flush=True)
     print(f"   question: {question[:50]}...", file=sys.stderr, flush=True)
-    print(f"   language: {language}", file=sys.stderr, flush=True)
+    print(f"   language parameter: '{language}' (type: {type(language).__name__})", file=sys.stderr, flush=True)
     print(f"   context_chunks: {len(context_chunks)}", file=sys.stderr, flush=True)
     print(f"   doc_order: {len(doc_order)} documents", file=sys.stderr, flush=True)
     print(f"   conversation_history: {len(conversation_history)} messages", file=sys.stderr, flush=True)
@@ -742,6 +742,100 @@ Return only the questions, one per line, without numbering or bullet points."""
     except Exception as e:
         print(f"❌ Error generating follow-up questions: {e}", file=sys.stderr, flush=True)
         return []
+
+
+class GenerateQuestionsRequest(BaseModel):
+    category: str
+    language: str = "English"
+
+@app.post("/generate-questions")
+async def generate_questions(request: GenerateQuestionsRequest):
+    """카테고리별 예시 질문 생성"""
+    try:
+        # 언어 매핑
+        target_language = map_language(request.language)
+
+        # 카테고리별 프롬프트 정의
+        category_prompts = {
+            "Guidelines": "clinical guidelines and protocols for veterinary medicine",
+            "가이드라인": "임상 가이드라인 및 수의학 프로토콜",
+            "ガイドライン": "獣医学の臨床ガイドラインとプロトコル",
+            "Drug Administration": "drug dosages, administration methods, and safety for veterinary medicine",
+            "약물 투여": "약물 용량, 투여 방법 및 수의학 안전성",
+            "薬物投与": "薬物投与量、投与方法、獣医学の安全性",
+            "Treatment Alternatives": "alternative treatments and medications in veterinary medicine",
+            "치료 대안": "수의학의 대체 치료 및 약물",
+            "治療の代替案": "獣医学における代替治療と薬物",
+            "Diagnostic Protocols": "diagnostic procedures and testing protocols in veterinary medicine",
+            "진단 프로토콜": "수의학의 진단 절차 및 검사 프로토콜",
+            "診断プロトコル": "獣医学における診断手順と検査プロトコル"
+        }
+
+        category_context = category_prompts.get(request.category, "veterinary medicine topics")
+
+        # 언어별 시스템 프롬프트
+        if target_language == "Korean":
+            system_prompt = f"""당신은 수의학 전문가입니다.
+{category_context}에 관한 실용적이고 간결한 질문 3개를 생성해주세요.
+각 질문은 실제 수의사가 궁금해할 만한 내용이어야 하며, 한 문장으로 간단명료하게 작성해야 합니다.
+질문의 길이는 15-20단어 이내로 제한하세요.
+질문은 한국어로 작성하고, JSON 배열 형식으로 반환하세요: ["질문1", "질문2", "질문3"]"""
+        elif target_language == "Japanese":
+            system_prompt = f"""あなたは獣医学の専門家です。
+{category_context}に関する実用的で簡潔な質問を3つ生成してください。
+各質問は実際の獣医師が疑問に思う内容であり、1文で簡潔に書く必要があります。
+質問の長さは15-20単語以内に制限してください。
+質問は日本語で書き、JSON配列形式で返してください: ["質問1", "質問2", "質問3"]"""
+        else:
+            system_prompt = f"""You are a veterinary medicine expert.
+Generate 3 practical and concise questions about {category_context}.
+Each question should be something a real veterinarian would ask, written in one clear sentence.
+Keep each question to 15-20 words maximum.
+Return the questions in English as a JSON array: ["question1", "question2", "question3"]"""
+
+        # GPT-4o-mini로 질문 생성
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Generate 3 new questions for the category: {request.category}"}
+            ],
+            temperature=0.9,  # 다양성을 위해 높은 temperature
+            max_tokens=500
+        )
+
+        content = response.choices[0].message.content.strip()
+
+        # JSON 파싱
+        try:
+            # JSON 배열 추출
+            if content.startswith("[") and content.endswith("]"):
+                questions = json.loads(content)
+            else:
+                # 코드 블록 안에 있을 수 있음
+                import re
+                json_match = re.search(r'\[.*\]', content, re.DOTALL)
+                if json_match:
+                    questions = json.loads(json_match.group(0))
+                else:
+                    questions = []
+
+            # 최대 3개로 제한
+            questions = questions[:3]
+
+            if len(questions) < 3:
+                raise ValueError("Not enough questions generated")
+
+            return {"questions": questions}
+
+        except Exception as parse_error:
+            print(f"❌ JSON 파싱 오류: {parse_error}", file=sys.stderr, flush=True)
+            print(f"Raw content: {content}", file=sys.stderr, flush=True)
+            raise HTTPException(status_code=500, detail="Failed to parse generated questions")
+
+    except Exception as e:
+        print(f"❌ 질문 생성 오류: {e}", file=sys.stderr, flush=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/health")

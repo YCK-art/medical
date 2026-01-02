@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, ChevronDown, BookText, Pill, Stethoscope, Sparkles, ArrowUpRight, Activity, Menu, SquarePen } from "lucide-react";
+import { ArrowRight, ChevronDown, BookText, Pill, Stethoscope, Sparkles, ArrowUpRight, Activity, Menu, SquarePen, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -15,6 +15,8 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
   const { language } = useLanguage();
   const [question, setQuestion] = useState("");
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [customQuestions, setCustomQuestions] = useState<{[key: string]: string[]}>({});
+  const [isGenerating, setIsGenerating] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,11 +24,42 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
     onQuestionSubmit(question);
   };
 
+  const handleRefreshQuestions = async (categoryText: string) => {
+    setIsGenerating(categoryText);
+    try {
+      const response = await fetch('http://localhost:8000/generate-questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          category: categoryText,
+          language: language
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate questions');
+      }
+
+      const data = await response.json();
+      setCustomQuestions(prev => ({
+        ...prev,
+        [categoryText]: data.questions
+      }));
+    } catch (error) {
+      console.error('Error generating questions:', error);
+    } finally {
+      setIsGenerating(null);
+    }
+  };
+
   // Multilingual content
   const content = {
     English: {
       placeholder: "Ask a medical question...",
       banner: "Clinical Diagnostic AI, 50% off for early beta testers",
+      refreshQuestions: "Refresh Questions",
       suggestions: [
         {
           icon: BookText,
@@ -69,6 +102,7 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
     한국어: {
       placeholder: "의학 질문을 입력하세요...",
       banner: "임상 진단 AI, 얼리 베타 테스터 50% 할인",
+      refreshQuestions: "질문 새로고침",
       suggestions: [
         {
           icon: BookText,
@@ -111,6 +145,7 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
     日本語: {
       placeholder: "医学的な質問を入力してください...",
       banner: "臨床診断AI、早期ベータテスター向け50%オフ",
+      refreshQuestions: "質問を更新",
       suggestions: [
         {
           icon: BookText,
@@ -259,10 +294,9 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
 
           {/* 모바일: 확장된 질문 목록 - 바로 아래 표시 */}
           {expandedCategory && (
-            <div className="w-full space-y-2 animate-slideDown">
-              {suggestions
-                .find((s) => s.text === expandedCategory)
-                ?.questions.map((q, qIndex) => (
+            <div className="w-full animate-slideDown">
+              <div className="space-y-2 mb-3">
+                {(customQuestions[expandedCategory] || suggestions.find((s) => s.text === expandedCategory)?.questions || []).map((q, qIndex) => (
                   <button
                     key={qIndex}
                     onClick={() => onQuestionSubmit(q)}
@@ -272,6 +306,16 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
                     <ArrowUpRight className="w-4 h-4 flex-shrink-0 text-gray-500 group-hover:text-[#20808D] transition-colors" />
                   </button>
                 ))}
+              </div>
+              {/* Refresh 버튼 */}
+              <button
+                onClick={() => handleRefreshQuestions(expandedCategory)}
+                disabled={isGenerating === expandedCategory}
+                className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-gray-400 hover:text-[#20808D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <RefreshCw className={`w-4 h-4 ${isGenerating === expandedCategory ? 'animate-spin' : ''}`} />
+                <span className="text-sm">{content[language].refreshQuestions}</span>
+              </button>
             </div>
           )}
         </div>
@@ -350,10 +394,9 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
 
           {/* 데스크톱: 확장된 질문 목록 */}
           {expandedCategory && (
-            <div className="w-full space-y-2 animate-slideDown">
-              {suggestions
-                .find((s) => s.text === expandedCategory)
-                ?.questions.map((q, qIndex) => (
+            <div className="w-full animate-slideDown">
+              <div className="space-y-2 mb-3">
+                {(customQuestions[expandedCategory] || suggestions.find((s) => s.text === expandedCategory)?.questions || []).map((q, qIndex) => (
                   <button
                     key={qIndex}
                     onClick={() => onQuestionSubmit(q)}
@@ -363,6 +406,16 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
                     <ArrowUpRight className="w-4 h-4 flex-shrink-0 text-gray-500 group-hover:text-[#20808D] transition-colors" />
                   </button>
                 ))}
+              </div>
+              {/* Refresh 버튼 */}
+              <button
+                onClick={() => handleRefreshQuestions(expandedCategory)}
+                disabled={isGenerating === expandedCategory}
+                className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-gray-400 hover:text-[#20808D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <RefreshCw className={`w-4 h-4 ${isGenerating === expandedCategory ? 'animate-spin' : ''}`} />
+                <span className="text-sm">{content[language].refreshQuestions}</span>
+              </button>
             </div>
           )}
         </div>
