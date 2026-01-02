@@ -2,76 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'Pretendard';
-  src: url('/fonts/Pretendard-Regular.otf') format('opentype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Spectral';
-  src: url('/fonts/Spectral-ExtraBold.ttf') format('truetype');
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Reddit Sans';
-  src: url('/fonts/RedditSans-VariableFont_wght.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'TikTok Sans';
-  src: url('/fonts/TikTokSans-VariableFont_opsz,slnt,wdth,wght.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Noto Serif';
-  src: url('/fonts/NotoSerif-VariableFont_wdth,wght.ttf') format('truetype');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Hedvig Letters Serif';
-  src: url('/fonts/HedvigLettersSerif-Regular-VariableFont_opsz.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
 * {
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
 /* 영어 답변용 Noto Serif 폰트 클래스 */
 .font-noto-serif {
-  font-family: 'Noto Serif', serif !important;
+  font-family: var(--font-noto-serif), serif !important;
 }
 
 .font-noto-serif * {
-  font-family: 'Noto Serif', serif !important;
+  font-family: var(--font-noto-serif), serif !important;
 }
 
 .font-noto-serif strong,
 .font-noto-serif b {
-  font-family: 'Noto Serif', serif !important;
+  font-family: var(--font-noto-serif), serif !important;
   font-weight: 700 !important;
 }
 
 .font-noto-serif em,
 .font-noto-serif i {
-  font-family: 'Noto Serif', serif !important;
+  font-family: var(--font-noto-serif), serif !important;
   font-style: italic !important;
 }
 
