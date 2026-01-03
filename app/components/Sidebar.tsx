@@ -515,11 +515,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                         <Settings className="w-4 h-4 text-gray-400 group-hover:text-[#4DB8C4] transition-colors" strokeWidth={1.5} />
                       </button>
 
-                      {/* Get help */}
-                      <button className="w-full flex items-center justify-between px-4 py-1.5 hover:bg-gray-700 transition-colors text-left">
-                        <span className="text-sm text-gray-200">{currentContent.help}</span>
-                      </button>
-
                       {/* Divider */}
                       <div className="border-t border-gray-700 my-1"></div>
                     </>

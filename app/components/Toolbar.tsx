@@ -23,8 +23,9 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
 
   const content = {
     English: {
-      features: "Features",
-      enterprise: "Enterprise",
+      // features: "Features",
+      // enterprise: "Enterprise",
+      mission: "Mission",
       pricing: "Pricing",
       resources: "Resources",
       contactSales: "Contact Sales",
@@ -32,14 +33,14 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
       resourceItems: [
         { id: "blog", icon: BookOpen, label: "Blog", description: "Latest news and updates", column: 1 },
         { id: "careers", icon: Briefcase, label: "Careers", description: "Join our team", column: 1 },
-        { id: "security", icon: Shield, label: "Security", description: "Trust and compliance", column: 2 },
+        // { id: "security", icon: Shield, label: "Security", description: "Trust and compliance", column: 2 },
         { id: "support", icon: HelpCircle, label: "Support", description: "Get help anytime", column: 2 },
-        { id: "mission", icon: Target, label: "Mission", description: "Our purpose and values", column: 3 },
       ]
     },
     한국어: {
-      features: "기능",
-      enterprise: "기업",
+      // features: "기능",
+      // enterprise: "기업",
+      mission: "미션",
       pricing: "요금제",
       resources: "리소스",
       contactSales: "영업팀 문의",
@@ -47,14 +48,14 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
       resourceItems: [
         { id: "blog", icon: BookOpen, label: "블로그", description: "최신 뉴스 및 업데이트", column: 1 },
         { id: "careers", icon: Briefcase, label: "채용", description: "우리 팀에 합류하세요", column: 1 },
-        { id: "security", icon: Shield, label: "보안", description: "신뢰와 규정 준수", column: 2 },
+        // { id: "security", icon: Shield, label: "보안", description: "신뢰와 규정 준수", column: 2 },
         { id: "support", icon: HelpCircle, label: "지원", description: "언제든지 도움을 받으세요", column: 2 },
-        { id: "mission", icon: Target, label: "미션", description: "우리의 목적과 가치", column: 3 },
       ]
     },
     日本語: {
-      features: "機能",
-      enterprise: "エンタープライズ",
+      // features: "機能",
+      // enterprise: "エンタープライズ",
+      mission: "ミッション",
       pricing: "料金",
       resources: "リソース",
       contactSales: "営業に問い合わせ",
@@ -62,9 +63,8 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
       resourceItems: [
         { id: "blog", icon: BookOpen, label: "ブログ", description: "最新のニュースと更新情報", column: 1 },
         { id: "careers", icon: Briefcase, label: "採用", description: "私たちのチームに参加", column: 1 },
-        { id: "security", icon: Shield, label: "セキュリティ", description: "信頼とコンプライアンス", column: 2 },
+        // { id: "security", icon: Shield, label: "セキュリティ", description: "信頼とコンプライアンス", column: 2 },
         { id: "support", icon: HelpCircle, label: "サポート", description: "いつでもサポート", column: 2 },
-        { id: "mission", icon: Target, label: "ミッション", description: "私たちの目的と価値観", column: 3 },
       ]
     }
   };
@@ -115,7 +115,7 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
 
             {/* Navigation Menu */}
             <div className="hidden md:flex items-center space-x-8">
-              <button
+              {/* <button
                 onClick={() => router.push('/features')}
                 className={`transition-colors ${
                   effectiveTheme === 'light'
@@ -124,8 +124,18 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
                 }`}
               >
                 <span>{currentContent.features}</span>
-              </button>
+              </button> */}
               <button
+                onClick={() => router.push('/mission')}
+                className={`transition-colors ${
+                  effectiveTheme === 'light'
+                    ? 'text-gray-900 hover:text-[#20808D]'
+                    : 'text-gray-300 hover:text-[#4DB8C4]'
+                }`}
+              >
+                <span>{currentContent.mission}</span>
+              </button>
+              {/* <button
                 onClick={() => router.push('/enterprise')}
                 className={`transition-colors ${
                   effectiveTheme === 'light'
@@ -134,7 +144,7 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
                 }`}
               >
                 <span>{currentContent.enterprise}</span>
-              </button>
+              </button> */}
               <button
                 onClick={() => router.push('/pricing')}
                 className={`transition-colors ${
@@ -207,7 +217,7 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
         >
           <div className="px-6 py-4 space-y-4">
             {/* Mobile Menu Items */}
-            <button
+            {/* <button
               onClick={() => {
                 router.push('/features');
                 setIsMobileMenuOpen(false);
@@ -219,9 +229,23 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
               }`}
             >
               {currentContent.features}
-            </button>
+            </button> */}
 
             <button
+              onClick={() => {
+                router.push('/mission');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`w-full text-left py-3 px-4 rounded-lg transition-colors ${
+                effectiveTheme === 'light'
+                  ? 'text-gray-900 hover:bg-gray-100'
+                  : 'text-white hover:bg-[#2a2a2a]'
+              }`}
+            >
+              {currentContent.mission}
+            </button>
+
+            {/* <button
               onClick={() => {
                 router.push('/enterprise');
                 setIsMobileMenuOpen(false);
@@ -233,7 +257,7 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
               }`}
             >
               {currentContent.enterprise}
-            </button>
+            </button> */}
 
             <button
               onClick={() => {

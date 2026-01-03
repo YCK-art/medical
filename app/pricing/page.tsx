@@ -73,21 +73,41 @@ export default function PricingPage() {
       comparePlans: "Compare plans",
       signUp: "Sign up",
       contactUs: "Contact us",
-      cascade: "Cascade",
-      features: "Features",
-      messageLimits: "Message Limits",
-      addOnCredits: "Add-on prompt credits",
-      tab: "Tab",
-      previews: "Previews",
-      deploys: "Deploys",
-      allPremiumModels: "All premium models",
-      fastContext: "Fast Context",
-      sweModel: "SWE-15 model",
-      windsurfReviews: "Windsurf Reviews",
-      centralizedBilling: "Centralized billing",
-      adminDashboard: "Admin dashboard with analytics",
-      prioritySupport: "Priority support",
+      usage: "Usage",
+      monthlyQuestions: "Monthly Questions",
+      priorityProcessing: "Priority Processing",
+      evidenceReasoning: "Evidence & Reasoning",
+      evidenceBasedAnswers: "Evidence-based answers",
+      openAccessSources: "Open-access journal sources",
+      evidenceSummary: "Evidence summary",
+      differentialDiagnosisList: "Differential diagnosis list",
+      complexRareCases: "Complex/rare case handling",
+      workflow: "Workflow",
+      questionHistory: "Question history storage",
+      questionBookmark: "Question bookmark",
+      repeatQuestionOptimization: "Repeat question optimization",
+      performanceReliability: "Performance & Reliability",
+      responseSpeed: "Response speed",
+      peakTimeStability: "Peak time stability",
+      serviceSLA: "Service SLA",
+      supportAccess: "Support & Access",
+      customerSupport: "Customer support",
+      contractBased: "Contract-based provision",
+      legalCompliance: "Legal & compliance documentation",
       unlimited: "Unlimited",
+      custom: "Custom",
+      basic: "Basic",
+      standard: "Standard",
+      extended: "Extended",
+      limited: "Limited",
+      faster: "Faster",
+      highestPriority: "Highest priority",
+      high: "High",
+      community: "Community",
+      email: "Email",
+      priorityEmail: "Priority email",
+      dedicated: "Dedicated",
+      disclaimer: "Ruleout provides evidence-based clinical information derived from open-access veterinary literature. It does not provide diagnoses or treatment recommendations.",
       loginTitle: "Log in or Sign up",
       loginSubtitle: "Choose your work email.",
       whyNeeded: "Why is this needed?",
@@ -101,25 +121,28 @@ export default function PricingPage() {
       maxDesc: "Everything in Pro, plus:",
       enterpriseDesc: "Everything in Max, plus:",
       freeFeatures: [
-        "One-week Pro trial",
-        "Limited Agent requests",
-        "Limited Tab completions"
+        "5 questions per day",
+        "Evidence-based answers from open-access journals",
+        "Differential diagnosis candidates",
+        "Cited sources with direct links"
       ],
       proFeatures: [
-        "Extended limits on Agent",
-        "Unlimited Tab completions",
-        "Background Agents",
-        "Maximum context windows"
+        "500 questions per month",
+        "Deeper evidence-based reasoning",
+        "Differential diagnoses with literature support",
+        "Priority response speed"
       ],
       maxFeatures: [
-        "3x usage on all OpenAI, Claude, Gemini models",
-        "Priority access to new features"
+        "Unlimited questions",
+        "No monthly usage cap",
+        "Built for frequent and complex cases",
+        "Stable performance during peak usage"
       ],
       enterpriseFeatures: [
-        "Centralized billing",
-        "Admin dashboard with analytics",
+        "Custom usage limits",
+        "Contract-based access",
         "Priority support",
-        "Custom integrations"
+        "Dedicated onboarding"
       ]
     },
     한국어: {
@@ -142,21 +165,41 @@ export default function PricingPage() {
       comparePlans: "플랜 비교",
       signUp: "가입하기",
       contactUs: "문의하기",
-      cascade: "캐스케이드",
-      features: "기능",
-      messageLimits: "메시지 제한",
-      addOnCredits: "추가 프롬프트 크레딧",
-      tab: "탭",
-      previews: "미리보기",
-      deploys: "배포",
-      allPremiumModels: "모든 프리미엄 모델",
-      fastContext: "빠른 컨텍스트",
-      sweModel: "SWE-15 모델",
-      windsurfReviews: "Windsurf 리뷰",
-      centralizedBilling: "중앙 집중식 결제",
-      adminDashboard: "분석 관리자 대시보드",
-      prioritySupport: "우선 지원",
+      usage: "사용량",
+      monthlyQuestions: "월 질문 수",
+      priorityProcessing: "우선 처리",
+      evidenceReasoning: "증거 및 추론",
+      evidenceBasedAnswers: "증거 기반 답변",
+      openAccessSources: "오픈 액세스 논문 출처",
+      evidenceSummary: "근거 문장 요약",
+      differentialDiagnosisList: "감별진단 리스트",
+      complexRareCases: "복합/희귀 케이스 처리",
+      workflow: "워크플로우",
+      questionHistory: "질문 히스토리 저장",
+      questionBookmark: "질문 저장 (Bookmark)",
+      repeatQuestionOptimization: "반복 질문 최적화",
+      performanceReliability: "성능 및 안정성",
+      responseSpeed: "응답 속도",
+      peakTimeStability: "피크 타임 안정성",
+      serviceSLA: "서비스 SLA",
+      supportAccess: "지원 및 액세스",
+      customerSupport: "고객 지원",
+      contractBased: "계약 기반 제공",
+      legalCompliance: "법무·컴플라이언스 문서",
       unlimited: "무제한",
+      custom: "맞춤형",
+      basic: "기본",
+      standard: "표준",
+      extended: "확장",
+      limited: "제한적",
+      faster: "빠름",
+      highestPriority: "최우선",
+      high: "높음",
+      community: "커뮤니티",
+      email: "이메일",
+      priorityEmail: "우선 이메일",
+      dedicated: "전담",
+      disclaimer: "Ruleout은 오픈 액세스 수의학 문헌에서 도출된 증거 기반 임상 정보를 제공합니다. 진단이나 치료 권장사항을 제공하지 않습니다.",
       loginTitle: "로그인 또는 회원가입",
       loginSubtitle: "업무용 이메일을 선택하세요.",
       whyNeeded: "왜 필요한가요?",
@@ -170,25 +213,28 @@ export default function PricingPage() {
       maxDesc: "프로 플랜의 모든 기능 및:",
       enterpriseDesc: "맥스 플랜의 모든 기능 및:",
       freeFeatures: [
-        "1주일 프로 체험",
-        "제한된 에이전트 요청",
-        "제한된 탭 자동 완성"
+        "하루 5개 질문",
+        "오픈 액세스 저널 기반 답변",
+        "감별 진단 후보",
+        "직접 링크가 포함된 출처"
       ],
       proFeatures: [
-        "에이전트 확장 한도",
-        "무제한 탭 자동 완성",
-        "백그라운드 에이전트",
-        "최대 컨텍스트 윈도우"
+        "월 500개 질문",
+        "더 깊은 증거 기반 추론",
+        "문헌 지원 감별 진단",
+        "우선 응답 속도"
       ],
       maxFeatures: [
-        "모든 OpenAI, Claude, Gemini 모델 3배 사용량",
-        "새로운 기능 우선 액세스"
+        "무제한 질문",
+        "월간 사용량 제한 없음",
+        "빈번하고 복잡한 케이스에 최적화",
+        "피크 시간대 안정적인 성능"
       ],
       enterpriseFeatures: [
-        "중앙 집중식 결제",
-        "분석이 포함된 관리자 대시보드",
+        "맞춤형 사용량 제한",
+        "계약 기반 액세스",
         "우선 지원",
-        "맞춤형 통합"
+        "전담 온보딩"
       ]
     },
     日本語: {
@@ -211,21 +257,41 @@ export default function PricingPage() {
       comparePlans: "プランを比較",
       signUp: "サインアップ",
       contactUs: "お問い合わせ",
-      cascade: "カスケード",
-      features: "機能",
-      messageLimits: "メッセージ制限",
-      addOnCredits: "追加プロンプトクレジット",
-      tab: "タブ",
-      previews: "プレビュー",
-      deploys: "デプロイ",
-      allPremiumModels: "すべてのプレミアムモデル",
-      fastContext: "高速コンテキスト",
-      sweModel: "SWE-15モデル",
-      windsurfReviews: "Windsurfレビュー",
-      centralizedBilling: "一元化された請求",
-      adminDashboard: "分析管理ダッシュボード",
-      prioritySupport: "優先サポート",
+      usage: "使用量",
+      monthlyQuestions: "月間質問数",
+      priorityProcessing: "優先処理",
+      evidenceReasoning: "エビデンスと推論",
+      evidenceBasedAnswers: "エビデンスベースの回答",
+      openAccessSources: "オープンアクセス論文ソース",
+      evidenceSummary: "エビデンス要約",
+      differentialDiagnosisList: "鑑別診断リスト",
+      complexRareCases: "複雑/希少ケース処理",
+      workflow: "ワークフロー",
+      questionHistory: "質問履歴保存",
+      questionBookmark: "質問ブックマーク",
+      repeatQuestionOptimization: "繰り返し質問最適化",
+      performanceReliability: "パフォーマンスと信頼性",
+      responseSpeed: "応答速度",
+      peakTimeStability: "ピーク時の安定性",
+      serviceSLA: "サービスSLA",
+      supportAccess: "サポートとアクセス",
+      customerSupport: "カスタマーサポート",
+      contractBased: "契約ベース提供",
+      legalCompliance: "法務・コンプライアンス文書",
       unlimited: "無制限",
+      custom: "カスタム",
+      basic: "基本",
+      standard: "標準",
+      extended: "拡張",
+      limited: "制限付き",
+      faster: "高速",
+      highestPriority: "最優先",
+      high: "高",
+      community: "コミュニティ",
+      email: "メール",
+      priorityEmail: "優先メール",
+      dedicated: "専任",
+      disclaimer: "Ruleoutは、オープンアクセスの獣医学文献から得られたエビデンスベースの臨床情報を提供します。診断や治療の推奨は行いません。",
       loginTitle: "ログインまたはサインアップ",
       loginSubtitle: "業務用メールアドレスを選択してください。",
       whyNeeded: "なぜ必要ですか？",
@@ -239,25 +305,28 @@ export default function PricingPage() {
       maxDesc: "プロプランのすべて、さらに:",
       enterpriseDesc: "マックスプランのすべて、さらに:",
       freeFeatures: [
-        "1週間のプロトライアル",
-        "限定エージェントリクエスト",
-        "限定タブ補完"
+        "1日5つの質問",
+        "オープンアクセスジャーナルに基づく回答",
+        "鑑別診断候補",
+        "直接リンク付きの出典"
       ],
       proFeatures: [
-        "エージェントの拡張制限",
-        "無制限タブ補完",
-        "バックグラウンドエージェント",
-        "最大コンテキストウィンドウ"
+        "月500の質問",
+        "より深いエビデンスベースの推論",
+        "文献サポート付き鑑別診断",
+        "優先応答速度"
       ],
       maxFeatures: [
-        "すべてのOpenAI、Claude、Geminiモデルで3倍の使用量",
-        "新機能への優先アクセス"
+        "無制限の質問",
+        "月間使用量制限なし",
+        "頻繁で複雑なケースに最適化",
+        "ピーク時の安定したパフォーマンス"
       ],
       enterpriseFeatures: [
-        "一元化された請求",
-        "分析付き管理ダッシュボード",
+        "カスタム使用制限",
+        "契約ベースのアクセス",
         "優先サポート",
-        "カスタム統合"
+        "専任オンボーディング"
       ]
     }
   };
@@ -300,8 +369,8 @@ export default function PricingPage() {
     },
     {
       name: t.pro,
-      monthlyPrice: 20,
-      yearlyPricePerMonth: 12,
+      monthlyPrice: 29,
+      yearlyPricePerMonth: 22,
       description: t.proDesc,
       features: t.proFeatures,
       buttonText: t.getPro,
@@ -408,13 +477,15 @@ export default function PricingPage() {
                         <div className="flex items-baseline">
                           <span className={`text-4xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.letsTalk}</span>
                         </div>
+                      ) : plan.monthlyPrice === 0 ? (
+                        <div className="flex items-baseline">
+                          <span className={`text-4xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.free}</span>
+                        </div>
                       ) : (
                         <>
                           <div className="flex items-baseline">
                             <span className={`text-4xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>${animatedPrice}</span>
-                            {price && price > 0 && (
-                              <span className={`ml-2 ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"}`}>{t.perMonth}</span>
-                            )}
+                            <span className={`ml-2 ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"}`}>{t.perMonth}</span>
                           </div>
                           {billingPeriod === "yearly" && discount > 0 && (
                             <span className="text-[#20808D] text-sm font-semibold">
@@ -514,7 +585,7 @@ export default function PricingPage() {
                   <div className="flex flex-col items-center gap-4">
                     <div className={`font-bold text-xl ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.pro}</div>
                     <div className={`text-sm ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"}`}>
-                      <span className={`text-2xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>${billingPeriod === "monthly" ? 20 : 12}</span> {t.perMonth}
+                      <span className={`text-2xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>${billingPeriod === "monthly" ? 29 : 22}</span> {t.perMonth}
                     </div>
                     <button
                       className="w-full px-6 py-2.5 bg-[#20808D] rounded-lg hover:bg-[#1a6b77] transition-all duration-200 text-white font-medium"
@@ -578,48 +649,46 @@ export default function PricingPage() {
             </thead>
 
             <tbody>
-              {/* Cascade Section */}
+              {/* Usage Section */}
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
                 <td colSpan={5} className="py-4 px-4">
-                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.cascade}</div>
+                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.usage}</div>
                 </td>
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
-                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.messageLimits}</td>
-                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>15 messages/mo</td>
-                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>300 messages/mo</td>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.monthlyQuestions}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>5 / day</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>500 / month</td>
                 <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.unlimited}</td>
-                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.unlimited}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.custom}</td>
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
-                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.addOnCredits}</td>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.priorityProcessing}</td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
                 </td>
-                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>$10 for 250 credits</td>
-                <td className={`py-4 px-4 text-center text-sm ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>Add-on credits available for purchase</td>
-                <td className={`py-4 px-4 text-center text-sm ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>Add-on credits available for purchase</td>
+                <td className="py-4 px-4 text-center">
+                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                </td>
+                <td className="py-4 px-4 text-center">
+                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                </td>
+                <td className="py-4 px-4 text-center">
+                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                </td>
               </tr>
 
-              {/* Features Section */}
+              {/* Evidence & Reasoning Section */}
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
                 <td colSpan={5} className="py-4 px-4">
-                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.features}</div>
+                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.evidenceReasoning}</div>
                 </td>
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
-                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.tab}</td>
-                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.unlimited}</td>
-                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.unlimited}</td>
-                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.unlimited}</td>
-                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.unlimited}</td>
-              </tr>
-
-              <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
-                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.previews}</td>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.evidenceBasedAnswers}</td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
                 </td>
@@ -635,7 +704,7 @@ export default function PricingPage() {
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
-                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.deploys}</td>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.openAccessSources}</td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
                 </td>
@@ -651,7 +720,15 @@ export default function PricingPage() {
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
-                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.allPremiumModels}</td>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.evidenceSummary}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.basic}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.standard}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.extended}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.extended}</td>
+              </tr>
+
+              <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.differentialDiagnosisList}</td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
                 </td>
@@ -667,13 +744,11 @@ export default function PricingPage() {
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
-                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.fastContext}</td>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.complexRareCases}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
                 </td>
-                <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
-                </td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.limited}</td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
                 </td>
@@ -682,8 +757,15 @@ export default function PricingPage() {
                 </td>
               </tr>
 
+              {/* Workflow Section */}
+              <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
+                <td colSpan={5} className="py-4 px-4">
+                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.workflow}</div>
+                </td>
+              </tr>
+
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
-                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.sweModel}</td>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.questionHistory}</td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
                 </td>
@@ -699,28 +781,12 @@ export default function PricingPage() {
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
-                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.windsurfReviews}</td>
-                <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
-                </td>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.questionBookmark}</td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
-                </td>
-                <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
-                </td>
-              </tr>
-
-              <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
-                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.centralizedBilling}</td>
-                <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
-                </td>
-                <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
@@ -731,12 +797,12 @@ export default function PricingPage() {
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
-                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.adminDashboard}</td>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.repeatQuestionOptimization}</td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
@@ -746,8 +812,34 @@ export default function PricingPage() {
                 </td>
               </tr>
 
+              {/* Performance & Reliability Section */}
+              <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
+                <td colSpan={5} className="py-4 px-4">
+                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.performanceReliability}</div>
+                </td>
+              </tr>
+
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
-                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.prioritySupport}</td>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.responseSpeed}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.standard}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.faster}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.highestPriority}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.highestPriority}</td>
+              </tr>
+
+              <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.peakTimeStability}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.standard}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.standard}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.high}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.high}</td>
+              </tr>
+
+              <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.serviceSLA}</td>
+                <td className="py-4 px-4 text-center">
+                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                </td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
                 </td>
@@ -756,6 +848,50 @@ export default function PricingPage() {
                 </td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                </td>
+              </tr>
+
+              {/* Support & Access Section */}
+              <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
+                <td colSpan={5} className="py-4 px-4">
+                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.supportAccess}</div>
+                </td>
+              </tr>
+
+              <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.customerSupport}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.community}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.email}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.priorityEmail}</td>
+                <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.dedicated}</td>
+              </tr>
+
+              <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.contractBased}</td>
+                <td className="py-4 px-4 text-center">
+                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                </td>
+                <td className="py-4 px-4 text-center">
+                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                </td>
+                <td className="py-4 px-4 text-center">
+                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                </td>
+                <td className="py-4 px-4 text-center">
+                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                </td>
+              </tr>
+
+              <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
+                <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.legalCompliance}</td>
+                <td className="py-4 px-4 text-center">
+                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                </td>
+                <td className="py-4 px-4 text-center">
+                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                </td>
+                <td className="py-4 px-4 text-center">
+                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
                   <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
@@ -763,6 +899,13 @@ export default function PricingPage() {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        {/* Disclaimer */}
+        <div className="mt-12 text-center">
+          <p className={`text-sm ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} max-w-3xl mx-auto`}>
+            {t.disclaimer}
+          </p>
         </div>
       </div>
 

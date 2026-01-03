@@ -45,7 +45,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       terms: "계속하면 Ruleout의",
       termsOfService: "이용약관",
       and: "및",
-      privacyPolicy: "개인정보처리방침"
+      privacyPolicy: "개인정보처리방침에 동의합니다"
     },
     日本語: {
       title: "ログインまたはサインアップ",
@@ -59,7 +59,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       terms: "続行すると、Ruleoutの",
       termsOfService: "利用規約",
       and: "および",
-      privacyPolicy: "プライバシーポリシー"
+      privacyPolicy: "プライバシーポリシーに同意したものとみなされます"
     }
   };
 
@@ -111,7 +111,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             {currentContent.title}
           </h2>
           <p className="text-gray-400">
-            {currentContent.subtitle} <a href="#" className="text-[#20808D] hover:underline">{currentContent.whyNeeded}</a>
+            {currentContent.subtitle}
           </p>
         </div>
 

@@ -20,7 +20,7 @@ export default function MissionPage() {
     English: {
       heroText: "For the Animals We Love",
       futureTitle: "The Future of Care is Compassionate",
-      futureSubtitle: "We're building a world where animals live healthier lives, supported by veterinarians empowered with instant, evidence-based knowledge.",
+      futureSubtitle: "We aim to build a world where animals live healthier lives, supported by veterinarians empowered with instant, evidence-based knowledge.",
       learnMore: "Learn More",
       loginTitle: "Log in or Sign up",
       loginSubtitle: "Choose your work email.",
@@ -41,7 +41,7 @@ export default function MissionPage() {
     한국어: {
       heroText: "우리가 사랑하는 동물들을 위하여",
       futureTitle: "미래의 치료는 공감입니다",
-      futureSubtitle: "우리는 동물들이 더 건강한 삶을 살아갈 수 있는 세상을 만들어가고 있습니다. 그 중심에는 필요한 순간, 근거 기반의 지식으로 판단할 수 있도록 지원받는 수의사가 있습니다.",
+      futureSubtitle: "우리는 수의사들이 근거에 기반한 정보를 바탕으로 더 나은 판단을 내릴 수 있도록 돕고, 그 결과 동물들이 더 건강한 삶을 살아갈 수 있는 세상을 만들어가고자 합니다.",
       learnMore: "자세히 알아보기",
       loginTitle: "로그인 또는 회원가입",
       loginSubtitle: "업무용 이메일을 선택하세요.",
@@ -62,7 +62,7 @@ export default function MissionPage() {
     日本語: {
       heroText: "私たちが愛する動物たちのために",
       futureTitle: "ケアの未来は、思いやりから始まる",
-      futureSubtitle: "私たちは、動物たちがより健康に生きられる社会を目指しています。その中心にいるのは、必要な瞬間にエビデンスに基づいた判断ができるよう支えられた獣医師です。",
+      futureSubtitle: "私たちは、獣医師が根拠に基づいた情報をもとに、より良い判断ができるようにし、動物たちがより健康に生きられる社会を目指しています。",
       learnMore: "詳しく見る",
       loginTitle: "ログインまたはサインアップ",
       loginSubtitle: "業務用メールアドレスを選択してください。",
@@ -86,6 +86,7 @@ export default function MissionPage() {
   const fullText = t.heroText;
 
   useEffect(() => {
+    setDisplayedText(""); // 언어 변경시 텍스트 초기화
     let currentIndex = 0;
     const typingInterval = setInterval(() => {
       if (currentIndex <= fullText.length) {
@@ -97,7 +98,7 @@ export default function MissionPage() {
     }, 100); // 100ms마다 한 글자씩
 
     return () => clearInterval(typingInterval);
-  }, []);
+  }, [fullText, language]);
 
   const handleLogin = () => {
     setShowLoginModal(true);
@@ -158,7 +159,7 @@ export default function MissionPage() {
             <h2 className={`text-4xl md:text-5xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-black"} mb-6`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
               {t.futureTitle}
             </h2>
-            <p className={`text-xl ${effectiveTheme === "light" ? "text-gray-900" : "text-black"} leading-relaxed max-w-4xl`}>
+            <p className={`text-xl ${effectiveTheme === "light" ? "text-gray-900" : "text-black"} leading-relaxed max-w-4xl`} style={{ fontFamily: language === 'English' ? "'TikTok Sans', sans-serif" : "'Pretendard', sans-serif" }}>
               {t.futureSubtitle}
             </p>
           </div>

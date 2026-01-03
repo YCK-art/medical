@@ -34,14 +34,11 @@ export default function Footer() {
       legal: {
         title: "Legal",
         terms: "Terms of Service",
-        privacy: "Privacy Policy",
-        security: "Security"
+        privacy: "Privacy Policy"
       },
       product: {
         title: "Product",
-        pricing: "Pricing",
-        features: "Features",
-        updates: "Updates"
+        pricing: "Pricing"
       },
       copyright: "© 2026 Ruleout. All rights reserved."
     },
@@ -55,14 +52,11 @@ export default function Footer() {
       legal: {
         title: "법률",
         terms: "이용약관",
-        privacy: "개인정보처리방침",
-        security: "보안"
+        privacy: "개인정보처리방침"
       },
       product: {
         title: "제품",
-        pricing: "요금제",
-        features: "기능",
-        updates: "업데이트"
+        pricing: "요금제"
       },
       copyright: "© 2026 Ruleout. All rights reserved."
     },
@@ -76,14 +70,11 @@ export default function Footer() {
       legal: {
         title: "法務",
         terms: "利用規約",
-        privacy: "プライバシーポリシー",
-        security: "セキュリティ"
+        privacy: "プライバシーポリシー"
       },
       product: {
         title: "製品",
-        pricing: "料金",
-        features: "機能",
-        updates: "更新情報"
+        pricing: "料金"
       },
       copyright: "© 2026 Ruleout. All rights reserved."
     }
@@ -131,16 +122,6 @@ export default function Footer() {
                   {currentContent.product.pricing}
                 </Link>
               </li>
-              <li>
-                <Link href="/features" className={`${effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-white"} transition-colors`}>
-                  {currentContent.product.features}
-                </Link>
-              </li>
-              <li>
-                <Link href="/updates" className={`${effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-white"} transition-colors`}>
-                  {currentContent.product.updates}
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -158,11 +139,6 @@ export default function Footer() {
               <li>
                 <Link href="/privacy" className={`${effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-white"} transition-colors`}>
                   {currentContent.legal.privacy}
-                </Link>
-              </li>
-              <li>
-                <Link href="/security" className={`${effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-white"} transition-colors`}>
-                  {currentContent.legal.security}
                 </Link>
               </li>
             </ul>

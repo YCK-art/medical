@@ -46,12 +46,7 @@ function FAQItem({ question, answer, theme }: { question: string; answer: string
 function CarouselContent({ effectiveTheme, slides }: { effectiveTheme: "light" | "dark"; slides: Array<{ title: string; description: string }> }) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % 3);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
+  // Auto-play removed - manual navigation only
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start">
@@ -88,29 +83,32 @@ function CarouselContent({ effectiveTheme, slides }: { effectiveTheme: "light" |
           <div className="aspect-[16/9] relative">
             {/* Slide 1 */}
             <div className={`absolute inset-0 transition-opacity duration-500 ${currentSlide === 0 ? 'opacity-100' : 'opacity-0'}`}>
-              <div className="w-full h-full bg-gradient-to-br from-[#20808D]/10 to-[#4DB8C4]/10 flex items-center justify-center">
-                <span className={`text-8xl font-bold ${effectiveTheme === "light" ? "text-gray-300" : "text-gray-800"}`}>
-                  1
-                </span>
-              </div>
+              <Image
+                src="/image/carousel_1.png"
+                alt="Comprehensive guideline database"
+                fill
+                className="object-cover"
+              />
             </div>
 
             {/* Slide 2 */}
             <div className={`absolute inset-0 transition-opacity duration-500 ${currentSlide === 1 ? 'opacity-100' : 'opacity-0'}`}>
-              <div className="w-full h-full bg-gradient-to-br from-[#4DB8C4]/10 to-[#6dccd7]/10 flex items-center justify-center">
-                <span className={`text-8xl font-bold ${effectiveTheme === "light" ? "text-gray-300" : "text-gray-800"}`}>
-                  2
-                </span>
-              </div>
+              <Image
+                src="/image/carousel_2.png"
+                alt="Evidence-based decision support"
+                fill
+                className="object-cover"
+              />
             </div>
 
             {/* Slide 3 */}
             <div className={`absolute inset-0 transition-opacity duration-500 ${currentSlide === 2 ? 'opacity-100' : 'opacity-0'}`}>
-              <div className="w-full h-full bg-gradient-to-br from-[#6dccd7]/10 to-[#20808D]/10 flex items-center justify-center">
-                <span className={`text-8xl font-bold ${effectiveTheme === "light" ? "text-gray-300" : "text-gray-800"}`}>
-                  3
-                </span>
-              </div>
+              <Image
+                src="/image/carousel_3.png"
+                alt="Instant reference lookup"
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
         </div>
@@ -233,7 +231,8 @@ export default function LandingPage() {
       ],
       partners: {
         subtitle: "Journals",
-        title: "Evidence-informed veterinary medicine, built for clinicians"
+        title: "Evidence-informed veterinary medicine, built for clinicians",
+        footnote: "Journal logos are the property of their respective owners. Display does not imply endorsement or affiliation."
       },
       features: {
         title: "Clinically intelligent, Instantly responsive.",
@@ -296,11 +295,11 @@ export default function LandingPage() {
           },
           {
             question: "Is Ruleout free?",
-            answer: "Ruleout offers a free tier with access to essential guidelines. Premium plans provide unlimited searches, advanced filtering, and access to our complete guideline library with regular updates."
+            answer: "Ruleout offers a free tier that allows limited access to evidence-based content derived from open-access veterinary literature. For users with higher research needs, Pro and Max plans are available. These plans provide higher research query limits and expanded access to evidence drawn from a broader range of open-access sources, with regular content updates."
           },
           {
-            question: "How accurate are the clinical guidelines?",
-            answer: "All guidelines in Ruleout are sourced directly from official veterinary medical associations and peer-reviewed publications. We maintain strict quality control and update our database regularly to ensure clinical accuracy."
+            question: "How are the clinical references sourced and maintained?",
+            answer: "Ruleout references and analyzes content from open-access (CC BY) veterinary research publications and publicly available evidence-based resources. All source materials are used in accordance with their respective licenses, and original authorship and publication information are preserved. Content is updated regularly as new open-access literature becomes available."
           },
           {
             question: "What search capabilities does Ruleout offer?",
@@ -362,8 +361,9 @@ export default function LandingPage() {
         }
       ],
       partners: {
-        subtitle: "파트너",
-        title: "Ruleout은 선도적인 수의학 플랫폼입니다"
+        subtitle: "저널",
+        title: "근거 중심 수의학, 임상의를 위해 만들어졌습니다",
+        footnote: "저널 로고는 각 소유자의 재산입니다. 표시는 보증이나 제휴를 의미하지 않습니다."
       },
       features: {
         title: "임상적으로 똑똑하고, 즉각적으로 반응합니다.",
@@ -426,11 +426,11 @@ export default function LandingPage() {
           },
           {
             question: "Ruleout은 무료인가요?",
-            answer: "Ruleout은 필수 가이드라인에 액세스할 수 있는 무료 등급을 제공합니다. 프리미엄 플랜은 무제한 검색, 고급 필터링 및 정기 업데이트가 포함된 완전한 가이드라인 라이브러리에 대한 액세스를 제공합니다."
+            answer: "Ruleout은 오픈 액세스 수의학 문헌에서 파생된 근거 기반 콘텐츠에 대한 제한적인 액세스를 허용하는 무료 플랜을 제공합니다. 더 높은 연구 요구를 가진 사용자를 위해 Pro 및 Max 플랜을 이용할 수 있습니다. 이러한 플랜은 더 높은 연구 쿼리 제한과 더 광범위한 오픈 액세스 소스에서 도출된 증거에 대한 확장된 액세스를 제공하며, 정기적인 콘텐츠 업데이트가 포함됩니다."
           },
           {
-            question: "임상 가이드라인은 얼마나 정확한가요?",
-            answer: "Ruleout의 모든 가이드라인은 공식 수의학 협회 및 동료 검토 출판물에서 직접 가져옵니다. 우리는 엄격한 품질 관리를 유지하고 임상 정확성을 보장하기 위해 데이터베이스를 정기적으로 업데이트합니다."
+            question: "임상 참고 자료는 어떻게 조달되고 유지 관리되나요?",
+            answer: "Ruleout은 오픈 액세스(CC BY) 수의학 연구 출판물 및 공개적으로 이용 가능한 근거 기반 자료의 콘텐츠를 참조하고 분석합니다. 모든 소스 자료는 해당 라이선스에 따라 사용되며, 원저자 및 출판 정보가 보존됩니다. 콘텐츠는 새로운 오픈 액세스 문헌이 제공됨에 따라 정기적으로 업데이트됩니다."
           },
           {
             question: "Ruleout은 어떤 검색 기능을 제공하나요?",
@@ -492,8 +492,9 @@ export default function LandingPage() {
         }
       ],
       partners: {
-        subtitle: "パートナー",
-        title: "Ruleoutは獣医学の主要なプラットフォームです"
+        subtitle: "ジャーナル",
+        title: "エビデンスに基づく獣医学、臨床医のために構築",
+        footnote: "ジャーナルロゴは各所有者の財産です。表示は推奨または提携を意味するものではありません。"
       },
       features: {
         title: "臨床的に高度で、即座に応答します。",
@@ -556,11 +557,11 @@ export default function LandingPage() {
           },
           {
             question: "Ruleoutは無料ですか？",
-            answer: "Ruleoutは、必須のガイドラインにアクセスできる無料プランを提供しています。プレミアムプランでは、無制限の検索、高度なフィルタリング、定期的な更新を含む完全なガイドラインライブラリへのアクセスを提供します。"
+            answer: "Ruleoutは、オープンアクセス獣医学文献から得られたエビデンスに基づくコンテンツへの限定的なアクセスを可能にする無料プランを提供しています。より高い研究ニーズを持つユーザーには、ProおよびMaxプランが利用可能です。これらのプランは、より高い研究クエリ制限と、より広範なオープンアクセスソースから得られたエビデンスへの拡張アクセスを提供し、定期的なコンテンツ更新が含まれます。"
           },
           {
-            question: "臨床ガイドラインはどのくらい正確ですか？",
-            answer: "Ruleoutのすべてのガイドラインは、公式の獣医学協会およびピアレビューされた出版物から直接取得されています。臨床の正確性を確保するために、厳格な品質管理を維持し、データベースを定期的に更新しています。"
+            question: "臨床参考資料はどのように調達され、維持されていますか？",
+            answer: "Ruleoutは、オープンアクセス(CC BY)獣医学研究出版物および一般に利用可能なエビデンスに基づくリソースからのコンテンツを参照および分析します。すべてのソース資料は、それぞれのライセンスに従って使用され、元の著者および出版情報が保持されます。コンテンツは、新しいオープンアクセス文献が利用可能になるにつれて定期的に更新されます。"
           },
           {
             question: "Ruleoutはどのような検索機能を提供していますか？",
@@ -689,22 +690,40 @@ export default function LandingPage() {
           </div>
 
           {/* 파트너 로고 그리드 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-3xl mx-auto">
-            <div className={`flex items-center justify-center h-24 ${effectiveTheme === "light" ? "bg-white border border-gray-200" : "bg-[#2a2a2a]"} rounded-lg p-4 group cursor-pointer`}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-center max-w-5xl mx-auto">
+            <div className={`flex items-center justify-center h-20 ${effectiveTheme === "light" ? "bg-white border border-gray-200" : "bg-[#2a2a2a]"} rounded-lg p-3 group cursor-pointer`}>
               <Image
                 src="/image/acvim.png"
                 alt="ACVIM"
-                width={150}
-                height={60}
+                width={130}
+                height={50}
                 className="object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
               />
             </div>
-            <div className={`flex items-center justify-center h-24 ${effectiveTheme === "light" ? "bg-white border border-gray-200" : "bg-[#2a2a2a]"} rounded-lg p-4 group cursor-pointer`}>
+            <div className={`flex items-center justify-center h-20 ${effectiveTheme === "light" ? "bg-white border border-gray-200" : "bg-[#2a2a2a]"} rounded-lg p-3 group cursor-pointer`}>
               <Image
                 src="/image/annual reviews.png"
                 alt="Annual Reviews"
-                width={150}
-                height={60}
+                width={130}
+                height={50}
+                className="object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+              />
+            </div>
+            <div className={`flex items-center justify-center h-20 ${effectiveTheme === "light" ? "bg-white border border-gray-200" : "bg-[#2a2a2a]"} rounded-lg p-3 group cursor-pointer`}>
+              <Image
+                src="/image/frontiers.png"
+                alt="Frontiers"
+                width={130}
+                height={50}
+                className="object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+              />
+            </div>
+            <div className={`flex items-center justify-center h-20 ${effectiveTheme === "light" ? "bg-white border border-gray-200" : "bg-[#2a2a2a]"} rounded-lg p-3 group cursor-pointer`}>
+              <Image
+                src="/image/BMC.png"
+                alt="BMC"
+                width={130}
+                height={50}
                 className="object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
               />
             </div>
@@ -713,7 +732,7 @@ export default function LandingPage() {
           {/* Footnote */}
           <div className="text-right mt-6">
             <p className="text-xs text-gray-500" style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
-              Journal logos are the property of their respective owners. Display does not imply endorsement or affiliation.
+              {currentContent.partners.footnote}
             </p>
           </div>
         </div>
@@ -732,7 +751,8 @@ export default function LandingPage() {
                 playsInline
                 className="w-full h-auto"
               >
-                <source src="/image/features.mp4" type="video/mp4" />
+                <source src="/image/video_feature1.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
               </video>
             </div>
 
@@ -799,10 +819,7 @@ export default function LandingPage() {
                 <p className={`text-base ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} leading-relaxed mb-4`}>
                   {currentContent.features2.cards[0].description}
                 </p>
-                <button className="flex items-center space-x-2 text-[#4DB8C4] hover:text-[#6dccd7] transition-colors group">
-                  <span className="text-sm font-medium">{currentContent.features2.cards[0].link}</span>
-                  <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </button>
+                <div className="h-[28px]"></div>
               </div>
 
               {/* Image */}
@@ -826,10 +843,7 @@ export default function LandingPage() {
                 <p className={`text-base ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} leading-relaxed mb-4`}>
                   {currentContent.features2.cards[1].description}
                 </p>
-                <button className="flex items-center space-x-2 text-[#4DB8C4] hover:text-[#6dccd7] transition-colors group">
-                  <span className="text-sm font-medium">{currentContent.features2.cards[1].link}</span>
-                  <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </button>
+                <div className="h-[28px]"></div>
               </div>
 
               {/* Image */}
@@ -977,7 +991,10 @@ export default function LandingPage() {
               {currentContent.banner.title}
             </h2>
           </div>
-          <button className="group relative px-8 py-3 bg-white text-black text-base font-semibold rounded-full hover:bg-[#4DB8C4] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-[#4DB8C4]/20 overflow-hidden">
+          <button
+            onClick={() => setShowLoginModal(true)}
+            className="group relative px-8 py-3 bg-white text-black text-base font-semibold rounded-full hover:bg-[#4DB8C4] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-[#4DB8C4]/20 overflow-hidden"
+          >
             <span className="relative z-10 flex items-center justify-center space-x-2">
               <span>{currentContent.banner.button}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
