@@ -156,6 +156,26 @@ export const signUpWithEmailLink = async (email: string, displayName?: string) =
   }
 };
 
+// 이메일 링크로 로그인 요청 (매직 링크 발송)
+export const requestSignInLink = async (email: string) => {
+  try {
+    const actionCodeSettings = {
+      url: `${window.location.origin}/verify-email`, // 인증 후 리다이렉트될 URL
+      handleCodeInApp: true, // 앱에서 코드 처리
+    };
+
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+
+    // 이메일을 로컬 스토리지에 저장 (나중에 인증 완료 시 사용)
+    window.localStorage.setItem('emailForSignIn', email);
+
+    console.log("로그인 링크 발송 완료:", email);
+  } catch (error) {
+    console.error("로그인 링크 발송 오류:", error);
+    throw error;
+  }
+};
+
 // 이메일 링크로 로그인 완료 (인증 링크 클릭 후)
 export const completeEmailLinkSignIn = async (emailLink: string) => {
   try {

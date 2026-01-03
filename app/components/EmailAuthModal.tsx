@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithEmail, signUpWithEmailLink, resetPassword } from "@/lib/auth";
+import { signUpWithEmailLink, requestSignInLink } from "@/lib/auth";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface EmailAuthModalProps {
@@ -11,9 +11,8 @@ interface EmailAuthModalProps {
 
 export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps) {
   const { language } = useLanguage();
-  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -24,10 +23,9 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
       signin: {
         title: "Sign in with Email",
         email: "Email",
-        password: "Password",
-        button: "Sign in",
+        button: "Send Sign-in Link",
         switchToSignup: "Don't have an account? Sign up",
-        forgotPassword: "Forgot password?"
+        linkSent: "Sign-in link sent! Please check your inbox and click the link to log in."
       },
       signup: {
         title: "Sign up with Email",
@@ -36,13 +34,6 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
         button: "Sign up",
         switchToSignin: "Already have an account? Sign in",
         verificationSent: "Verification email sent! Please check your inbox and click the link to complete registration."
-      },
-      reset: {
-        title: "Reset Password",
-        email: "Email",
-        button: "Send Reset Email",
-        backToSignin: "Back to Sign in",
-        success: "Password reset email sent! Please check your inbox."
       },
       errors: {
         emailRequired: "Email is required",
@@ -62,10 +53,9 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
       signin: {
         title: "이메일로 로그인",
         email: "이메일",
-        password: "비밀번호",
-        button: "로그인",
+        button: "로그인 링크 보내기",
         switchToSignup: "계정이 없으신가요? 회원가입",
-        forgotPassword: "비밀번호를 잊으셨나요?"
+        linkSent: "로그인 링크가 발송되었습니다! 이메일 받은 편지함을 확인하고 링크를 클릭하여 로그인해주세요."
       },
       signup: {
         title: "이메일로 회원가입",
@@ -74,13 +64,6 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
         button: "회원가입",
         switchToSignin: "이미 계정이 있으신가요? 로그인",
         verificationSent: "인증 이메일이 발송되었습니다! 이메일 받은 편지함을 확인하고 링크를 클릭하여 가입을 완료해주세요."
-      },
-      reset: {
-        title: "비밀번호 재설정",
-        email: "이메일",
-        button: "재설정 이메일 보내기",
-        backToSignin: "로그인으로 돌아가기",
-        success: "비밀번호 재설정 이메일이 전송되었습니다! 이메일을 확인해주세요."
       },
       errors: {
         emailRequired: "이메일을 입력해주세요",
@@ -100,10 +83,9 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
       signin: {
         title: "メールでログイン",
         email: "メール",
-        password: "パスワード",
-        button: "ログイン",
+        button: "ログインリンクを送信",
         switchToSignup: "アカウントをお持ちでないですか？サインアップ",
-        forgotPassword: "パスワードをお忘れですか？"
+        linkSent: "ログインリンクが送信されました！受信トレイを確認してリンクをクリックしてログインしてください。"
       },
       signup: {
         title: "メールでサインアップ",
@@ -112,13 +94,6 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
         button: "サインアップ",
         switchToSignin: "既にアカウントをお持ちですか？ログイン",
         verificationSent: "確認メールが送信されました！受信トレイを確認してリンクをクリックして登録を完了してください。"
-      },
-      reset: {
-        title: "パスワードリセット",
-        email: "メール",
-        button: "リセットメールを送信",
-        backToSignin: "ログインに戻る",
-        success: "パスワードリセットメールが送信されました！受信トレイを確認してください。"
       },
       errors: {
         emailRequired: "メールを入力してください",
@@ -172,20 +147,20 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (!email) {
       setError(currentContent.errors.emailRequired);
       return;
     }
-    if (!password) {
-      setError(currentContent.errors.passwordRequired);
-      return;
-    }
 
     setLoading(true);
     try {
-      await signInWithEmail(email, password);
-      onClose();
+      await requestSignInLink(email);
+      // 로그인 링크 발송 성공 메시지 표시
+      setSuccess(currentContent.signin.linkSent);
+      // 폼 필드 초기화 (모달은 닫지 않음)
+      setEmail("");
     } catch (error: any) {
       handleError(error);
     } finally {
@@ -218,26 +193,6 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
     }
   };
 
-  const handleReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (!email) {
-      setError(currentContent.errors.emailRequired);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await resetPassword(email);
-      setSuccess(currentContent.reset.success);
-    } catch (error: any) {
-      handleError(error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div
@@ -260,7 +215,6 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
         <h2 className="text-2xl font-bold text-white mb-6">
           {mode === "signin" && currentContent.signin.title}
           {mode === "signup" && currentContent.signup.title}
-          {mode === "reset" && currentContent.reset.title}
         </h2>
 
         {/* Error Message */}
@@ -292,25 +246,6 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
                 disabled={loading}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                {currentContent.signin.password}
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-[#20808D]"
-                disabled={loading}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setMode("reset")}
-              className="text-sm text-[#20808D] hover:underline"
-            >
-              {currentContent.signin.forgotPassword}
-            </button>
             <button
               type="submit"
               disabled={loading}
@@ -368,41 +303,6 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
               className="w-full text-sm text-gray-400 hover:text-gray-200"
             >
               {currentContent.signup.switchToSignin}
-            </button>
-          </form>
-        )}
-
-        {/* Reset Password Form */}
-        {mode === "reset" && (
-          <form onSubmit={handleReset} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                {currentContent.reset.email}
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-[#20808D]"
-                disabled={loading}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-[#20808D] text-white rounded-lg hover:bg-[#1a6a78] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "..." : currentContent.reset.button}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("signin");
-                setSuccess("");
-              }}
-              className="w-full text-sm text-gray-400 hover:text-gray-200"
-            >
-              {currentContent.reset.backToSignin}
             </button>
           </form>
         )}
