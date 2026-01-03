@@ -87,7 +87,12 @@ function HomeContent() {
     const savedProjectId = localStorage.getItem("currentProjectId");
 
     if (savedView) {
-      setCurrentView(savedView as any);
+      // "visit" 또는 "visitRecording"이 저장되어 있으면 "home"으로 대체 (디폴트는 새 채팅)
+      if (savedView === "visit" || savedView === "visitRecording") {
+        setCurrentView("home");
+      } else {
+        setCurrentView(savedView as any);
+      }
     }
     if (savedConversationId && savedConversationId !== "null") {
       setCurrentConversationId(savedConversationId);

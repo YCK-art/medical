@@ -61,16 +61,20 @@ def map_language(frontend_lang: str) -> str:
     return language_map.get(frontend_lang, "English")
 
 def detect_language_from_text(text: str) -> str:
-    """텍스트 내용으로부터 언어 감지"""
-    # 한국어 감지 (한글 유니코드 범위)
-    if any(0xAC00 <= ord(c) <= 0xD7A3 for c in text):
+    """텍스트 내용으로부터 언어 감지 (개선된 버전)"""
+    # 한국어 감지 (한글 유니코드 범위) - 최우선
+    has_korean = any(0xAC00 <= ord(c) <= 0xD7A3 for c in text)
+    if has_korean:
         return "Korean"
 
-    # 일본어 감지 (히라가나, 카타카나, 한자)
-    if any((0x3040 <= ord(c) <= 0x309F) or  # 히라가나
-           (0x30A0 <= ord(c) <= 0x30FF) or  # 카타카나
-           (0x4E00 <= ord(c) <= 0x9FFF)     # 한자 (CJK)
-           for c in text):
+    # 일본어 감지 (히라가나, 카타카나만 확인 - 한자 제외)
+    # 히라가나나 카타카나가 있으면 일본어로 확정
+    has_hiragana_or_katakana = any(
+        (0x3040 <= ord(c) <= 0x309F) or  # 히라가나
+        (0x30A0 <= ord(c) <= 0x30FF)     # 카타카나
+        for c in text
+    )
+    if has_hiragana_or_katakana:
         return "Japanese"
 
     # 기본값: 영어
@@ -118,7 +122,7 @@ class QueryRequest(BaseModel):
     question: str
     conversation_history: List[Dict] = []
     previous_context_chunks: List[Dict] = []  # 누적 컨텍스트
-    language: str = "한국어"
+    language: Optional[str] = None  # Optional - 없으면 질문 텍스트에서 자동 감지
 
 
 class Reference(BaseModel):
@@ -469,55 +473,87 @@ Available documents: 0 to {num_references-1}
         non_english_instruction = """
 
 🔥 CRITICAL INSTRUCTIONS FOR KOREAN ANSWERS:
-You are translating from English veterinary literature to Korean. To preserve medical terminology richness and prevent information loss:
+You are writing a professional veterinary answer in Korean based on English reference literature. Your goal is to provide COMPLETE, DETAILED clinical information without losing any specificity.
 
-1. **Always include English medical terms in parentheses on FIRST mention**:
-   - Disease names: "담즙성 구토 증후군(Bilious vomiting syndrome, BVS)"
-   - Drug names: "마로피탄(maropitant)", "오메프라졸(omeprazole)"
-   - Medical conditions: "위장염(gastroenteritis)", "췌장염(pancreatitis)"
-   - Diagnostic tests: "혈액 검사(blood work)", "초음파(ultrasound)"
-   - Anatomical terms: "십이지장(duodenum)", "담낭(gallbladder)"
+**INFORMATION PRESERVATION - ABSOLUTE PRIORITY:**
+1. **PRESERVE ALL QUANTITATIVE DATA EXACTLY**:
+   - ✅ Drug dosages: "10 mg/kg PO q12h", "0.4-0.6 mg/kg BID"
+   - ✅ Percentages: "67% of dogs showed improvement", "sensitivity 85%"
+   - ✅ Test values: "T4 >4.0 μg/dL", "WBC >15,000/μL"
+   - ✅ Time durations: "7-14 days", "minimum 4 weeks"
+   - ✅ Study data: "In a study of 234 dogs...", "median survival 18 months"
+   - ❌ NEVER simplify or omit these details
 
-2. **Extract the exact English phrase from the reference documents** - don't paraphrase or simplify medical terms
+2. **MEDICAL TERMINOLOGY - Include English on FIRST mention only**:
+   - Disease: "담즙성 구토 증후군(Bilious vomiting syndrome, BVS)"
+   - Drugs: "오클라시티닙(oclacitinib, Apoquel) 0.4-0.6 mg/kg 1일 2회 경구 투여"
+   - Tests: "혈청 T4 검사(serum T4 test)"
+   - After first mention: Use Korean only ("BVS는...", "Apoquel은...")
 
-3. **After first mention, use Korean abbreviation or Korean term only**
+3. **EXTRACT ALL CLINICAL DETAILS from English references**:
+   - Treatment protocols (exact steps, sequences)
+   - Contraindications and warnings
+   - Mechanisms and pathophysiology
+   - Differential diagnoses
+   - Monitoring parameters
+   - Prognosis data
 
-4. **Do NOT translate common words** like "dog", "morning", "vomit" - only medical terminology
+4. **MAINTAIN ANSWER DEPTH AND LENGTH**:
+   - Your Korean answer should be AS DETAILED as an English answer would be
+   - Do NOT summarize or shorten - EXPAND with all available information
+   - Include ALL relevant clinical details from the references
 
-5. **Preserve ALL clinical details from the English text**: dosages, percentages, study findings, mechanisms
+GOOD EXAMPLE (DETAILED, COMPLETE):
+"**아토피 피부염(atopic dermatitis)은 개에서 흔한 만성 소양성 피부 질환으로, 환경 항원에 대한 IgE 매개 과민반응으로 발생합니다.** 234마리의 개를 대상으로 한 연구에서 오클라시티닙(oclacitinib, Apoquel) 0.4-0.6 mg/kg을 1일 2회 경구 투여했을 때 67%의 개에서 소양증 점수가 50% 이상 감소했으며, 치료 시작 후 4시간 이내에 효과가 나타났습니다. Apoquel은 JAK1 및 JAK3 효소를 선택적으로 억제하여 IL-31 및 기타 사이토카인의 신호 전달을 차단합니다.{{citation:0,1,2}}
 
-GOOD EXAMPLE:
-"**거품 구토(foamy vomit)는 여러 기저 질환을 나타낼 수 있으며, 담즙성 구토 증후군(Bilious vomiting syndrome, BVS)은 특히 아침에 발생하는 특정 질환입니다.** BVS는 장시간 공복 후 발생하며, 소량씩 자주 급식하는 것으로 관리할 수 있습니다.{{citation:2,6}}"
+초기 치료는 최소 14일간 1일 2회 투여하며, 이후 증상이 조절되면 1일 1회로 감량할 수 있습니다. 병용 요법으로 알레르기 항원 특이 면역치료(allergen-specific immunotherapy)를 고려할 수 있으며, 환경 관리와 함께 사용 시 장기 예후가 개선됩니다.{{citation:3,4}}"
 
-BAD EXAMPLE:
-"거품 구토는 여러 원인이 있을 수 있습니다. 담즙성 구토는..." (English term missing, less specific)
+BAD EXAMPLE (VAGUE, INCOMPLETE):
+"아토피 피부염은 항원에 대한 반응입니다. 항히스타민제가 효과적입니다." ❌
+(Missing: drug names, dosages, percentages, mechanisms, study data)
 """
     elif language == "Japanese":
         non_english_instruction = """
 
 🔥 CRITICAL INSTRUCTIONS FOR JAPANESE ANSWERS:
-You are translating from English veterinary literature to Japanese. To preserve medical terminology richness and prevent information loss:
+You are writing a professional veterinary answer in Japanese based on English reference literature. Your goal is to provide COMPLETE, DETAILED clinical information without losing any specificity.
 
-1. **Always include English medical terms in parentheses on FIRST mention**:
-   - Disease names: "胆汁性嘔吐症候群(Bilious vomiting syndrome, BVS)"
-   - Drug names: "マロピタント(maropitant)", "オメプラゾール(omeprazole)"
-   - Medical conditions: "胃腸炎(gastroenteritis)", "膵炎(pancreatitis)"
-   - Diagnostic tests: "血液検査(blood work)", "超音波検査(ultrasound)"
-   - Anatomical terms: "十二指腸(duodenum)", "胆嚢(gallbladder)"
+**INFORMATION PRESERVATION - ABSOLUTE PRIORITY:**
+1. **PRESERVE ALL QUANTITATIVE DATA EXACTLY**:
+   - ✅ Drug dosages: "10 mg/kg PO q12h", "0.4-0.6 mg/kg BID"
+   - ✅ Percentages: "67% of dogs showed improvement", "sensitivity 85%"
+   - ✅ Test values: "T4 >4.0 μg/dL", "WBC >15,000/μL"
+   - ✅ Time durations: "7-14 days", "minimum 4 weeks"
+   - ✅ Study data: "In a study of 234 dogs...", "median survival 18 months"
+   - ❌ NEVER simplify or omit these details
 
-2. **Extract the exact English phrase from the reference documents** - don't paraphrase or simplify medical terms
+2. **MEDICAL TERMINOLOGY - Include English on FIRST mention only**:
+   - Disease: "胆汁性嘔吐症候群(Bilious vomiting syndrome, BVS)"
+   - Drugs: "オクラシチニブ(oclacitinib, Apoquel) 0.4-0.6 mg/kg 1日2回経口投与"
+   - Tests: "血清T4検査(serum T4 test)"
+   - After first mention: Use Japanese only ("BVSは...", "Apoquelは...")
 
-3. **After first mention, use Japanese abbreviation or Japanese term only**
+3. **EXTRACT ALL CLINICAL DETAILS from English references**:
+   - Treatment protocols (exact steps, sequences)
+   - Contraindications and warnings
+   - Mechanisms and pathophysiology
+   - Differential diagnoses
+   - Monitoring parameters
+   - Prognosis data
 
-4. **Do NOT translate common words** like "dog", "morning", "vomit" - only medical terminology
+4. **MAINTAIN ANSWER DEPTH AND LENGTH**:
+   - Your Japanese answer should be AS DETAILED as an English answer would be
+   - Do NOT summarize or shorten - EXPAND with all available information
+   - Include ALL relevant clinical details from the references
 
-5. **Preserve ALL clinical details from the English text**: dosages, percentages, study findings, mechanisms
+GOOD EXAMPLE (DETAILED, COMPLETE):
+"**アトピー性皮膚炎(atopic dermatitis)は犬で一般的な慢性掻痒性皮膚疾患であり、環境抗原に対するIgE媒介性過敏反応により発生します。** 234頭の犬を対象とした研究では、オクラシチニブ(oclacitinib, Apoquel) 0.4-0.6 mg/kgを1日2回経口投与したところ、67%の犬で掻痒スコアが50%以上減少し、治療開始後4時間以内に効果が現れました。Apoquelは、JAK1およびJAK3酵素を選択的に阻害し、IL-31およびその他のサイトカインのシグナル伝達を遮断します。{{citation:0,1,2}}
 
-GOOD EXAMPLE:
-"**泡状嘔吐(foamy vomit)は複数の基礎疾患を示す可能性があり、胆汁性嘔吐症候群(Bilious vomiting syndrome, BVS)は特に朝に発生する特定の疾患です。** BVSは長時間の絶食後に発生し、少量ずつ頻繁に給餌することで管理できます。{{citation:2,6}}"
+初期治療は最低14日間1日2回投与し、その後症状がコントロールされれば1日1回に減量できます。併用療法として抗原特異的免疫療法(allergen-specific immunotherapy)を検討でき、環境管理と併用すると長期予後が改善されます。{{citation:3,4}}"
 
-BAD EXAMPLE:
-"泡状嘔吐は様々な原因があります。胆汁性嘔吐は..." (English term missing, less specific)
+BAD EXAMPLE (VAGUE, INCOMPLETE):
+"アトピー性皮膚炎は抗原に対する反応です。抗ヒスタミン剤が効果的です。" ❌
+(Missing: drug names, dosages, percentages, mechanisms, study data)
 """
 
     user_message = f"""Question: {question}
@@ -881,27 +917,25 @@ async def query_stream(request: QueryRequest):
             print(f"   Previous context: {len(previous_context_chunks)} chunks", file=sys.stderr, flush=True)
             print(f"   History: {len(conversation_history)} messages", file=sys.stderr, flush=True)
 
-            # 1단계: 언어 감지
-            # 우선순위: 1) 프론트엔드 명시적 선택, 2) 텍스트 기반 자동 감지
-            if language:
-                detected_lang = map_language(language)
-                print(f"🌐 프론트엔드 언어 사용: {language} → {detected_lang}", file=sys.stderr, flush=True)
-            else:
-                detected_lang = detect_language_from_text(question)
-                print(f"🔍 텍스트 기반 언어 감지: {detected_lang}", file=sys.stderr, flush=True)
+            # 1단계: 언어 감지 - 질문 텍스트에서 자동 감지 (프론트엔드 설정 무시)
+            detected_lang = detect_language_from_text(question)
+            print(f"🔍 질문 텍스트 기반 언어 자동 감지: {detected_lang}", file=sys.stderr, flush=True)
+            print(f"   Question preview: {question[:100]}...", file=sys.stderr, flush=True)
 
             yield create_sse_event({
                 "status": "translating",
                 "message": "질문 이해 중..."
             })
 
-            # 한국어 질문이면 영어로 번역 (DB가 영어이므로)
+            # 한국어 또는 일본어 질문이면 영어로 번역 (DB가 영어이므로)
             search_query = question
-            if detected_lang == "Korean":
-                print(f"🌐 한국어 질문 감지 - 영어로 번역 중...", file=sys.stderr, flush=True)
+            if detected_lang in ["Korean", "Japanese"]:
+                lang_display = "한국어" if detected_lang == "Korean" else "日本語"
+                print(f"🌐 {lang_display} 질문 감지 - 영어로 번역 중...", file=sys.stderr, flush=True)
 
                 # 🔥 ENHANCED: Medical context-preserving translation
-                translation_prompt = f"""You are a veterinary medical translator. Translate this Korean veterinary question to English while PRESERVING ALL clinical context and nuances.
+                if detected_lang == "Korean":
+                    translation_prompt = f"""You are a veterinary medical translator. Translate this Korean veterinary question to English while PRESERVING ALL clinical context and nuances.
 
 CRITICAL RULES:
 1. **Preserve temporal context**: "아침에" → "in the morning", "밤에" → "at night", "식후" → "after eating"
@@ -929,6 +963,35 @@ Now translate this Korean veterinary question:
 {question}
 
 Return ONLY the English translation that preserves all clinical details and context."""
+                else:  # Japanese
+                    translation_prompt = f"""You are a veterinary medical translator. Translate this Japanese veterinary question to English while PRESERVING ALL clinical context and nuances.
+
+CRITICAL RULES:
+1. **Preserve temporal context**: "朝に" → "in the morning", "夜に" → "at night", "食後" → "after eating"
+2. **Preserve symptom descriptions** (keep onomatopoeia meanings):
+   - "ゲーゲー" (retching sound) → "retched" or "dry heaving"
+   - "泡状の嘔吐" → "foamy vomit" or "frothy vomit"
+   - "水様性下痢" → "watery diarrhea"
+   - "血便" → "bloody stool" or "hematochezia"
+3. **Preserve clinical patterns**: If the question mentions timing, frequency, or progression, keep those details
+4. **Use proper veterinary terminology**: Translate colloquial Japanese to professional English medical terms
+5. **Preserve question intent**: Maintain whether it's asking for diagnosis, treatment, or explanation
+
+Examples:
+- "犬が朝に泡状の嘔吐をしました。原因は何ですか？"
+  → "My dog vomited foam in the morning. What could be the cause?"
+
+- "猫が食後に吐き続けます"
+  → "My cat keeps vomiting after eating meals"
+
+- "犬が足を引きずっています。どこが痛いのでしょうか？"
+  → "My dog is limping. Where might the pain be?"
+
+Now translate this Japanese veterinary question:
+
+{question}
+
+Return ONLY the English translation that preserves all clinical details and context."""
 
                 translation_response = openai_client.chat.completions.create(
                     model="gpt-4o-mini",
@@ -936,8 +999,8 @@ Return ONLY the English translation that preserves all clinical details and cont
                         "role": "user",
                         "content": translation_prompt
                     }],
-                    temperature=0.2,  # Lower temperature for more consistent translation
-                    max_tokens=250  # Slightly more tokens to allow detailed translation
+                    temperature=0.2,
+                    max_tokens=250
                 )
                 search_query = translation_response.choices[0].message.content.strip()
                 print(f"✅ 번역 완료: {question[:50]}... → {search_query[:50]}...", file=sys.stderr, flush=True)

@@ -625,7 +625,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
           question: question,
           conversation_history: conversationHistory,
           previous_context_chunks: contextChunks,  // 🔥 이전 컨텍스트 전달
-          language: language, // 현재 선택된 언어 전송
+          // language 파라미터 제거 - 백엔드가 질문 텍스트에서 자동 감지하도록 변경
         }),
         signal: abortControllerRef.current.signal, // AbortController 시그널 추가
       });
