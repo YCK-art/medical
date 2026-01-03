@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithEmail, signUpWithEmail, resetPassword } from "@/lib/auth";
+import { signInWithEmail, signUpWithEmailLink, resetPassword } from "@/lib/auth";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface EmailAuthModalProps {
@@ -14,7 +14,6 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
   const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -34,10 +33,9 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
         title: "Sign up with Email",
         name: "Name (Optional)",
         email: "Email",
-        password: "Password",
-        confirmPassword: "Confirm Password",
         button: "Sign up",
-        switchToSignin: "Already have an account? Sign in"
+        switchToSignin: "Already have an account? Sign in",
+        verificationSent: "Verification email sent! Please check your inbox and click the link to complete registration."
       },
       reset: {
         title: "Reset Password",
@@ -55,6 +53,8 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
         emailInUse: "This email is already in use",
         wrongPassword: "Wrong password",
         userNotFound: "User not found",
+        invalidCredential: "Email or password is incorrect",
+        emailNotVerified: "Please verify your email before signing in. Check your inbox for the verification link.",
         networkError: "Network error. Please try again."
       }
     },
@@ -71,10 +71,9 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
         title: "이메일로 회원가입",
         name: "이름 (선택사항)",
         email: "이메일",
-        password: "비밀번호",
-        confirmPassword: "비밀번호 확인",
         button: "회원가입",
-        switchToSignin: "이미 계정이 있으신가요? 로그인"
+        switchToSignin: "이미 계정이 있으신가요? 로그인",
+        verificationSent: "인증 이메일이 발송되었습니다! 이메일 받은 편지함을 확인하고 링크를 클릭하여 가입을 완료해주세요."
       },
       reset: {
         title: "비밀번호 재설정",
@@ -92,6 +91,8 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
         emailInUse: "이미 사용 중인 이메일입니다",
         wrongPassword: "잘못된 비밀번호입니다",
         userNotFound: "사용자를 찾을 수 없습니다",
+        invalidCredential: "이메일 혹은 비밀번호가 일치하지 않습니다",
+        emailNotVerified: "로그인하기 전에 이메일 인증을 완료해주세요. 받은 편지함에서 인증 링크를 확인해주세요.",
         networkError: "네트워크 오류가 발생했습니다. 다시 시도해주세요."
       }
     },
@@ -108,10 +109,9 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
         title: "メールでサインアップ",
         name: "名前（オプション）",
         email: "メール",
-        password: "パスワード",
-        confirmPassword: "パスワード確認",
         button: "サインアップ",
-        switchToSignin: "既にアカウントをお持ちですか？ログイン"
+        switchToSignin: "既にアカウントをお持ちですか？ログイン",
+        verificationSent: "確認メールが送信されました！受信トレイを確認してリンクをクリックして登録を完了してください。"
       },
       reset: {
         title: "パスワードリセット",
@@ -129,6 +129,8 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
         emailInUse: "このメールは既に使用されています",
         wrongPassword: "パスワードが間違っています",
         userNotFound: "ユーザーが見つかりません",
+        invalidCredential: "メールまたはパスワードが正しくありません",
+        emailNotVerified: "ログインする前にメールを認証してください。受信トレイで認証リンクを確認してください。",
         networkError: "ネットワークエラーが発生しました。もう一度お試しください。"
       }
     }
@@ -152,6 +154,12 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
         break;
       case "auth/user-not-found":
         setError(currentContent.errors.userNotFound);
+        break;
+      case "auth/invalid-credential":
+        setError(currentContent.errors.invalidCredential);
+        break;
+      case "auth/email-not-verified":
+        setError(currentContent.errors.emailNotVerified);
         break;
       case "auth/network-request-failed":
         setError(currentContent.errors.networkError);
@@ -188,28 +196,21 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (!email) {
       setError(currentContent.errors.emailRequired);
       return;
     }
-    if (!password) {
-      setError(currentContent.errors.passwordRequired);
-      return;
-    }
-    if (password.length < 6) {
-      setError(currentContent.errors.passwordTooShort);
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError(currentContent.errors.passwordMismatch);
-      return;
-    }
 
     setLoading(true);
     try {
-      await signUpWithEmail(email, password, displayName);
-      onClose();
+      await signUpWithEmailLink(email, displayName);
+      // 회원가입 성공 시 인증 이메일 발송 메시지 표시
+      setSuccess(currentContent.signup.verificationSent);
+      // 폼 필드 초기화 (모달은 닫지 않음 - 사용자가 메시지를 읽을 수 있도록)
+      setEmail("");
+      setDisplayName("");
     } catch (error: any) {
       handleError(error);
     } finally {
@@ -350,30 +351,6 @@ export default function EmailAuthModal({ isOpen, onClose }: EmailAuthModalProps)
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-[#20808D]"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                {currentContent.signup.password}
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-[#20808D]"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                {currentContent.signup.confirmPassword}
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-[#2a2a2a] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-[#20808D]"
                 disabled={loading}
               />

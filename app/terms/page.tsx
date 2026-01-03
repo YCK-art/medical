@@ -268,7 +268,7 @@ export default function TermsPage() {
           <p>
             <strong>Ruleout, Inc.</strong><br />
             Seoul, Republic of Korea<br />
-            Email: support@ruleout.com
+            Email: ruleout.official@gmail.com
           </p>
         </div>
       </div>

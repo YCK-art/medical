@@ -404,7 +404,7 @@ export default function PrivacyPage() {
             <li>request data portability where applicable</li>
           </ul>
           <p>
-            To exercise rights, contact <strong>privacy@ruleout.com</strong>.
+            To exercise rights, contact <strong>ruleout.official@gmail.com</strong>.
           </p>
           <p>We may need to verify your identity before responding.</p>
 
@@ -449,7 +449,7 @@ export default function PrivacyPage() {
           <p>
             <strong>Ruleout, Inc. – Privacy Office</strong><br />
             Seoul, Republic of Korea<br />
-            Email: privacy@ruleout.com
+            Email: ruleout.official@gmail.com
           </p>
           <p>If legally required, a Data Protection Officer (DPO) may be appointed and listed here.</p>
         </div>
