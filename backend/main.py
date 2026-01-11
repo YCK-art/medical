@@ -80,6 +80,67 @@ def detect_language_from_text(text: str) -> str:
     # 기본값: 영어
     return "English"
 
+def classify_question_type(question: str, language: str) -> str:
+    """
+    Classify question type using pattern matching.
+
+    Returns: 'diagnostic_symptom', 'treatment', 'prognosis',
+             'diagnostic_disease', 'general'
+    """
+    import re
+    question_lower = question.lower()
+
+    # Symptom patterns (highest priority)
+    symptom_patterns = {
+        'Korean': [r'토.*해', r'구토', r'설사', r'기침', r'절뚝', r'가려워',
+                   r'안.*먹', r'기운.*없', r'우웩', r'콜록', r'거품', r'물.*똥',
+                   r'피.*똥', r'긁', r'핥', r'처져', r'불안'],
+        'Japanese': [r'吐.*て', r'嘔吐', r'下痢', r'咳', r'痒.*がっ',
+                     r'食べ.*ない', r'元気.*ない', r'泡', r'血便', r'掻.*て',
+                     r'舐.*て', r'ぐったり'],
+        'English': [r'vomit', r'diarrhea', r'cough', r'limp', r'itch',
+                    r'not.*eat', r'letharg', r'foam', r'scratch', r'lick',
+                    r'weak', r'tired']
+    }
+
+    # Treatment patterns
+    treatment_patterns = {
+        'Korean': [r'치료', r'약물', r'처치', r'수술', r'투여', r'처방'],
+        'Japanese': [r'治療', r'薬物', r'処置', r'手術', r'投与', r'処方'],
+        'English': [r'treatment', r'therapy', r'medication', r'protocol', r'drug', r'how to treat']
+    }
+
+    # Prognosis patterns
+    prognosis_patterns = {
+        'Korean': [r'예후', r'생존율', r'얼마나 살', r'완치', r'회복'],
+        'Japanese': [r'予後', r'生存率', r'どのくらい生きる', r'完治', r'回復'],
+        'English': [r'prognosis', r'survival', r'life expectancy', r'outcome', r'cure rate']
+    }
+
+    # Check patterns in priority order
+    if language in symptom_patterns:
+        for pattern in symptom_patterns[language]:
+            if re.search(pattern, question_lower):
+                return 'diagnostic_symptom'
+
+    if language in treatment_patterns:
+        for pattern in treatment_patterns[language]:
+            if re.search(pattern, question_lower):
+                return 'treatment'
+
+    if language in prognosis_patterns:
+        for pattern in prognosis_patterns[language]:
+            if re.search(pattern, question_lower):
+                return 'prognosis'
+
+    # Check for disease names (diagnostic_disease)
+    disease_patterns = [r'what is', r'뭔가요', r'とは何', r'무엇', r'何ですか']
+    for pattern in disease_patterns:
+        if re.search(pattern, question_lower):
+            return 'diagnostic_disease'
+
+    return 'general'
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "medical-guidelines-kr")
@@ -922,6 +983,10 @@ async def query_stream(request: QueryRequest):
             print(f"🔍 질문 텍스트 기반 언어 자동 감지: {detected_lang}", file=sys.stderr, flush=True)
             print(f"   Question preview: {question[:100]}...", file=sys.stderr, flush=True)
 
+            # Classify question type
+            question_type = classify_question_type(question, detected_lang)
+            print(f"🔍 Question type: {question_type}", file=sys.stderr, flush=True)
+
             yield create_sse_event({
                 "status": "translating",
                 "message": "질문 이해 중..."
@@ -1032,7 +1097,7 @@ Return only the alternative questions, one per line."""
             expansion_response = openai_client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "user", "content": expansion_prompt}],
-                temperature=0.7,
+                temperature=0.4,
                 max_tokens=100
             )
 
