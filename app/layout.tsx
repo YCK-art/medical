@@ -23,7 +23,7 @@ const pretendard = localFont({
 
 export const metadata: Metadata = {
   title: "Ruleout",
-  description: "한국 의학회 진료지침서 AI 검색 플랫폼",
+  description: "Empower veterinarians to make faster, smarter decisions",
   icons: {
     icon: [
       { url: '/image/logo_candidate1 복사본.png', sizes: '32x32', type: 'image/png' },
