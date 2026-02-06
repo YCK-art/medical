@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ArrowUp, ArrowDown, BookOpen, Copy, Check, Share2, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Loader2, MoreHorizontal, Bookmark, List, Menu } from "lucide-react";
+import { ArrowUp, ArrowDown, BookOpen, Copy, Check, Share2, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Loader2, List, Menu } from "lucide-react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -16,7 +16,6 @@ import {
   updateConversationTitle,
   generateChatTitle,
   getConversation,
-  toggleFavorite,
   updateMessage,
 } from "@/lib/chatService";
 import ThinkingSteps from "./ThinkingSteps";
@@ -48,7 +47,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [referencesCollapsed, setReferencesCollapsed] = useState<{[key: number]: boolean}>({});
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [isFavorite, setIsFavorite] = useState(false);
   const hasCalledAPI = useRef(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isLoadingConversation = useRef(false);
@@ -218,7 +216,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
             })) as Message[];
             setMessages(typedMessages);
             setCurrentConversationId(conversationId);
-            setIsFavorite(conversation.isFavorite || false);
             setContextChunks([]);  // 🔥 기존 대화 불러올 때 컨텍스트 초기화
           }
           // 대화 불러오기 완료 후 hasCalledAPI 리셋
@@ -748,25 +745,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
     }, 50);
   };
 
-  // Toggle favorite
-  const handleToggleFavorite = async () => {
-    if (!currentConversationId) {
-      console.log("No conversation ID");
-      return;
-    }
-
-    try {
-      console.log("Toggling favorite:", currentConversationId, "from", isFavorite, "to", !isFavorite);
-      await toggleFavorite(currentConversationId, isFavorite);
-      setIsFavorite(!isFavorite);
-      console.log("Favorite toggled successfully");
-      if (onTitleUpdated) {
-        onTitleUpdated();
-      }
-    } catch (error) {
-      console.error("Failed to toggle favorite:", error);
-    }
-  };
 
   // 메시지 피드백 핸들러
   const handleMessageFeedback = async (messageIndex: number, feedbackType: 'like' | 'dislike') => {
@@ -1298,7 +1276,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#0a0a0a]">
       {/* 헤더 */}
-      <div className="sticky top-0 z-10 border-b border-gray-700 px-4 py-2 md:py-4 bg-[rgba(10,10,10,0.7)] backdrop-blur-md">
+      <div className="sticky top-0 z-10 px-4 py-2 md:py-4 bg-[rgba(10,10,10,0.7)] backdrop-blur-md">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center space-x-2">
             {/* 모바일 햄버거 메뉴 */}
@@ -1312,26 +1290,9 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
               </button>
             )}
             <Image src="/image/logo_candidate1 복사본.png" alt="Ruleout" width={28} height={28} className="hidden md:block" />
-            <span className="text-lg font-semibold hidden md:block">Ruleout</span>
+            <span className="text-lg font-semibold hidden md:block font-hedvig">Ruleout</span>
           </div>
           <div className="flex items-center space-x-2">
-            <button
-              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              title={currentContent.more}
-            >
-              <MoreHorizontal className="w-5 h-5 text-gray-400" />
-            </button>
-            <button
-              onClick={handleToggleFavorite}
-              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              title={currentContent.bookmark}
-            >
-              <Bookmark
-                className="w-5 h-5"
-                style={{ color: isFavorite ? '#20808D' : '#9ca3af' }}
-                fill={isFavorite ? '#20808D' : 'none'}
-              />
-            </button>
             <button
               className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-700 rounded-lg transition-colors"
               title={currentContent.share}
@@ -1370,7 +1331,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                         )}
                       </button>
                     )}
-                    <div className="bg-[#2a2a2a] rounded-2xl px-6 py-4 max-w-2xl">
+                    <div className="bg-[#2a2a2a] rounded-3xl px-4 py-3 max-w-2xl">
                       <p className="text-white whitespace-pre-wrap">{message.content}</p>
                     </div>
                   </div>
@@ -1417,10 +1378,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                         <div className="flex items-center justify-between mt-4">
                           {/* 왼쪽: 텍스트가 있는 버튼들 (데스크톱만) */}
                           <div className="hidden md:flex items-center space-x-2">
-                            <button className="flex items-center space-x-2 px-3 py-1.5 hover:bg-gray-700 rounded-lg transition-colors">
-                              <Share2 className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-400">{currentContent.share}</span>
-                            </button>
                             <button
                               onClick={() => handleExportToPDF(messages[index - 1]?.content || "", message)}
                               className="flex items-center space-x-2 px-3 py-1.5 hover:bg-gray-700 rounded-lg transition-colors"
@@ -1597,7 +1554,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
                       {/* 후속 질문 섹션 - 타이핑 완료 후에만 표시 */}
                       {!message.isStreaming && message.followupQuestions && message.followupQuestions.length > 0 && (
                         <div className="mt-10">
-                          <div className="rounded-xl border border-gray-700 bg-gray-800/30 p-5">
+                          <div className="rounded-xl bg-gray-800/30 p-5">
                             <h3 className="text-lg font-medium text-gray-300 mb-4 flex items-center gap-2">
                               <List className="w-5 h-5" />
                               {currentContent.relatedQuestions}
@@ -1698,7 +1655,7 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
             )}
 
             <form onSubmit={handleSubmit}>
-            <div className="flex items-center bg-[#2a2a2a] rounded-2xl border border-gray-700 px-4 md:px-6 pr-2 py-1 hover:border-gray-600 transition-colors">
+            <div className="flex items-center bg-[#2a2a2a] rounded-3xl px-4 md:px-6 pr-2 py-1 transition-colors">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}

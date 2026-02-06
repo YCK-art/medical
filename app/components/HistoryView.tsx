@@ -276,21 +276,11 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
         </div>
       </div>
 
-      {/* 데스크톱 헤더 */}
-      <div className="hidden md:block sticky top-0 z-10 border-b border-gray-700 p-4 bg-[rgba(26,26,26,0.7)] backdrop-blur-md">
-        <div className="flex items-center max-w-5xl mx-auto">
-          <div className="flex items-center space-x-1">
-            <Image src="/image/logo_candidate1 복사본.png" alt="Ruleout AI" width={28} height={28} />
-            <span className="text-lg font-semibold">Ruleout AI</span>
-          </div>
-        </div>
-      </div>
-
       {/* 페이지 헤더 */}
       <div className="p-4 md:p-8">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-4 md:mb-8">
-            <h1 className="text-2xl md:text-3xl font-semibold text-gray-200">{currentContent.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-semibold text-gray-200 font-hedvig">Ruleout</h1>
             <button
               onClick={onNewChat}
               className="hidden md:flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-100 text-black rounded-lg transition-colors"
@@ -308,7 +298,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={currentContent.searchPlaceholder}
-              className="w-full bg-[#2a2a2a] border border-gray-700 rounded-lg pl-10 md:pl-12 pr-4 py-2.5 md:py-3 text-sm md:text-base text-gray-200 placeholder-gray-500 focus:outline-none focus:border-gray-600"
+              className="w-full bg-[#2a2a2a] rounded-lg pl-10 md:pl-12 pr-4 py-2.5 md:py-3 text-sm md:text-base text-gray-200 placeholder-gray-500 focus:outline-none"
             />
           </div>
 

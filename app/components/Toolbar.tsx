@@ -11,11 +11,12 @@ import { US, KR, JP } from 'country-flag-icons/react/3x2';
 interface ToolbarProps {
   onLoginClick?: () => void;
   onMenuClick?: (menu: string) => void;
+  variant?: 'light' | 'dark';
 }
 
 type MenuKey = "resources" | null;
 
-export default function Toolbar({ onLoginClick }: ToolbarProps) {
+export default function Toolbar({ onLoginClick, variant = 'dark' }: ToolbarProps) {
   const router = useRouter();
   const { effectiveTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
@@ -113,7 +114,7 @@ export default function Toolbar({ onLoginClick }: ToolbarProps) {
       </div>
 
       {/* Main Navbar */}
-      <nav className="bg-[#0a0a0a] relative">
+      <nav className={`${variant === 'light' ? 'bg-[#f5f5f5]' : 'bg-[#0a0a0a]'} relative`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -128,8 +129,8 @@ export default function Toolbar({ onLoginClick }: ToolbarProps) {
                 height={28}
                 className="object-contain"
               />
-              <span className={`text-xl font-semibold ${
-                effectiveTheme === 'light' ? 'text-gray-900' : 'text-white'
+              <span className={`text-xl font-semibold font-hedvig ${
+                variant === 'light' ? 'text-gray-900' : 'text-white'
               }`}>Ruleout</span>
             </div>
 
@@ -137,21 +138,33 @@ export default function Toolbar({ onLoginClick }: ToolbarProps) {
             <div className="hidden md:flex items-center space-x-8" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
               <button
                 onClick={() => router.push('/feature')}
-                className="text-sm text-gray-300 hover:text-white transition-colors"
+                className={`text-sm transition-colors ${
+                  variant === 'light'
+                    ? 'text-gray-700 hover:text-gray-900'
+                    : 'text-gray-300 hover:text-white'
+                }`}
                 onMouseEnter={() => setActiveMenu(null)}
               >
                 {currentContent.feature}
               </button>
               <button
                 onClick={() => router.push('/mission')}
-                className="text-sm text-gray-300 hover:text-white transition-colors"
+                className={`text-sm transition-colors ${
+                  variant === 'light'
+                    ? 'text-gray-700 hover:text-gray-900'
+                    : 'text-gray-300 hover:text-white'
+                }`}
                 onMouseEnter={() => setActiveMenu(null)}
               >
                 {currentContent.mission}
               </button>
               <button
                 onClick={() => router.push('/pricing')}
-                className="text-sm text-gray-300 hover:text-white transition-colors"
+                className={`text-sm transition-colors ${
+                  variant === 'light'
+                    ? 'text-gray-700 hover:text-gray-900'
+                    : 'text-gray-300 hover:text-white'
+                }`}
                 onMouseEnter={() => setActiveMenu(null)}
               >
                 {currentContent.pricing}
@@ -162,9 +175,13 @@ export default function Toolbar({ onLoginClick }: ToolbarProps) {
               >
                 <button
                   className={`flex items-center text-sm transition-colors ${
-                    activeMenu === "resources"
-                      ? "text-white"
-                      : "text-gray-300 hover:text-white"
+                    variant === 'light'
+                      ? activeMenu === "resources"
+                        ? "text-gray-900"
+                        : "text-gray-700 hover:text-gray-900"
+                      : activeMenu === "resources"
+                        ? "text-white"
+                        : "text-gray-300 hover:text-white"
                   }`}
                 >
                   {currentContent.resources}
@@ -179,7 +196,11 @@ export default function Toolbar({ onLoginClick }: ToolbarProps) {
             <div className="hidden md:flex items-center space-x-4">
               <button
                 onClick={() => router.push('/login')}
-                className="text-sm text-gray-300 hover:text-white transition-colors"
+                className={`text-sm transition-colors ${
+                  variant === 'light'
+                    ? 'text-gray-700 hover:text-gray-900'
+                    : 'text-gray-300 hover:text-white'
+                }`}
                 style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
               >
                 {currentContent.login}
@@ -187,17 +208,29 @@ export default function Toolbar({ onLoginClick }: ToolbarProps) {
               <div className="relative">
                 <button
                   onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-                  className="flex items-center space-x-1 text-sm text-gray-300 hover:text-white transition-colors"
+                  className={`flex items-center space-x-1 text-sm transition-colors ${
+                    variant === 'light'
+                      ? 'text-gray-700 hover:text-gray-900'
+                      : 'text-gray-300 hover:text-white'
+                  }`}
                   style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
                 >
                   <span>{language === 'English' ? 'EN' : language === '한국어' ? 'KO' : 'JP'}</span>
                   <ChevronDown className="w-3 h-3" />
                 </button>
                 {isLanguageOpen && (
-                  <div className="absolute right-0 mt-2 w-32 bg-[#0a0a0a] border border-gray-800 rounded-lg shadow-lg overflow-hidden z-[60]">
+                  <div className={`absolute right-0 mt-2 w-32 rounded-lg shadow-lg overflow-hidden z-[60] ${
+                    variant === 'light'
+                      ? 'bg-white border border-gray-200'
+                      : 'bg-[#0a0a0a] border border-gray-800'
+                  }`}>
                     <button
                       onClick={() => handleLocaleChange('English')}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors flex items-center space-x-3"
+                      className={`w-full px-4 py-2 text-left text-sm transition-colors flex items-center space-x-3 ${
+                        variant === 'light'
+                          ? 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                          : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'
+                      }`}
                       style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
                     >
                       <US className="w-5 h-4" />
@@ -205,7 +238,11 @@ export default function Toolbar({ onLoginClick }: ToolbarProps) {
                     </button>
                     <button
                       onClick={() => handleLocaleChange('한국어')}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors flex items-center space-x-3"
+                      className={`w-full px-4 py-2 text-left text-sm transition-colors flex items-center space-x-3 ${
+                        variant === 'light'
+                          ? 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                          : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'
+                      }`}
                       style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
                     >
                       <KR className="w-5 h-4" />
@@ -213,7 +250,11 @@ export default function Toolbar({ onLoginClick }: ToolbarProps) {
                     </button>
                     <button
                       onClick={() => handleLocaleChange('日本語')}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors flex items-center space-x-3"
+                      className={`w-full px-4 py-2 text-left text-sm transition-colors flex items-center space-x-3 ${
+                        variant === 'light'
+                          ? 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                          : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'
+                      }`}
                       style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
                     >
                       <JP className="w-5 h-4" />
@@ -238,7 +279,9 @@ export default function Toolbar({ onLoginClick }: ToolbarProps) {
 
         {/* Full-width Dropdown */}
         <div
-          className={`absolute left-0 right-0 bg-[#0a0a0a] shadow-xl z-50 transition-all duration-300 ease-in-out ${
+          className={`absolute left-0 right-0 shadow-xl z-50 transition-all duration-300 ease-in-out ${
+            variant === 'light' ? 'bg-[#f5f5f5]' : 'bg-[#0a0a0a]'
+          } ${
             activeMenu
               ? "opacity-100 visible translate-y-0"
               : "opacity-0 invisible -translate-y-2"
@@ -265,10 +308,16 @@ export default function Toolbar({ onLoginClick }: ToolbarProps) {
                         className="block group w-full text-left"
                       >
                         <div className="p-4 rounded-lg transition-colors">
-                          <h3 className="text-sm font-medium text-white group-hover:text-[#4DB8C4] transition-colors mb-1" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                          <h3 className={`text-sm font-medium transition-colors mb-1 ${
+                            variant === 'light'
+                              ? 'text-gray-900 group-hover:text-[#20808D]'
+                              : 'text-white group-hover:text-[#4DB8C4]'
+                          }`} style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                             {item.label}
                           </h3>
-                          <p className="text-xs text-gray-400 leading-relaxed" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                          <p className={`text-xs leading-relaxed ${
+                            variant === 'light' ? 'text-gray-600' : 'text-gray-400'
+                          }`} style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                             {item.description}
                           </p>
                         </div>
@@ -279,12 +328,18 @@ export default function Toolbar({ onLoginClick }: ToolbarProps) {
 
                 {/* Right side - Image Placeholder */}
                 <div className="w-[360px]">
-                  <div className="h-full bg-gray-900 rounded-lg relative overflow-hidden p-6 flex flex-col justify-end min-h-[280px]">
+                  <div className={`h-full rounded-lg relative overflow-hidden p-6 flex flex-col justify-end min-h-[280px] ${
+                    variant === 'light' ? 'bg-gray-100' : 'bg-gray-900'
+                  }`}>
                     <div className="text-left">
-                      <h3 className="text-white font-semibold text-base mb-2">
+                      <h3 className={`font-semibold text-base mb-2 ${
+                        variant === 'light' ? 'text-gray-900' : 'text-white'
+                      }`}>
                         {currentContent.imageArea.title}
                       </h3>
-                      <p className="text-gray-300 text-xs leading-relaxed">
+                      <p className={`text-xs leading-relaxed ${
+                        variant === 'light' ? 'text-gray-700' : 'text-gray-300'
+                      }`}>
                         {currentContent.imageArea.description}
                       </p>
                     </div>
@@ -319,7 +374,7 @@ export default function Toolbar({ onLoginClick }: ToolbarProps) {
                 height={28}
                 className="object-contain"
               />
-              <span className="text-xl font-semibold text-white">Ruleout</span>
+              <span className="text-xl font-semibold text-white font-hedvig">Ruleout</span>
             </div>
             <button
               onClick={toggleMobileMenu}

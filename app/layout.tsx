@@ -29,6 +29,22 @@ const hedvigLettersSerif = localFont({
   preload: true,
 });
 
+// Google Sans Flex 폰트 최적화
+const googleSansFlex = localFont({
+  src: '../public/fonts/GoogleSansFlex-VariableFont_GRAD,ROND,opsz,slnt,wdth,wght.ttf',
+  variable: '--font-google-sans-flex',
+  display: 'swap',
+  preload: true,
+});
+
+// Helvetica 폰트 최적화
+const helvetica = localFont({
+  src: '../public/fonts/Helvetica.ttf',
+  variable: '--font-helvetica',
+  display: 'swap',
+  preload: true,
+});
+
 export const metadata: Metadata = {
   title: "Ruleout",
   description: "Empower veterinarians to make faster, smarter decisions",
@@ -49,7 +65,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`antialiased ${pretendard.variable} ${notoSerif.variable} ${hedvigLettersSerif.variable}`}>
+      <body className={`antialiased ${pretendard.variable} ${notoSerif.variable} ${hedvigLettersSerif.variable} ${googleSansFlex.variable} ${helvetica.variable}`}>
         <AuthProvider>
           <LanguageProvider>
             <ThemeProvider>{children}</ThemeProvider>

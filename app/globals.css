@@ -18,6 +18,13 @@ body {
   font-family: var(--font-helvetica), sans-serif !important;
 }
 
+/* Google Sans Flex 폰트 클래스 */
+.font-google-sans-flex {
+  font-family: var(--font-hedvig-letters-serif), serif !important;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
 /* 영어 답변용 Noto Serif 폰트 클래스 */
 .font-noto-serif {
   font-family: var(--font-noto-serif), serif !important;

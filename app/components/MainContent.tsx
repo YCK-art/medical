@@ -190,9 +190,9 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
   const suggestions = content[language].suggestions;
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden">
+    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#0a0a0a]">
       {/* 모바일 상단 툴바 */}
-      <div className="md:hidden sticky top-0 z-10 border-b border-gray-700 px-3 py-2 bg-[rgba(26,26,26,0.9)] backdrop-blur-md">
+      <div className="md:hidden sticky top-0 z-10 border-b border-gray-700 px-3 py-2 bg-[rgba(10,10,10,0.9)] backdrop-blur-md">
         <div className="flex items-center justify-between">
           <button
             onClick={onToggleSidebar}
@@ -224,7 +224,7 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
               height={32}
               className="object-contain translate-y-1"
             />
-            <h1 className="text-3xl font-bold whitespace-nowrap">
+            <h1 className="text-3xl font-bold whitespace-nowrap" style={{ fontFamily: 'var(--font-hedvig-letters-serif), serif' }}>
               <span className="text-white">Ruleout </span>
               <span style={{ color: '#20808D' }}>Pro</span>
             </h1>
@@ -324,7 +324,7 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
               height={48}
               className="object-contain translate-y-1"
             />
-            <h1 className="text-5xl font-bold">
+            <h1 className="text-5xl font-bold" style={{ fontFamily: 'var(--font-hedvig-letters-serif), serif' }}>
               <span className="text-white">Ruleout </span>
               <span style={{ color: '#20808D' }}>Pro</span>
             </h1>
