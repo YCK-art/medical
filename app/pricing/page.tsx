@@ -349,7 +349,7 @@ export default function PricingPage() {
 
   const getButtonStyle = (isPrimary: boolean) => {
     if (isPrimary) {
-      return "bg-[#20808D] hover:bg-[#1a6a78] text-white";
+      return "bg-gray-900 hover:bg-gray-800 text-white";
     }
     return effectiveTheme === "light"
       ? "border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-900"
@@ -399,36 +399,38 @@ export default function PricingPage() {
   ];
 
   return (
-    <div className={`min-h-screen ${effectiveTheme === "light" ? "bg-white text-gray-900" : "bg-[#1a1a1a] text-white"}`}>
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Toolbar */}
       <Toolbar onLoginClick={handleLogin} />
 
       {/* Pricing Content */}
       <div className="max-w-7xl mx-auto px-6 py-20 pt-32" style={{ marginTop: '20px' }}>
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className={`text-5xl font-bold mb-4 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>{t.pricing}</h1>
-          <p className={`text-xl ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} mb-10`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>{t.subtitle}</p>
+        <div className="text-center mb-6">
+          <h1 className="text-5xl font-normal mb-4 text-white" style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>{t.pricing}</h1>
+          <p className="text-xl text-gray-400 mb-10" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{t.subtitle}</p>
 
           {/* Billing Segment Control */}
-          <div className={`inline-flex items-center ${effectiveTheme === "light" ? "bg-gray-100" : "bg-[#2a2a2a]"} rounded-xl p-1 mb-4`}>
+          <div className="inline-flex items-center bg-black rounded-full p-1 mb-2">
             <button
               onClick={() => setBillingPeriod("monthly")}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 billingPeriod === "monthly"
                   ? effectiveTheme === "light" ? "bg-white text-gray-900 shadow-sm" : "bg-[#3a3a3a] text-white"
                   : effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-gray-200"
               }`}
+              style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
             >
               {t.monthly}
             </button>
             <button
               onClick={() => setBillingPeriod("yearly")}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 billingPeriod === "yearly"
                   ? effectiveTheme === "light" ? "bg-white text-gray-900 shadow-sm" : "bg-[#3a3a3a] text-white"
                   : effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-gray-200"
               }`}
+              style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
             >
               {t.yearly}
             </button>
@@ -451,11 +453,11 @@ export default function PricingPage() {
                   className={`${
                     effectiveTheme === "light"
                       ? plan.recommended
-                        ? "bg-gradient-to-br from-gray-50 via-white to-gray-50 border-[#20808D]"
+                        ? "bg-gradient-to-br from-gray-50 via-white to-gray-50 border-[#60A5FA]"
                         : "bg-gradient-to-br from-gray-50 via-white to-gray-100 border-gray-300"
                       : plan.recommended
-                        ? "bg-gradient-to-br from-[#252525] via-[#212121] to-[#1a1a1a] border-[#20808D]"
-                        : "bg-gradient-to-br from-[#252525] via-[#212121] to-[#181818] border-gray-700"
+                        ? "bg-[#0a0a0a] border-[#60A5FA]"
+                        : "bg-[#0a0a0a] border-gray-700"
                   } border-2 rounded-2xl p-8 relative flex flex-col`}
                   style={{
                     boxShadow: plan.recommended
@@ -475,20 +477,20 @@ export default function PricingPage() {
                     <div className="flex items-baseline gap-3 mb-2">
                       {plan.isEnterprise ? (
                         <div className="flex items-baseline">
-                          <span className={`text-4xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.letsTalk}</span>
+                          <span className={`text-4xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>{t.letsTalk}</span>
                         </div>
                       ) : plan.monthlyPrice === 0 ? (
                         <div className="flex items-baseline">
-                          <span className={`text-4xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.free}</span>
+                          <span className={`text-4xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>{t.free}</span>
                         </div>
                       ) : (
                         <>
                           <div className="flex items-baseline">
-                            <span className={`text-4xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>${animatedPrice}</span>
+                            <span className={`text-4xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>${animatedPrice}</span>
                             <span className={`ml-2 ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"}`}>{t.perMonth}</span>
                           </div>
                           {billingPeriod === "yearly" && discount > 0 && (
-                            <span className="text-[#20808D] text-sm font-semibold">
+                            <span className="text-[#60A5FA] text-sm font-semibold">
                               {discount}{t.off}
                             </span>
                           )}
@@ -502,7 +504,7 @@ export default function PricingPage() {
                   <div className="mb-8 space-y-3 flex-grow">
                     {plan.features.map((feature, featureIndex) => (
                       <div key={featureIndex} className="flex items-start space-x-2">
-                        <Check className="w-4 h-4 text-[#20808D] mt-0.5 flex-shrink-0" />
+                        <Check className="w-4 h-4 text-[#60A5FA] mt-0.5 flex-shrink-0" />
                         <span className={`text-sm ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{feature}</span>
                       </div>
                     ))}
@@ -512,14 +514,14 @@ export default function PricingPage() {
                     onClick={plan.onClick}
                     className={`w-full py-3 rounded-lg font-medium transition-all duration-200 relative z-20 ${plan.buttonStyle}`}
                     style={{
-                      boxShadow: plan.buttonStyle.includes('bg-[#20808D]')
-                        ? '0 4px 14px rgba(32, 128, 141, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.2)'
+                      boxShadow: plan.buttonStyle.includes('bg-gray-900')
+                        ? '0 4px 14px rgba(17, 24, 39, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.2)'
                         : '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.2)',
                       transform: 'translateZ(10px)',
                     }}
                     onMouseEnter={(e) => {
-                      if (plan.buttonStyle.includes('bg-[#20808D]')) {
-                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(32, 128, 141, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.2)';
+                      if (plan.buttonStyle.includes('bg-gray-900')) {
+                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(17, 24, 39, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.2)';
                         e.currentTarget.style.transform = 'translateY(-2px) translateZ(10px)';
                       } else {
                         e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.2)';
@@ -527,8 +529,8 @@ export default function PricingPage() {
                       }
                     }}
                     onMouseLeave={(e) => {
-                      if (plan.buttonStyle.includes('bg-[#20808D]')) {
-                        e.currentTarget.style.boxShadow = '0 4px 14px rgba(32, 128, 141, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.2)';
+                      if (plan.buttonStyle.includes('bg-gray-900')) {
+                        e.currentTarget.style.boxShadow = '0 4px 14px rgba(17, 24, 39, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.2)';
                       } else {
                         e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.2)';
                       }
@@ -546,7 +548,7 @@ export default function PricingPage() {
 
       {/* Compare Plans Section */}
       <div className="max-w-7xl mx-auto px-6 py-20">
-        <h2 className={`text-5xl font-bold text-center mb-16 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>{t.comparePlans}</h2>
+        <h2 className="text-3xl font-normal text-center mb-8 text-white" style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>{t.comparePlans}</h2>
 
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -560,7 +562,7 @@ export default function PricingPage() {
                   <div className="flex flex-col items-center gap-4">
                     <div className={`font-bold text-xl ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.free}</div>
                     <div className={`text-sm ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"}`}>
-                      <span className={`text-2xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>$0</span> {t.perMonth}
+                      <span className={`text-2xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>$0</span> {t.perMonth}
                     </div>
                     <button
                       onClick={() => setShowLoginModal(true)}
@@ -585,12 +587,12 @@ export default function PricingPage() {
                   <div className="flex flex-col items-center gap-4">
                     <div className={`font-bold text-xl ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.pro}</div>
                     <div className={`text-sm ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"}`}>
-                      <span className={`text-2xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>${billingPeriod === "monthly" ? 29 : 22}</span> {t.perMonth}
+                      <span className={`text-2xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>${billingPeriod === "monthly" ? 29 : 22}</span> {t.perMonth}
                     </div>
                     <button
-                      className="w-full px-6 py-2.5 bg-[#20808D] rounded-lg hover:bg-[#1a6b77] transition-all duration-200 text-white font-medium"
+                      className="w-full px-6 py-2.5 bg-gray-900 rounded-lg hover:bg-gray-800 transition-all duration-200 text-white font-medium"
                       style={{
-                        boxShadow: '0 4px 14px rgba(32, 128, 141, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                        boxShadow: '0 4px 14px rgba(17, 24, 39, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
                       }}
                     >
                       {t.signUp}
@@ -603,7 +605,7 @@ export default function PricingPage() {
                   <div className="flex flex-col items-center gap-4">
                     <div className={`font-bold text-xl ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.max}</div>
                     <div className={`text-sm ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"}`}>
-                      <span className={`text-2xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>${billingPeriod === "monthly" ? 60 : 45}</span> {t.perMonth}
+                      <span className={`text-2xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>${billingPeriod === "monthly" ? 60 : 45}</span> {t.perMonth}
                     </div>
                     <button
                       className={`w-full px-6 py-2.5 border-2 ${
@@ -652,7 +654,7 @@ export default function PricingPage() {
               {/* Usage Section */}
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
                 <td colSpan={5} className="py-4 px-4">
-                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.usage}</div>
+                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>{t.usage}</div>
                 </td>
               </tr>
 
@@ -667,55 +669,55 @@ export default function PricingPage() {
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
                 <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.priorityProcessing}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
               </tr>
 
               {/* Evidence & Reasoning Section */}
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
                 <td colSpan={5} className="py-4 px-4">
-                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.evidenceReasoning}</div>
+                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>{t.evidenceReasoning}</div>
                 </td>
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
                 <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.evidenceBasedAnswers}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
                 <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.openAccessSources}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
               </tr>
 
@@ -730,92 +732,92 @@ export default function PricingPage() {
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
                 <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.differentialDiagnosisList}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
                 <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.complexRareCases}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className={`py-4 px-4 text-center ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.limited}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
               </tr>
 
               {/* Workflow Section */}
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
                 <td colSpan={5} className="py-4 px-4">
-                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.workflow}</div>
+                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>{t.workflow}</div>
                 </td>
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
                 <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.questionHistory}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
                 <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.questionBookmark}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
                 <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.repeatQuestionOptimization}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
               </tr>
 
               {/* Performance & Reliability Section */}
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
                 <td colSpan={5} className="py-4 px-4">
-                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.performanceReliability}</div>
+                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>{t.performanceReliability}</div>
                 </td>
               </tr>
 
@@ -838,23 +840,23 @@ export default function PricingPage() {
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
                 <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.serviceSLA}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
               </tr>
 
               {/* Support & Access Section */}
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
                 <td colSpan={5} className="py-4 px-4">
-                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>{t.supportAccess}</div>
+                  <div className={`font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>{t.supportAccess}</div>
                 </td>
               </tr>
 
@@ -869,32 +871,32 @@ export default function PricingPage() {
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
                 <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.contractBased}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
               </tr>
 
               <tr className={`border-b ${effectiveTheme === "light" ? "border-gray-200 hover:bg-gray-50" : "border-gray-700 hover:bg-[#252525]"} transition-colors`}>
                 <td className={`py-4 px-4 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>{t.legalCompliance}</td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">✕</span>
+                  <span className="inline-block text-red-500 text-lg mx-auto">✕</span>
                 </td>
                 <td className="py-4 px-4 text-center">
-                  <span className="inline-block w-5 h-5 rounded-full bg-[#4DB8C4]/20 text-[#4DB8C4] flex items-center justify-center mx-auto">✓</span>
+                  <span className="inline-block text-[#60A5FA] text-lg mx-auto">✓</span>
                 </td>
               </tr>
             </tbody>

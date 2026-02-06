@@ -1,257 +1,179 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Sun, Moon, Globe, ChevronDown } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Footer() {
-  const { themeMode, setThemeMode, effectiveTheme } = useTheme();
-  const { language, setLanguage } = useLanguage();
-  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const { effectiveTheme } = useTheme();
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (showLanguageDropdown && !target.closest('.language-selector')) {
-        setShowLanguageDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showLanguageDropdown]);
-
-  const content = {
-    English: {
-      company: {
-        title: "Company",
-        mission: "Mission",
-        careers: "Careers",
-        blog: "Blog"
-      },
-      legal: {
-        title: "Legal",
-        terms: "Terms of Service",
-        privacy: "Privacy Policy"
-      },
-      product: {
-        title: "Product",
-        pricing: "Pricing"
-      },
-      copyright: "© 2026 Ruleout. All rights reserved."
+  const footerLinks = {
+    platform: {
+      title: "Platform",
+      links: [
+        { label: "Assistant", href: "/assistant" },
+        { label: "Vault", href: "/vault" },
+        { label: "Knowledge", href: "/knowledge" },
+        { label: "Workflows", href: "/workflows" },
+        { label: "Microsoft Integrations", href: "/integrations/microsoft" },
+        { label: "Partnerships", href: "/partnerships" }
+      ]
     },
-    한국어: {
-      company: {
-        title: "회사",
-        mission: "미션",
-        careers: "채용",
-        blog: "블로그"
-      },
-      legal: {
-        title: "법률",
-        terms: "이용약관",
-        privacy: "개인정보처리방침"
-      },
-      product: {
-        title: "제품",
-        pricing: "요금제"
-      },
-      copyright: "© 2026 Ruleout. All rights reserved."
+    solutions: {
+      title: "Solutions",
+      links: [
+        { label: "Innovation", href: "/solutions/innovation" },
+        { label: "In-House", href: "/solutions/in-house" },
+        { label: "Transactional", href: "/solutions/transactional" },
+        { label: "Litigation", href: "/solutions/litigation" },
+        { label: "Collaboration", href: "/solutions/collaboration" }
+      ]
     },
-    日本語: {
-      company: {
-        title: "会社",
-        mission: "ミッション",
-        careers: "採用",
-        blog: "ブログ"
-      },
-      legal: {
-        title: "法務",
-        terms: "利用規約",
-        privacy: "プライバシーポリシー"
-      },
-      product: {
-        title: "製品",
-        pricing: "料金"
-      },
-      copyright: "© 2026 Ruleout. All rights reserved."
+    about: {
+      title: "About",
+      links: [
+        { label: "Customers", href: "/customers" },
+        { label: "Security", href: "/security" },
+        { label: "Company", href: "/company" },
+        { label: "Newsroom", href: "/newsroom" },
+        { label: "Careers", href: "/careers" },
+        { label: "Law Schools", href: "/law-schools" }
+      ]
+    },
+    resources: {
+      title: "Resources",
+      links: [
+        { label: "Blog", href: "/blog" },
+        { label: "Videos", href: "/videos" },
+        { label: "Guides", href: "/guides" },
+        { label: "Legal", href: "/legal" },
+        { label: "Privacy Policy", href: "/privacy" },
+        { label: "Press Kit", href: "/press" }
+      ]
     }
   };
 
-  const currentContent = content[language as keyof typeof content];
+  const socialLinks = [
+    { label: "X", href: "https://x.com" },
+    { label: "LinkedIn", href: "https://linkedin.com" },
+    { label: "YouTube", href: "https://youtube.com" }
+  ];
 
   return (
-    <footer className={`${effectiveTheme === "light" ? "bg-gray-50 border-gray-200" : "bg-[#0a0a0a] border-gray-800"} border-t`}>
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Footer content grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          {/* Company */}
+    <footer className="bg-[#0a0a0a] text-white">
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-16">
+          {/* Logo Column */}
+          <div className="md:col-span-1">
+            <div className="flex items-center gap-2">
+              <Image
+                src="/image/logo_candidate1 복사본.png"
+                alt="Ruleout Logo"
+                width={40}
+                height={40}
+                className="object-contain"
+              />
+            </div>
+          </div>
+
+          {/* Platform */}
           <div>
-            <h3 className={`font-semibold mb-4 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>
-              {currentContent.company.title}
+            <h3 className="text-sm font-normal text-gray-400 mb-4">
+              {footerLinks.platform.title}
             </h3>
             <ul className="space-y-3">
-              <li>
-                <Link href="/mission" className={`${effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-white"} transition-colors`}>
-                  {currentContent.company.mission}
-                </Link>
-              </li>
-              <li>
-                <Link href="/careers" className={`${effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-white"} transition-colors`}>
-                  {currentContent.company.careers}
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className={`${effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-white"} transition-colors`}>
-                  {currentContent.company.blog}
-                </Link>
-              </li>
+              {footerLinks.platform.links.map((link, index) => (
+                <li key={index}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white hover:text-gray-300 transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Product */}
+          {/* Solutions */}
           <div>
-            <h3 className={`font-semibold mb-4 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>
-              {currentContent.product.title}
+            <h3 className="text-sm font-normal text-gray-400 mb-4">
+              {footerLinks.solutions.title}
             </h3>
             <ul className="space-y-3">
-              <li>
-                <Link href="/pricing" className={`${effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-white"} transition-colors`}>
-                  {currentContent.product.pricing}
-                </Link>
-              </li>
+              {footerLinks.solutions.links.map((link, index) => (
+                <li key={index}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white hover:text-gray-300 transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* About */}
           <div>
-            <h3 className={`font-semibold mb-4 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}>
-              {currentContent.legal.title}
+            <h3 className="text-sm font-normal text-gray-400 mb-4">
+              {footerLinks.about.title}
             </h3>
             <ul className="space-y-3">
-              <li>
-                <Link href="/terms" className={`${effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-white"} transition-colors`}>
-                  {currentContent.legal.terms}
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className={`${effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-white"} transition-colors`}>
-                  {currentContent.legal.privacy}
-                </Link>
-              </li>
+              {footerLinks.about.links.map((link, index) => (
+                <li key={index}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white hover:text-gray-300 transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h3 className="text-sm font-normal text-gray-400 mb-4">
+              {footerLinks.resources.title}
+            </h3>
+            <ul className="space-y-3">
+              {footerLinks.resources.links.map((link, index) => (
+                <li key={index}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white hover:text-gray-300 transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        {/* Bottom section with controls */}
-        <div className={`pt-8 border-t ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"} flex flex-col md:flex-row justify-between items-center gap-4`}>
-          <p className={`text-sm ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"}`}>
-            {currentContent.copyright}
+        {/* Bottom Section */}
+        <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-800">
+          <p className="text-xs text-gray-500 mb-4 md:mb-0">
+            Copyright © 2025 Ruleout AI Corporation. All rights reserved.
           </p>
 
-          <div className="flex items-center gap-3">
-            {/* Theme Toggle */}
-            <div className={`flex items-center ${effectiveTheme === "light" ? "bg-gray-100 border-gray-200" : "bg-[#1a1a1a] border-gray-800"} rounded-lg p-1 border`}>
-              <button
-                onClick={() => setThemeMode("light")}
-                className={`p-2 rounded-md transition-colors ${
-                  themeMode === "light"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-400 hover:text-white"
-                }`}
+          {/* Social Links */}
+          <div className="flex items-center gap-6">
+            {socialLinks.map((social, index) => (
+              <Link
+                key={index}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-gray-400 hover:text-white transition-colors"
               >
-                <Sun className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setThemeMode("dark")}
-                className={`p-2 rounded-md transition-colors ${
-                  themeMode === "dark"
-                    ? "bg-gray-800 text-white shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <Moon className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Language Selector */}
-            <div className="relative language-selector">
-              <button
-                onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
-                className={`flex items-center gap-2 px-3 py-2 ${
-                  effectiveTheme === "light"
-                    ? "bg-gray-100 border-gray-200 text-gray-600 hover:text-gray-900"
-                    : "bg-[#1a1a1a] border-gray-800 text-gray-400 hover:text-white"
-                } rounded-lg border transition-colors`}
-              >
-                <Globe className="w-4 h-4" />
-                <span className="text-sm">{language}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Language Dropdown */}
-              {showLanguageDropdown && (
-                <div className={`absolute bottom-full right-0 mb-2 ${
-                  effectiveTheme === "light"
-                    ? "bg-white border-gray-200"
-                    : "bg-[#1a1a1a] border-gray-800"
-                } border rounded-lg shadow-lg overflow-hidden min-w-[140px]`}>
-                  <button
-                    onClick={() => {
-                      setLanguage("English");
-                      setShowLanguageDropdown(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm ${
-                      language === "English"
-                        ? effectiveTheme === "light"
-                          ? "bg-gray-100 text-gray-900"
-                          : "bg-gray-800 text-white"
-                        : effectiveTheme === "light"
-                        ? "text-gray-600 hover:bg-gray-50"
-                        : "text-gray-400 hover:bg-gray-900"
-                    } transition-colors`}
-                  >
-                    English
-                  </button>
-                  <button
-                    onClick={() => {
-                      setLanguage("한국어");
-                      setShowLanguageDropdown(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm ${
-                      language === "한국어"
-                        ? effectiveTheme === "light"
-                          ? "bg-gray-100 text-gray-900"
-                          : "bg-gray-800 text-white"
-                        : effectiveTheme === "light"
-                        ? "text-gray-600 hover:bg-gray-50"
-                        : "text-gray-400 hover:bg-gray-900"
-                    } transition-colors`}
-                  >
-                    한국어
-                  </button>
-                  <button
-                    onClick={() => {
-                      setLanguage("日本語");
-                      setShowLanguageDropdown(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm ${
-                      language === "日本語"
-                        ? effectiveTheme === "light"
-                          ? "bg-gray-100 text-gray-900"
-                          : "bg-gray-800 text-white"
-                        : effectiveTheme === "light"
-                        ? "text-gray-600 hover:bg-gray-50"
-                        : "text-gray-400 hover:bg-gray-900"
-                    } transition-colors`}
-                  >
-                    日本語
-                  </button>
-                </div>
-              )}
-            </div>
+                {social.label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>

@@ -131,7 +131,7 @@ export default function MoveToProjectModal({ conversationId, isOpen, onClose, on
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={currentContent.searchPlaceholder}
-              className="w-full bg-[#1a1a1a] border border-gray-700 rounded-lg pl-12 pr-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-gray-600"
+              className="w-full bg-[#0a0a0a] border border-gray-700 rounded-lg pl-12 pr-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-gray-600"
               autoFocus
             />
           </div>
@@ -154,7 +154,7 @@ export default function MoveToProjectModal({ conversationId, isOpen, onClose, on
                 <button
                   key={project.id}
                   onClick={() => handleMoveToProject(project.id)}
-                  className="w-full flex items-center space-x-3 p-4 bg-[#1a1a1a] hover:bg-[#333333] border border-gray-700 rounded-lg transition-colors text-left"
+                  className="w-full flex items-center space-x-3 p-4 bg-[#0a0a0a] hover:bg-[#333333] border border-gray-700 rounded-lg transition-colors text-left"
                 >
                   <FolderOpen className="w-5 h-5 text-gray-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">

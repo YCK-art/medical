@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ArrowUp, ArrowDown, BookOpen, Copy, Check, Share2, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Loader2, MoreHorizontal, Bookmark, List, Menu, ChevronsLeft, Volume2, VolumeX } from "lucide-react";
+import { ArrowUp, ArrowDown, BookOpen, Copy, Check, Share2, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Loader2, MoreHorizontal, Bookmark, List, Menu } from "lucide-react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -19,7 +19,6 @@ import {
   toggleFavorite,
   updateMessage,
 } from "@/lib/chatService";
-import { uploadAudioFile, saveRecording, formatDate, formatTime as formatRecordingDateTime } from "@/lib/recordingService";
 import ThinkingSteps from "./ThinkingSteps";
 import CitationBanner from "./CitationBanner";
 import OutOfScopeBanner from "./OutOfScopeBanner";
@@ -38,14 +37,9 @@ interface ChatViewProps {
   onConversationCreated?: (conversationId: string) => void;
   onTitleUpdated?: () => void;
   onToggleSidebar?: () => void;
-  onToggleRecordingsSidebar?: () => void;
-  isVisitMode?: boolean;
-  isSidebarOpen?: boolean;
-  isRecordingsSidebarOpen?: boolean;
-  selectedRecording?: any;
 }
 
-export default function ChatView({ initialQuestion, conversationId, onNewQuestion, onConversationCreated, onTitleUpdated, onToggleSidebar, onToggleRecordingsSidebar, isVisitMode = false, isSidebarOpen = false, isRecordingsSidebarOpen = false, selectedRecording }: ChatViewProps) {
+export default function ChatView({ initialQuestion, conversationId, onNewQuestion, onConversationCreated, onTitleUpdated, onToggleSidebar }: ChatViewProps) {
   const { user } = useAuth();
   const { language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -70,78 +64,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
   const userScrolledUp = useRef(false); // 사용자가 스크롤을 위로 올렸는지 추적
   const lastScrollHeight = useRef(0); // 이전 스크롤 높이 추적
   const isComposingRef = useRef(false); // IME 입력 중인지 추적
-
-  // Recording states
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processingStep, setProcessingStep] = useState<'transcribing' | 'aligning' | 'diarizing' | 'finalizing' | null>(null);
-  const [showBetaBanner, setShowBetaBanner] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Transcript results
-  interface TranscriptSegment {
-    speaker: 'vet' | 'caregiver';
-    text: string;
-    start: number; // seconds
-    end: number;
-  }
-  const [transcriptSegments, setTranscriptSegments] = useState<TranscriptSegment[]>([]);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
-  const [playbackRate, setPlaybackRate] = useState(1.0);
-  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
-
-  // Smooth audio progress update using requestAnimationFrame
-  useEffect(() => {
-    const updateProgress = () => {
-      if (audioRef.current && isPlaying) {
-        setCurrentTime(audioRef.current.currentTime);
-        animationFrameRef.current = requestAnimationFrame(updateProgress);
-      }
-    };
-
-    if (isPlaying) {
-      animationFrameRef.current = requestAnimationFrame(updateProgress);
-    }
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [isPlaying]);
-
-  // Load selected recording from sidebar
-  useEffect(() => {
-    if (selectedRecording) {
-      console.log('📋 Loading selected recording:', selectedRecording);
-      setTranscriptSegments(selectedRecording.transcript || []);
-      setAudioUrl(selectedRecording.audioUrl || null);
-      // Clear any existing recording state
-      setIsRecording(false);
-      setIsProcessing(false);
-      setRecordingTime(0);
-    } else {
-      // selectedRecording이 null이면 상태 리셋 (New Visit 클릭 시)
-      console.log('🏠 Resetting to home screen (selectedRecording is null)');
-      setTranscriptSegments([]);
-      setAudioUrl(null);
-      setIsRecording(false);
-      setIsProcessing(false);
-      setRecordingTime(0);
-      setIsPlaying(false);
-      setCurrentTime(0);
-      setDuration(0);
-    }
-  }, [selectedRecording]);
 
   // User 상태 로깅
   useEffect(() => {
@@ -317,238 +239,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
 
     loadConversation();
   }, [initialQuestion, conversationId]);
-
-  // Recording time counter
-  useEffect(() => {
-    if (isRecording) {
-      recordingIntervalRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
-      }, 1000);
-    } else {
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-      }
-      setRecordingTime(0);
-    }
-
-    return () => {
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-      }
-    };
-  }, [isRecording]);
-
-  // Format recording time (MM:SS)
-  const formatRecordingTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // Start recording
-  const startRecording = async () => {
-    // 베타 서비스 준비 중 배너 표시
-    setShowBetaBanner(true);
-
-    // 3초 후 배너 자동 숨김
-    setTimeout(() => {
-      setShowBetaBanner(false);
-    }, 3000);
-
-    // 실제 녹음은 시작하지 않음 (베타 서비스 준비 중이므로)
-    return;
-
-    /* 원래 녹음 코드 (베타 서비스 준비 완료 시 활성화)
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const capturedRecordingTime = recordingTime; // Capture recording time before it resets
-        await processRecording(audioBlob, capturedRecordingTime);
-
-        // Stop all tracks
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      console.log('🎙️ Recording started');
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      alert('Failed to access microphone. Please check your permissions.');
-    }
-    */
-  };
-
-  // Stop recording
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      console.log('🛑 Recording stopped');
-    }
-  };
-
-  // Process recording (transcribe + diarize)
-  const processRecording = async (audioBlob: Blob, capturedRecordingTime: number) => {
-    if (!user) {
-      alert('Please log in to save recordings.');
-      return;
-    }
-
-    setIsProcessing(true);
-    setProcessingStep('transcribing'); // Start with first step immediately
-
-    try {
-      // Backend API call for STT + diarization with SSE streaming
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      const formData = new FormData();
-      formData.append('file', audioBlob, 'recording.webm');
-      // Don't specify language - let Whisper auto-detect
-      formData.append('num_speakers', '2');
-
-      console.log('🎙️ Starting transcription API with SSE...');
-      const transcriptionResponse = await fetch(`${backendUrl}/transcribe`, {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!transcriptionResponse.ok) {
-        throw new Error(`Transcription API failed: ${transcriptionResponse.statusText}`);
-      }
-
-      // Read SSE stream
-      const reader = transcriptionResponse.body?.getReader();
-      const decoder = new TextDecoder();
-      let transcriptionResult: any = null;
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          const lines = chunk.split('\n');
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = JSON.parse(line.slice(6));
-              console.log('📡 SSE event:', data);
-
-              if (data.status === 'step') {
-                // Update processing step based on backend progress
-                setProcessingStep(data.step);
-              } else if (data.status === 'complete') {
-                // Final result received
-                transcriptionResult = data;
-              } else if (data.status === 'error') {
-                throw new Error(data.message);
-              }
-            }
-          }
-        }
-      }
-
-      if (!transcriptionResult) {
-        throw new Error('No transcription result received');
-      }
-
-      console.log('📝 Transcription complete:', transcriptionResult);
-
-      const finalTranscript: TranscriptSegment[] = transcriptionResult.segments;
-
-      // Upload audio to Firebase Storage
-      console.log('📤 Uploading audio to Firebase Storage...');
-      const audioUrl = await uploadAudioFile(audioBlob, user.uid);
-
-      // Calculate duration from transcript (use capturedRecordingTime as fallback)
-      const duration = transcriptionResult.duration || capturedRecordingTime;
-      console.log('💾 Saving recording with duration:', duration, 'seconds (capturedRecordingTime:', capturedRecordingTime, ', transcriptionResult.duration:', transcriptionResult.duration, ')');
-
-      // Save recording metadata to Firestore
-      const now = new Date();
-      await saveRecording({
-        userId: user.uid,
-        date: formatDate(now),
-        time: formatRecordingDateTime(now),
-        duration,
-        audioUrl,
-        transcript: finalTranscript,
-        createdAt: Timestamp.now()
-      });
-
-      setTranscriptSegments(finalTranscript);
-      setAudioUrl(audioUrl);
-
-      console.log('✅ Processing complete');
-      setIsProcessing(false);
-      setProcessingStep(null);
-
-      // Trigger recordings sidebar refresh
-      console.log('🔄 Calling onTitleUpdated to refresh RecordingsSidebar...');
-      if (onTitleUpdated) {
-        onTitleUpdated(); // This triggers sidebarRefreshKey increment in parent
-        console.log('✅ onTitleUpdated called successfully');
-      } else {
-        console.warn('⚠️ onTitleUpdated is not defined!');
-      }
-    } catch (error) {
-      console.error('Error processing recording:', error);
-      setIsProcessing(false);
-      setProcessingStep(null);
-      alert('Failed to process recording. Please try again.');
-    }
-  };
-
-  // Audio player controls
-  const togglePlayPause = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  const seekToTime = (time: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = time;
-      setCurrentTime(time);
-    }
-  };
-
-  const toggleMute = () => {
-    if (audioRef.current) {
-      audioRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
-
-  const changePlaybackRate = (rate: number) => {
-    if (audioRef.current) {
-      audioRef.current.playbackRate = rate;
-      setPlaybackRate(rate);
-      setShowSpeedMenu(false);
-    }
-  };
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   // API 호출
   const queryAPI = async (question: string, isFirstMessage: boolean = false, skipUserMessage: boolean = false) => {
@@ -1606,9 +1296,9 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
   });
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#1a1a1a]">
+    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#0a0a0a]">
       {/* 헤더 */}
-      <div className="sticky top-0 z-10 border-b border-gray-700 px-4 py-2 md:py-4 bg-[rgba(26,26,26,0.7)] backdrop-blur-md">
+      <div className="sticky top-0 z-10 border-b border-gray-700 px-4 py-2 md:py-4 bg-[rgba(10,10,10,0.7)] backdrop-blur-md">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center space-x-2">
             {/* 모바일 햄버거 메뉴 */}
@@ -1624,480 +1314,37 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
             <Image src="/image/logo_candidate1 복사본.png" alt="Ruleout" width={28} height={28} className="hidden md:block" />
             <span className="text-lg font-semibold hidden md:block">Ruleout</span>
           </div>
-          {isVisitMode ? (
+          <div className="flex items-center space-x-2">
             <button
-              onClick={onToggleRecordingsSidebar}
               className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              aria-label="Toggle recordings sidebar"
+              title={currentContent.more}
             >
-              <ChevronsLeft className="w-5 h-5 text-gray-300" />
+              <MoreHorizontal className="w-5 h-5 text-gray-400" />
             </button>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <button
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                title={currentContent.more}
-              >
-                <MoreHorizontal className="w-5 h-5 text-gray-400" />
-              </button>
-              <button
-                onClick={handleToggleFavorite}
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                title={currentContent.bookmark}
-              >
-                <Bookmark
-                  className="w-5 h-5"
-                  style={{ color: isFavorite ? '#20808D' : '#9ca3af' }}
-                  fill={isFavorite ? '#20808D' : 'none'}
-                />
-              </button>
-              <button
-                className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-700 rounded-lg transition-colors"
-                title={currentContent.share}
-              >
-                <Share2 className="w-4 h-4 text-gray-400" />
-                <span className="text-sm text-gray-400">{currentContent.share}</span>
-              </button>
-            </div>
-          )}
+            <button
+              onClick={handleToggleFavorite}
+              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+              title={currentContent.bookmark}
+            >
+              <Bookmark
+                className="w-5 h-5"
+                style={{ color: isFavorite ? '#20808D' : '#9ca3af' }}
+                fill={isFavorite ? '#20808D' : 'none'}
+              />
+            </button>
+            <button
+              className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-700 rounded-lg transition-colors"
+              title={currentContent.share}
+            >
+              <Share2 className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-400">{currentContent.share}</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* 베타 서비스 준비 중 배너 */}
-      {showBetaBanner && (
-        <div className="bg-[#20808D] px-4 py-3 text-center animate-slideDown">
-          <p className="text-white text-sm font-medium" style={{ fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' }}>
-            {getTranslation('recording.betaInProgress', language)}
-          </p>
-        </div>
-      )}
-
       {/* 메시지 영역 */}
       <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 md:px-8 py-12">
-        {/* New Visit 초기 화면 - 메시지가 없고 transcript도 없을 때만 표시 */}
-        {messages.length === 0 && !isStreaming && !isProcessing && transcriptSegments.length === 0 && (
-          <div className="flex items-center justify-center h-full -mt-20">
-            {!isRecording ? (
-              // STEP 1: Ready to Record 화면
-              <div className="text-center space-y-10 max-w-3xl">
-                <h2 className="text-3xl md:text-4xl text-gray-300 mb-10" style={{ fontFamily: getFontFamily(language) }}>
-                  {getTranslation('recording.readyToRecord', language)}
-                </h2>
-
-                {/* 마이크 버튼 */}
-                <div className="flex justify-center mb-10">
-                  <button
-                    onClick={startRecording}
-                    className="relative w-56 h-56 rounded-full flex items-center justify-center transition-all duration-300 hover:brightness-110 group overflow-hidden"
-                    style={{
-                      background: 'linear-gradient(135deg, #20808D 0%, #4DB8C4 100%)',
-                      boxShadow: '0 10px 40px rgba(32, 128, 141, 0.3)'
-                    }}
-                  >
-                    {/* Shimmer effect on hover */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div
-                        className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
-                        style={{
-                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)'
-                        }}
-                      />
-                    </div>
-
-                    <svg
-                      className="w-28 h-28 text-white relative z-10"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* 안내 문구 */}
-                <p className="text-sm text-gray-400 leading-relaxed px-8 max-w-3xl mx-auto" style={{ fontFamily: language === '한국어' || language === '日本語' ? 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' : undefined }}>
-                  {language === 'English' ? (
-                    <>
-                      {getTranslation('recording.consentNotice', language)}{' '}
-                      <a
-                        href="/privacy"
-                        className="underline hover:text-[#4DB8C4] transition-colors"
-                      >
-                        {getTranslation('recording.regulations', language)}
-                      </a>
-                      {' '}in their jurisdiction.
-                    </>
-                  ) : (
-                    <>
-                      {getTranslation('recording.consentNotice', language)}{' '}
-                      <a
-                        href="/privacy"
-                        className="underline hover:text-[#4DB8C4] transition-colors"
-                      >
-                        {getTranslation('recording.regulations', language)}
-                      </a>
-                    </>
-                  )}
-                </p>
-              </div>
-            ) : (
-              // STEP 1: Recording in progress 화면
-              <div className="text-center space-y-10 max-w-3xl">
-                {/* Recording text */}
-                <h2 className="text-3xl text-gray-300" style={{ fontFamily: 'Hedvig Letters Serif, serif' }}>
-                  Recording
-                </h2>
-
-                {/* Timer */}
-                <div className="text-6xl text-gray-200 mb-8" style={{ fontFamily: 'Hedvig Letters Serif, serif', fontWeight: 400, letterSpacing: '0.05em' }}>
-                  {formatRecordingTime(recordingTime)}
-                </div>
-
-                {/* Pulsing gradient orb animation */}
-                <div className="flex items-center justify-center mb-16">
-                  <div
-                    className="relative w-64 h-64"
-                    style={{
-                      animation: 'orbPulse 3s ease-in-out infinite'
-                    }}
-                  >
-                    {/* Main gradient orb */}
-                    <div
-                      className="absolute inset-0 rounded-full"
-                      style={{
-                        background: 'radial-gradient(circle at 30% 30%, #4DB8C4 0%, #20808D 50%, #165761 100%)',
-                        filter: 'blur(2px)',
-                        animation: 'orbRotate 8s linear infinite'
-                      }}
-                    />
-                    {/* Glow effect */}
-                    <div
-                      className="absolute inset-0 rounded-full"
-                      style={{
-                        background: 'radial-gradient(circle at 30% 30%, rgba(77, 184, 196, 0.6) 0%, rgba(32, 128, 141, 0.3) 50%, transparent 100%)',
-                        filter: 'blur(20px)',
-                        animation: 'orbGlow 2s ease-in-out infinite alternate'
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Stop recording button */}
-                <button
-                  onClick={stopRecording}
-                  className="px-8 py-3 rounded-full text-white text-sm font-medium transition-all duration-300 hover:brightness-110"
-                  style={{
-                    background: 'linear-gradient(135deg, #20808D 0%, #4DB8C4 100%)',
-                    boxShadow: '0 8px 30px rgba(32, 128, 141, 0.4)'
-                  }}
-                >
-                  STOP RECORDING
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* STEP 2: Processing 화면 */}
-        {isProcessing && (
-          <div className="flex items-center justify-center h-full -mt-20">
-            <div className="text-center space-y-8 max-w-2xl">
-              <h2 className="text-3xl text-gray-300 mb-12" style={{ fontFamily: getFontFamily(language) }}>
-                {getTranslation('processing.title', language)}
-              </h2>
-
-              {/* Processing steps - Vertical layout */}
-              <div className="flex flex-col items-start max-w-md mx-auto">
-                {/* Step 1: Transcribing */}
-                <div className="flex items-start">
-                  <div className="flex flex-col items-center mr-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      processingStep === 'transcribing' ? 'bg-[#4DB8C4] ring-4 ring-[#4DB8C4]/30' :
-                      ['aligning', 'diarizing', 'finalizing'].includes(processingStep || '') ? 'bg-[#20808D]' :
-                      'bg-gray-600'
-                    }`}>
-                      {['aligning', 'diarizing', 'finalizing'].includes(processingStep || '') ? (
-                        <Check className="w-6 h-6 text-white" />
-                      ) : processingStep === 'transcribing' ? (
-                        <Loader2 className="w-6 h-6 text-white animate-spin" />
-                      ) : (
-                        <span className="text-white text-sm">1</span>
-                      )}
-                    </div>
-                    {/* Vertical line */}
-                    <div className={`w-0.5 h-16 mt-2 transition-all duration-300 ${
-                      ['aligning', 'diarizing', 'finalizing'].includes(processingStep || '') ? 'bg-[#20808D]' : 'bg-gray-600'
-                    }`}></div>
-                  </div>
-                  <div className="pt-3">
-                    <div className={`text-lg font-medium transition-all duration-300 ${
-                      processingStep === 'transcribing' ? 'text-[#4DB8C4]' :
-                      ['aligning', 'diarizing', 'finalizing'].includes(processingStep || '') ? 'text-[#20808D]' :
-                      'text-gray-500'
-                    }`} style={{ fontFamily: language === '한국어' || language === '日本語' ? 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' : undefined }}>
-                      {getTranslation('processing.steps.transcribing', language)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 2: Aligning timestamps */}
-                <div className="flex items-start">
-                  <div className="flex flex-col items-center mr-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      processingStep === 'aligning' ? 'bg-[#4DB8C4] ring-4 ring-[#4DB8C4]/30' :
-                      ['diarizing', 'finalizing'].includes(processingStep || '') ? 'bg-[#20808D]' :
-                      'bg-gray-600'
-                    }`}>
-                      {['diarizing', 'finalizing'].includes(processingStep || '') ? (
-                        <Check className="w-6 h-6 text-white" />
-                      ) : processingStep === 'aligning' ? (
-                        <Loader2 className="w-6 h-6 text-white animate-spin" />
-                      ) : (
-                        <span className="text-white text-sm">2</span>
-                      )}
-                    </div>
-                    {/* Vertical line */}
-                    <div className={`w-0.5 h-16 mt-2 transition-all duration-300 ${
-                      ['diarizing', 'finalizing'].includes(processingStep || '') ? 'bg-[#20808D]' : 'bg-gray-600'
-                    }`}></div>
-                  </div>
-                  <div className="pt-3">
-                    <div className={`text-lg font-medium transition-all duration-300 ${
-                      processingStep === 'aligning' ? 'text-[#4DB8C4]' :
-                      ['diarizing', 'finalizing'].includes(processingStep || '') ? 'text-[#20808D]' :
-                      'text-gray-500'
-                    }`} style={{ fontFamily: language === '한국어' || language === '日本語' ? 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' : undefined }}>
-                      {getTranslation('processing.steps.aligning', language)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 3: Speaker diarization */}
-                <div className="flex items-start">
-                  <div className="flex flex-col items-center mr-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      processingStep === 'diarizing' ? 'bg-[#4DB8C4] ring-4 ring-[#4DB8C4]/30' :
-                      processingStep === 'finalizing' ? 'bg-[#20808D]' :
-                      'bg-gray-600'
-                    }`}>
-                      {processingStep === 'finalizing' ? (
-                        <Check className="w-6 h-6 text-white" />
-                      ) : processingStep === 'diarizing' ? (
-                        <Loader2 className="w-6 h-6 text-white animate-spin" />
-                      ) : (
-                        <span className="text-white text-sm">3</span>
-                      )}
-                    </div>
-                    {/* Vertical line */}
-                    <div className={`w-0.5 h-16 mt-2 transition-all duration-300 ${
-                      processingStep === 'finalizing' ? 'bg-[#20808D]' : 'bg-gray-600'
-                    }`}></div>
-                  </div>
-                  <div className="pt-3">
-                    <div className={`text-lg font-medium transition-all duration-300 ${
-                      processingStep === 'diarizing' ? 'text-[#4DB8C4]' :
-                      processingStep === 'finalizing' ? 'text-[#20808D]' :
-                      'text-gray-500'
-                    }`} style={{ fontFamily: language === '한국어' || language === '日本語' ? 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' : undefined }}>
-                      {getTranslation('processing.steps.diarizing', language)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 4: Finalizing */}
-                <div className="flex items-start">
-                  <div className="flex flex-col items-center mr-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      processingStep === 'finalizing' ? 'bg-[#4DB8C4] ring-4 ring-[#4DB8C4]/30' : 'bg-gray-600'
-                    }`}>
-                      {processingStep === 'finalizing' ? (
-                        <Loader2 className="w-6 h-6 text-white animate-spin" />
-                      ) : (
-                        <span className="text-white text-sm">4</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="pt-3">
-                    <div className={`text-lg font-medium transition-all duration-300 ${
-                      processingStep === 'finalizing' ? 'text-[#4DB8C4]' : 'text-gray-500'
-                    }`} style={{ fontFamily: language === '한국어' || language === '日本語' ? 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' : undefined }}>
-                      {getTranslation('processing.steps.finalizing', language)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: Transcript Results */}
-        {transcriptSegments.length > 0 && audioUrl && (
-          <div className="md:max-w-4xl mx-auto pb-32">
-            {/* Transcript bubbles */}
-            <div className="space-y-4 mb-8">
-              {transcriptSegments.map((segment, index) => (
-                <div
-                  key={index}
-                  onClick={() => seekToTime(segment.start)}
-                  className={`flex ${segment.speaker === 'vet' ? 'justify-end' : 'justify-start'} cursor-pointer group`}
-                >
-                  <div className={`max-w-2xl px-6 py-4 rounded-2xl transition-all duration-200 ${
-                    segment.speaker === 'vet'
-                      ? 'bg-[#20808D]/20 border border-[#4DB8C4]/30 hover:bg-[#20808D]/30'
-                      : 'bg-gray-800 hover:bg-gray-750'
-                  }`}>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className={`text-xs font-medium ${
-                        segment.speaker === 'vet' ? 'text-[#4DB8C4]' : 'text-gray-400'
-                      }`}>
-                        {segment.speaker === 'vet' ? 'Vet' : 'Caregiver'}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {formatTime(segment.start)}
-                      </span>
-                    </div>
-                    <p className="text-gray-200 leading-relaxed">{segment.text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Audio Player */}
-            <div
-              className="fixed bottom-0 bg-[#1a1a1a] border-t border-gray-700 p-4 z-30 transition-all duration-300"
-              style={{
-                left: isSidebarOpen ? '256px' : '0',  // Sidebar width is 256px (w-64)
-                right: '0'  // Don't adjust for right sidebar - it will overlay
-              }}
-            >
-              <div className="max-w-4xl mx-auto">
-                {/* Hidden audio element */}
-                <audio
-                  ref={audioRef}
-                  src={audioUrl}
-                  onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
-                  onEnded={() => setIsPlaying(false)}
-                />
-
-                {/* Controls */}
-                <div className="flex items-center space-x-3">
-                  {/* Play/Pause button */}
-                  <button
-                    onClick={togglePlayPause}
-                    className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:brightness-110 flex-shrink-0"
-                    style={{
-                      background: 'linear-gradient(135deg, #20808D 0%, #4DB8C4 100%)',
-                      boxShadow: '0 2px 8px rgba(32, 128, 141, 0.3)'
-                    }}
-                  >
-                    {isPlaying ? (
-                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" style={{ transform: 'translateX(1px)' }}>
-                        <path d="M8 5v14l11-7z"/>
-                      </svg>
-                    )}
-                  </button>
-
-                  {/* Time display */}
-                  <span className="text-sm text-gray-400 flex-shrink-0 min-w-[40px]">
-                    {formatTime(currentTime)}
-                  </span>
-
-                  {/* Progress bar */}
-                  <div className="flex-1 flex items-center">
-                    <input
-                      type="range"
-                      min="0"
-                      max={duration || 0}
-                      value={currentTime}
-                      onChange={(e) => seekToTime(Number(e.target.value))}
-                      className="w-full h-1 bg-gray-700 rounded-full appearance-none cursor-pointer transition-all
-                        [&::-webkit-slider-thumb]:appearance-none
-                        [&::-webkit-slider-thumb]:w-3
-                        [&::-webkit-slider-thumb]:h-3
-                        [&::-webkit-slider-thumb]:rounded-full
-                        [&::-webkit-slider-thumb]:bg-[#4DB8C4]
-                        [&::-webkit-slider-thumb]:cursor-pointer
-                        [&::-webkit-slider-thumb]:transition-all
-                        [&::-webkit-slider-thumb]:shadow-md
-                        hover:[&::-webkit-slider-thumb]:w-3.5
-                        hover:[&::-webkit-slider-thumb]:h-3.5
-                        [&::-moz-range-thumb]:w-3
-                        [&::-moz-range-thumb]:h-3
-                        [&::-moz-range-thumb]:rounded-full
-                        [&::-moz-range-thumb]:bg-[#4DB8C4]
-                        [&::-moz-range-thumb]:border-0
-                        [&::-moz-range-thumb]:cursor-pointer
-                        [&::-moz-range-thumb]:transition-all
-                        hover:[&::-moz-range-thumb]:w-3.5
-                        hover:[&::-moz-range-thumb]:h-3.5"
-                      style={{
-                        background: `linear-gradient(to right, #4DB8C4 0%, #4DB8C4 ${(currentTime / (duration || 1)) * 100}%, #374151 ${(currentTime / (duration || 1)) * 100}%, #374151 100%)`
-                      }}
-                    />
-                  </div>
-
-                  {/* Total duration */}
-                  <span className="text-sm text-gray-400 flex-shrink-0 min-w-[40px]">
-                    {formatTime(duration)}
-                  </span>
-
-                  {/* Mute button */}
-                  <button
-                    onClick={toggleMute}
-                    className="p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
-                    aria-label={isMuted ? "Unmute" : "Mute"}
-                  >
-                    {isMuted ? (
-                      <VolumeX className="w-5 h-5 text-gray-300" />
-                    ) : (
-                      <Volume2 className="w-5 h-5 text-gray-300" />
-                    )}
-                  </button>
-
-                  {/* Playback speed button */}
-                  <div className="relative flex-shrink-0">
-                    <button
-                      onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                      className="px-3 py-2 hover:bg-gray-700 rounded-lg transition-colors text-sm text-gray-300 font-medium min-w-[60px]"
-                    >
-                      {playbackRate}x
-                    </button>
-
-                    {/* Speed dropdown menu */}
-                    {showSpeedMenu && (
-                      <div className="absolute bottom-full right-0 mb-2 bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg py-1 min-w-[80px]">
-                        {[0.5, 0.75, 1.0, 1.25, 1.75].map((speed) => (
-                          <button
-                            key={speed}
-                            onClick={() => changePlaybackRate(speed)}
-                            className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-700 transition-colors ${
-                              playbackRate === speed ? 'text-[#4DB8C4] font-semibold' : 'text-gray-300'
-                            }`}
-                          >
-                            {speed}x
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="md:max-w-4xl mx-auto space-y-12">
           {messages.map((message, index) => (
             <div key={index}>
@@ -2434,9 +1681,8 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
         </div>
       </div>
 
-      {/* 입력 영역 - New Visit 홈화면에서는 숨김 */}
-      {!(isVisitMode && messages.length === 0) && (
-        <div className="p-4">
+      {/* 입력 영역 */}
+      <div className="p-4">
           <div className="md:max-w-4xl mx-auto relative">
             {/* 맨 아래로 스크롤 버튼 */}
             {showScrollToBottom && (
@@ -2504,7 +1750,6 @@ export default function ChatView({ initialQuestion, conversationId, onNewQuestio
           </form>
           </div>
         </div>
-      )}
     </div>
   );
 }

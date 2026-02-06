@@ -2,8 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
+/* Custom Fonts - Now loaded via Next.js localFont in layout.tsx for better optimization */
+
+body {
   font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+/* HedvigLettersSerif 폰트 클래스 */
+.font-hedvig {
+  font-family: var(--font-hedvig-letters-serif), serif !important;
+}
+
+/* Helvetica 폰트 클래스 */
+.font-helvetica {
+  font-family: var(--font-helvetica), sans-serif !important;
 }
 
 /* 영어 답변용 Noto Serif 폰트 클래스 */
@@ -37,7 +49,7 @@
 }
 
 body {
-  @apply bg-[#1a1a1a] text-white;
+  @apply bg-[#0a0a0a] text-white;
 }
 
 @keyframes slideDown {
@@ -95,7 +107,20 @@ body {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.3s ease-in-out 0.15s both;
+  animation: fadeIn 0.2s ease-in-out both;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-fadeOut {
+  animation: fadeOut 0.3s ease-in-out forwards;
 }
 
 @keyframes blob {
@@ -162,4 +187,17 @@ body {
     opacity: 1;
     transform: scale(1.1);
   }
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
 }

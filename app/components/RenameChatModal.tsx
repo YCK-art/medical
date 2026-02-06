@@ -64,7 +64,7 @@ export default function RenameChatModal({ isOpen, currentTitle, onClose, onRenam
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-[#1a1a1a] border-2 border-blue-500 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-blue-400"
+            className="w-full bg-[#0a0a0a] border-2 border-blue-500 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-blue-400"
             autoFocus
             onKeyDown={(e) => {
               if (e.key === 'Enter') {

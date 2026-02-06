@@ -215,7 +215,7 @@ export default function CollectionsView({ onNewChat, onSelectProject, onToggleSi
   };
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#1a1a1a]">
+    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#0a0a0a]">
       {/* 모바일 상단 툴바 */}
       <div className="md:hidden sticky top-0 z-10 border-b border-gray-700 px-3 py-2 bg-[rgba(26,26,26,0.9)] backdrop-blur-md">
         <div className="flex items-center justify-between">

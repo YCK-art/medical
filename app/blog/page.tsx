@@ -7,7 +7,7 @@ import { Search } from "lucide-react";
 import Toolbar from "@/app/components/Toolbar";
 import Footer from '@/app/components/Footer';
 import { signInWithGoogle } from "@/lib/auth";
-import { getAllBlogPosts, getFeaturedPost, BlogPost } from "@/lib/blogService";
+import { getAllBlogPosts, BlogPost } from "@/lib/blogService";
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function BlogPage() {
@@ -16,14 +16,11 @@ export default function BlogPage() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("All posts");
   const [searchQuery, setSearchQuery] = useState("");
-  const [featuredPost, setFeaturedPost] = useState<BlogPost | null>(null);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   const content = {
     English: {
-      featured: "FEATURED",
-      readMore: "Read more →",
       allPosts: "All posts",
       product: "Product",
       research: "Research",
@@ -44,8 +41,6 @@ export default function BlogPage() {
       or: "or"
     },
     한국어: {
-      featured: "주요 글",
-      readMore: "더 읽기 →",
       allPosts: "모든 글",
       product: "제품",
       research: "연구",
@@ -66,8 +61,6 @@ export default function BlogPage() {
       or: "또는"
     },
     日本語: {
-      featured: "注目",
-      readMore: "続きを読む →",
       allPosts: "すべての投稿",
       product: "製品",
       research: "研究",
@@ -112,13 +105,8 @@ export default function BlogPage() {
     const loadBlogPosts = async () => {
       setLoading(true);
       try {
-        const [featured, allPosts] = await Promise.all([
-          getFeaturedPost(),
-          getAllBlogPosts(),
-        ]);
-        setFeaturedPost(featured);
-        // Filter out featured post from regular posts
-        setBlogPosts(allPosts.filter(post => !post.isFeatured));
+        const allPosts = await getAllBlogPosts();
+        setBlogPosts(allPosts);
       } catch (error) {
         console.error("Error loading blog posts:", error);
       } finally {
@@ -169,134 +157,97 @@ export default function BlogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] text-white">
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Toolbar */}
       <Toolbar onLoginClick={handleLogin} onMenuClick={handleMenuClick} />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-24 pt-32">
+      <div className="max-w-7xl mx-auto px-6 pt-20 pb-24">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-gray-400 text-lg">{t.loading}</div>
           </div>
         ) : (
           <>
-            {/* Featured Blog Post */}
-            {featuredPost && (
-              <div className="mb-16">
-                <div className="bg-gradient-to-br from-[#252525] to-[#1a1a1a] rounded-2xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-colors cursor-pointer"
-                     onClick={() => router.push(`/blog/${featuredPost.slug}`)}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 md:p-12">
-                    {/* Left: Text Content */}
-                    <div className="flex flex-col justify-center space-y-6">
-                      <span className="text-[#4DB8C4] text-sm font-semibold uppercase tracking-wide" style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
-                        {t.featured}
-                      </span>
-                      <h1 className="text-2xl md:text-3xl font-bold leading-tight" style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
-                        {featuredPost.title}
-                      </h1>
-                      <p className="text-base text-gray-400 leading-relaxed" style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
-                        {featuredPost.subtitle || featuredPost.content.substring(0, 200) + '...'}
-                      </p>
-                      <button className="px-6 py-3 bg-[#20808D] text-white rounded-lg hover:bg-[#1a6b77] transition-colors font-medium w-fit">
-                        {t.readMore}
-                      </button>
-                    </div>
+            {/* Header Section */}
+            <div className="mb-12">
+              <h1 className="text-5xl font-normal mb-4 text-white" style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>
+                Blog
+              </h1>
+              <p className="text-gray-400 text-lg mb-8" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                Product updates, insights, and behind-the-scenes from the Ruleout team.
+              </p>
 
-                    {/* Right: Image Placeholder */}
-                    <div className="relative h-[400px] bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl flex items-center justify-center">
-                      {featuredPost.imageUrl ? (
-                        <Image
-                          src={featuredPost.imageUrl}
-                          alt={featuredPost.title}
-                          fill
-                          className="object-cover rounded-xl"
-                        />
-                      ) : (
-                        <span className="text-gray-600 text-lg">Featured Image</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              {/* Filter Buttons */}
+              <div className="flex flex-wrap items-center gap-3">
+                {filters.map((filter) => (
+                  <button
+                    key={filter.key}
+                    onClick={() => setSelectedFilter(filter.key)}
+                    className={`px-6 py-2 font-medium transition-all border ${
+                      selectedFilter === filter.key
+                        ? "bg-white text-black border-white"
+                        : "bg-transparent text-gray-400 border-gray-700 hover:text-white hover:border-gray-500"
+                    }`}
+                    style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
-        {/* Filter and Search Bar */}
-        <div className="mb-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-3">
-            {filters.map((filter) => (
-              <button
-                key={filter.key}
-                onClick={() => setSelectedFilter(filter.key)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  selectedFilter === filter.key
-                    ? "bg-[#20808D] text-white"
-                    : "bg-[#252525] text-gray-400 hover:text-white hover:bg-[#2a2a2a]"
-                }`}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative w-full md:w-auto">
-            <input
-              type="text"
-              placeholder={t.searchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full md:w-80 px-4 py-2 pl-10 bg-[#252525] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#20808D] transition-colors"
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
-          </div>
-        </div>
-
-            {/* Blog Posts Grid */}
+            {/* Blog Posts Grid - 3 columns, up to 6 rows */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredPosts.length === 0 ? (
                 <div className="col-span-3 text-center py-20 text-gray-400">
                   {t.noPosts} {blogPosts.length === 0 ? t.checkBack : t.tryAdjust}
                 </div>
               ) : (
-                filteredPosts.map((post) => (
+                filteredPosts.slice(0, 18).map((post) => (
                   <div
                     key={post.id}
                     onClick={() => router.push(`/blog/${post.slug}`)}
-                    className="transition-all duration-200 cursor-pointer group"
+                    className="cursor-pointer group"
                   >
-                    {/* Image Placeholder */}
-                    <div className="relative h-48 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl flex items-center justify-center mb-4 overflow-hidden">
+                    {/* Image */}
+                    <div className="relative h-[240px] rounded-lg overflow-hidden mb-4">
                       {post.imageUrl ? (
                         <Image
                           src={post.imageUrl}
                           alt={post.title}
                           fill
-                          className="object-cover"
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
-                        <span className="text-gray-600 text-sm">Post Image</span>
+                        <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-700" />
                       )}
                     </div>
 
-                    {/* Content */}
-                    <div className="space-y-3">
-                      {/* Category Badge */}
-                      <span className="inline-block px-3 py-1 bg-[#20808D]/10 text-[#4DB8C4] text-xs font-semibold rounded-full">
-                        {post.category}
-                      </span>
+                    {/* Content Below Image */}
+                    <div className="space-y-2">
+                      {/* Date */}
+                      <div className="text-gray-400 text-sm" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                        {formatDate(post.date)}
+                      </div>
 
                       {/* Title */}
-                      <h3 className="text-xl font-semibold text-white group-hover:text-[#4DB8C4] transition-colors line-clamp-2" style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
+                      <h3 className="text-white text-xl font-semibold line-clamp-2 group-hover:text-gray-300 transition-colors" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                         {post.title}
                       </h3>
 
-                      {/* Author and Date */}
-                      <div className="flex items-center gap-2 text-sm text-gray-400">
+                      {/* Author/Team */}
+                      <div className="flex items-center gap-2 text-gray-400 text-sm" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                        <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center">
+                          <Image
+                            src="/image/logo_candidate1 복사본.png"
+                            alt="Ruleout Logo"
+                            width={20}
+                            height={20}
+                            className="object-contain"
+                          />
+                        </div>
                         <span>{post.author}</span>
-                        <span>•</span>
-                        <span>{formatDate(post.date)}</span>
                       </div>
                     </div>
                   </div>

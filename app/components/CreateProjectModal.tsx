@@ -87,7 +87,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate }: Create
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={currentContent.namePlaceholder}
-            className="w-full bg-[#1a1a1a] border border-gray-700 rounded-lg px-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-gray-600"
+            className="w-full bg-[#0a0a0a] border border-gray-700 rounded-lg px-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-gray-600"
             autoFocus
           />
         </div>
@@ -102,7 +102,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate }: Create
             onChange={(e) => setDescription(e.target.value)}
             placeholder={currentContent.descPlaceholder}
             rows={5}
-            className="w-full bg-[#1a1a1a] border border-gray-700 rounded-lg px-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-gray-600 resize-none"
+            className="w-full bg-[#0a0a0a] border border-gray-700 rounded-lg px-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-gray-600 resize-none"
           />
         </div>
 

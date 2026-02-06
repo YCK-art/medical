@@ -255,7 +255,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
   };
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#1a1a1a]">
+    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#0a0a0a]">
       {/* 모바일 상단 툴바 */}
       <div className="md:hidden sticky top-0 z-10 border-b border-gray-700 px-3 py-2 bg-[rgba(26,26,26,0.9)] backdrop-blur-md">
         <div className="flex items-center justify-between">
@@ -353,7 +353,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
                 {filteredConversations.map((conversation) => (
                   <div
                     key={conversation.id}
-                    className="grid grid-cols-[200px_1fr_auto] gap-4 px-6 py-6 border-b border-gray-800 hover:bg-[#2a2a2a] transition-colors group relative"
+                    className="grid grid-cols-[200px_1fr_auto] gap-4 px-6 py-6 border-b border-gray-800 hover:bg-[#1a2f32] transition-colors group relative"
                   >
                     {/* Date 컬럼 */}
                     <div className="text-sm text-gray-400">
@@ -430,7 +430,7 @@ export default function HistoryView({ onSelectChat, onNewChat, onConversationDel
                 {filteredConversations.map((conversation) => (
                   <div
                     key={conversation.id}
-                    className="border-b border-gray-800 hover:bg-[#2a2a2a] transition-colors relative"
+                    className="border-b border-gray-800 hover:bg-[#1a2f32] transition-colors relative"
                   >
                     <div className="flex items-start justify-between py-4 px-1">
                       {/* 왼쪽: 제목과 날짜 */}

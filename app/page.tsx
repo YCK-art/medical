@@ -9,7 +9,6 @@ import { getAllBlogPosts, BlogPost } from "@/lib/blogService";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Footer from "@/app/components/Footer";
-import LoginModal from "@/app/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
 
 // FAQ Item Component
@@ -17,12 +16,12 @@ function FAQItem({ question, answer, theme }: { question: string; answer: string
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className={`border-b ${theme === "light" ? "border-gray-200" : "border-gray-800"}`}>
+    <div className="border-b border-white/20 mx-auto max-w-4xl">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full py-6 flex items-center justify-between text-left hover:text-[#4DB8C4] transition-colors group"
       >
-        <span className={`text-lg md:text-xl font-medium ${theme === "light" ? "text-gray-900" : "text-white"} group-hover:text-[#4DB8C4] transition-colors`}>
+        <span className={`text-lg md:text-xl font-normal ${theme === "light" ? "text-gray-900" : "text-white"} group-hover:text-[#4DB8C4] transition-colors`} style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
           {question}
         </span>
         <ChevronDown
@@ -36,113 +35,161 @@ function FAQItem({ question, answer, theme }: { question: string; answer: string
           isOpen ? "max-h-96 pb-6" : "max-h-0"
         }`}
       >
-        <p className={`${theme === "light" ? "text-gray-600" : "text-gray-400"} leading-relaxed max-w-3xl`}>{answer}</p>
+        <p className={`${theme === "light" ? "text-gray-600" : "text-gray-400"} leading-relaxed max-w-3xl`} style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{answer}</p>
       </div>
     </div>
   );
 }
 
-// Carousel Content Component
-function CarouselContent({ effectiveTheme, slides }: { effectiveTheme: "light" | "dark"; slides: Array<{ title: string; description: string }> }) {
-  const [currentSlide, setCurrentSlide] = useState(0);
+// Solutions Section Component
+function SolutionsSection({ effectiveTheme }: { effectiveTheme: "light" | "dark" }) {
+  const [selectedTab, setSelectedTab] = useState("clinic");
+  const [progress, setProgress] = useState(0);
 
-  // Auto-play removed - manual navigation only
+  const tabs = [
+    { id: "clinic", label: "Veterinary Clinics" },
+    { id: "hospital", label: "Animal Hospitals" },
+    { id: "research", label: "Research Teams" },
+    { id: "education", label: "Education" }
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          // Move to next tab
+          const currentIndex = tabs.findIndex((tab) => tab.id === selectedTab);
+          const nextIndex = (currentIndex + 1) % tabs.length;
+          setSelectedTab(tabs[nextIndex].id);
+          return 0;
+        }
+        return prev + 0.5;
+      });
+    }, 50); // Complete in 10 seconds (200 * 50ms)
+
+    return () => clearInterval(interval);
+  }, [selectedTab]);
+
+  const handleTabClick = (tabId: string) => {
+    setSelectedTab(tabId);
+    setProgress(0);
+  };
+
+  const content = {
+    clinic: {
+      title: "Veterinary Clinics",
+      description: "Streamline high-volume work across practice areas to free up time for strategic guidance.",
+      link: "Solutions for Veterinary Clinics",
+      placeholder: "Image Placeholder 1"
+    },
+    hospital: {
+      title: "Animal Hospitals",
+      description: "Access evidence-based protocols and treatment guidelines for comprehensive patient care.",
+      link: "Solutions for Animal Hospitals",
+      placeholder: "Image Placeholder 2"
+    },
+    research: {
+      title: "Research Teams",
+      description: "Accelerate veterinary research with AI-powered literature review and data analysis.",
+      link: "Solutions for Research Teams",
+      placeholder: "Image Placeholder 3"
+    },
+    education: {
+      title: "Education",
+      description: "Enhance veterinary education with interactive learning tools and case studies.",
+      link: "Solutions for Education",
+      placeholder: "Image Placeholder 4"
+    }
+  };
+
+  const currentContent = content[selectedTab as keyof typeof content];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start">
-      {/* Left: Description Text */}
-      <div className="lg:col-span-2 space-y-6 pt-4">
-        <div className="min-h-[100px]">
-          <h3 className={`text-xl font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} mb-3 transition-opacity duration-500`}>
-            {slides[currentSlide].title}
-          </h3>
-          <p className={`text-sm ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} leading-relaxed mb-4 transition-opacity duration-500`}>
-            {slides[currentSlide].description}
-          </p>
+    <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#0a0a0a]"} py-20`}>
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2
+            className={`text-3xl md:text-4xl font-normal ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}
+            style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}
+          >
+            How Veterinarians Use Ruleout
+          </h2>
         </div>
 
-        {/* Slide Indicators */}
-        <div className="flex gap-2">
-          {[0, 1, 2].map((index) => (
+        {/* Individual Buttons */}
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
+          {tabs.map((tab) => (
             <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                currentSlide === index
-                  ? 'w-8 bg-[#20808D]'
-                  : `w-1.5 ${effectiveTheme === "light" ? "bg-gray-300" : "bg-gray-700"}`
+              key={tab.id}
+              onClick={() => handleTabClick(tab.id)}
+              className={`relative px-4 py-2 rounded-full text-sm font-normal transition-all duration-300 overflow-hidden border ${
+                selectedTab === tab.id
+                  ? "border-white shadow-lg"
+                  : effectiveTheme === "light"
+                  ? "bg-white text-gray-600 hover:text-gray-900 border-gray-300"
+                  : "bg-[#0a0a0a] text-gray-400 hover:text-white border-gray-700"
               }`}
-            />
+              style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
+            >
+              {/* Progress fill background - straight edge */}
+              {selectedTab === tab.id && (
+                <span
+                  className="absolute left-0 top-0 h-full bg-white z-0"
+                  style={{
+                    width: `${progress}%`
+                  }}
+                ></span>
+              )}
+              {/* Button text with smooth color transition */}
+              <span className="relative z-10 inline-block mix-blend-difference">
+                {tab.label}
+              </span>
+            </button>
           ))}
         </div>
-      </div>
 
-      {/* Right: Image Carousel */}
-      <div className="lg:col-span-3 relative">
-        <div className={`rounded-xl overflow-hidden border ${effectiveTheme === "light" ? "border-gray-200 bg-gray-100" : "border-gray-800 bg-[#0d1117]"} shadow-2xl`}>
-          <div className="aspect-[16/9] relative">
-            {/* Slide 1 */}
-            <div className={`absolute inset-0 transition-opacity duration-500 ${currentSlide === 0 ? 'opacity-100' : 'opacity-0'}`}>
-              <Image
-                src="/image/carousel_1.png"
-                alt="Comprehensive guideline database"
-                fill
-                className="object-cover"
-              />
+        {/* Single Content Card */}
+        <div className={`${effectiveTheme === "light" ? "bg-gray-50 border-gray-200" : "bg-[#0a0a0a] border-gray-800"} rounded-2xl border overflow-hidden shadow-2xl`}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[500px]">
+            {/* Left: Image Placeholder */}
+            <div className={`${effectiveTheme === "light" ? "bg-gray-100" : "bg-gray-900"} flex items-center justify-center`}>
+              <div className={`text-lg ${effectiveTheme === "light" ? "text-gray-400" : "text-gray-600"}`}>
+                {currentContent.placeholder}
+              </div>
             </div>
 
-            {/* Slide 2 */}
-            <div className={`absolute inset-0 transition-opacity duration-500 ${currentSlide === 1 ? 'opacity-100' : 'opacity-0'}`}>
-              <Image
-                src="/image/carousel_2.png"
-                alt="Evidence-based decision support"
-                fill
-                className="object-cover"
-              />
-            </div>
-
-            {/* Slide 3 */}
-            <div className={`absolute inset-0 transition-opacity duration-500 ${currentSlide === 2 ? 'opacity-100' : 'opacity-0'}`}>
-              <Image
-                src="/image/carousel_3.png"
-                alt="Instant reference lookup"
-                fill
-                className="object-cover"
-              />
+            {/* Right: Description */}
+            <div className="p-8 md:p-12 flex flex-col justify-center">
+              <h3
+                className={`text-2xl md:text-3xl font-normal mb-4 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}
+                style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}
+              >
+                {currentContent.title}
+              </h3>
+              <p className={`text-base mb-6 ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"}`} style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                {currentContent.description}
+              </p>
+              <button className="flex items-center space-x-2 text-[#4DB8C4] hover:text-[#6dccd7] transition-colors group">
+                <span className="text-sm font-normal" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                  {currentContent.link}
+                </span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
           </div>
         </div>
-
-        {/* Navigation Arrows */}
-        <button
-          onClick={() => setCurrentSlide((prev) => (prev - 1 + 3) % 3)}
-          className={`absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full ${effectiveTheme === "light" ? "bg-white border-gray-200" : "bg-[#2a2a2a] border-gray-700"} border shadow-lg flex items-center justify-center hover:scale-110 transition-transform`}
-        >
-          <svg className={`w-5 h-5 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <button
-          onClick={() => setCurrentSlide((prev) => (prev + 1) % 3)}
-          className={`absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full ${effectiveTheme === "light" ? "bg-white border-gray-200" : "bg-[#2a2a2a] border-gray-700"} border shadow-lg flex items-center justify-center hover:scale-110 transition-transform`}
-        >
-          <svg className={`w-5 h-5 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
       </div>
     </div>
   );
 }
+
 
 export default function LandingPage() {
   const router = useRouter();
   const { effectiveTheme } = useTheme();
   const { language } = useLanguage();
   const { user } = useAuth();
-  const [question, setQuestion] = useState("");
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [isLoadingBlogs, setIsLoadingBlogs] = useState(true);
 
@@ -165,22 +212,8 @@ export default function LandingPage() {
   }, []);
 
   const handleLogin = () => {
-    // 로그인 모달 열기
-    setShowLoginModal(true);
-  };
-
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!question.trim()) return;
-
-    // 모든 질문은 로그인 필수 - 로그인 모달 표시
-    setShowLoginModal(true);
-  };
-
-  const handleQuestionClick = (q: string) => {
-    // 모든 질문은 로그인 필수 - 로그인 모달 표시
-    setShowLoginModal(true);
+    // 로그인 페이지로 이동
+    router.push('/login');
   };
 
   // Language content
@@ -230,8 +263,8 @@ export default function LandingPage() {
         }
       ],
       partners: {
-        subtitle: "Journals",
-        title: "Evidence-informed veterinary medicine, built for clinicians",
+        subtitle: "",
+        title: "Built for Veterinarians",
         footnote: "Journal logos are the property of their respective owners. Display does not imply endorsement or affiliation."
       },
       features: {
@@ -278,12 +311,12 @@ export default function LandingPage() {
         ]
       },
       blog: {
-        title: "Recent highlights",
+        title: "Insights",
         viewMore: "View more posts",
         noPosts: "No blog posts available yet."
       },
       faq: {
-        title: "Frequently asked questions",
+        title: "Common Questions",
         items: [
           {
             question: "What veterinary guidelines are included in Ruleout?",
@@ -312,8 +345,8 @@ export default function LandingPage() {
         ]
       },
       banner: {
-        title: "Try Ruleout Now",
-        button: "Get Started"
+        title: "Unlock Professional Class AI for Your Firm",
+        button: "Request a Demo"
       }
     },
     한국어: {
@@ -361,8 +394,8 @@ export default function LandingPage() {
         }
       ],
       partners: {
-        subtitle: "저널",
-        title: "근거 중심 수의학, 임상의를 위해 만들어졌습니다",
+        subtitle: "",
+        title: "수의사를 위해 만들어졌습니다",
         footnote: "저널 로고는 각 소유자의 재산입니다. 표시는 보증이나 제휴를 의미하지 않습니다."
       },
       features: {
@@ -409,8 +442,8 @@ export default function LandingPage() {
         ]
       },
       blog: {
-        title: "최신 소식",
-        viewMore: "더 많은 게시물 보기",
+        title: "인사이트 & 새소식",
+        viewMore: "모두 보기",
         noPosts: "아직 블로그 게시물이 없습니다."
       },
       faq: {
@@ -443,8 +476,8 @@ export default function LandingPage() {
         ]
       },
       banner: {
-        title: "지금 Ruleout 사용해보기",
-        button: "시작하기"
+        title: "귀사를 위한 전문가급 AI를 경험하세요",
+        button: "데모 요청하기"
       }
     },
     日本語: {
@@ -492,8 +525,8 @@ export default function LandingPage() {
         }
       ],
       partners: {
-        subtitle: "ジャーナル",
-        title: "エビデンスに基づく獣医学、臨床医のために構築",
+        subtitle: "",
+        title: "獣医師のために構築",
         footnote: "ジャーナルロゴは各所有者の財産です。表示は推奨または提携を意味するものではありません。"
       },
       features: {
@@ -540,7 +573,7 @@ export default function LandingPage() {
         ]
       },
       blog: {
-        title: "最新のハイライト",
+        title: "インサイト",
         viewMore: "もっと見る",
         noPosts: "まだブログ投稿はありません。"
       },
@@ -574,14 +607,13 @@ export default function LandingPage() {
         ]
       },
       banner: {
-        title: "今すぐRuleoutを試す",
-        button: "始める"
+        title: "貴社のためのプロフェッショナルクラスAIを体験",
+        button: "デモをリクエスト"
       }
     }
   };
 
   const currentContent = content[language as keyof typeof content];
-  const suggestions = currentContent.suggestions;
 
   return (
     <div className={`min-h-screen ${effectiveTheme === "light" ? "bg-white text-gray-900" : "bg-[#1a1a1a] text-white"}`}>
@@ -589,372 +621,614 @@ export default function LandingPage() {
       <Toolbar onLoginClick={handleLogin} />
 
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-6 py-24 pt-40">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-          {/* 왼쪽: 텍스트 및 입력 */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
-                {currentContent.hero.title.split('\n').map((line, i) => (
-                  <span key={i}>
-                    {line}
-                    {i === 0 && <br />}
-                  </span>
-                ))}
-              </h1>
-              <p className={`text-base sm:text-lg md:text-xl ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"}`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
-                {currentContent.hero.subtitle}
-              </p>
+      <div className="bg-[#0a0a0a] py-20 pt-16">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          {/* 메인 문구 */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-tight text-white mb-6 font-hedvig" style={{ fontFamily: "var(--font-hedvig-letters-serif), serif !important" }}>
+            {currentContent.hero.title.split('\n').map((line, i) => (
+              <span key={i}>
+                {line}
+                {i === 0 && <br />}
+              </span>
+            ))}
+          </h1>
+
+          {/* 세부 문구 */}
+          <p className="text-base sm:text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+            {currentContent.hero.subtitle}
+          </p>
+
+          {/* Start Now 버튼 */}
+          <button
+            onClick={() => router.push('/login')}
+            className="px-6 py-3 bg-white text-black text-sm font-normal rounded-lg hover:bg-gray-100 transition-all duration-300"
+            style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
+          >
+            Start Now
+          </button>
+
+          {/* 이미지 플레이스홀더 섹션 */}
+          <div className="mt-16 relative rounded-xl overflow-hidden shadow-2xl bg-gray-900 border border-gray-800">
+            <div className="relative aspect-video flex items-center justify-center">
+              <div className="text-gray-500 text-lg">Image Placeholder</div>
             </div>
-
-            {/* Search Input */}
-            <form onSubmit={handleSubmit} className="w-full max-w-2xl mb-6">
-              <div className={`flex items-center ${effectiveTheme === "light" ? "bg-gray-50 border-gray-300" : "bg-[#2a2a2a] border-gray-700"} rounded-2xl border px-6 pr-2 py-3`}>
-                <input
-                  type="text"
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  placeholder={currentContent.hero.placeholder}
-                  className={`flex-1 bg-transparent outline-none ${effectiveTheme === "light" ? "text-gray-900 placeholder-gray-400" : "text-white placeholder-gray-500"}`}
-                />
-                <button
-                  type="submit"
-                  className="w-10 h-10 flex items-center justify-center bg-[#20808D] rounded-full transition-all duration-200 hover:shadow-[0_0_20px_rgba(32,128,141,0.4)] hover:brightness-110"
-                >
-                  <ArrowRight className="w-5 h-5 text-white" />
-                </button>
-              </div>
-            </form>
-
-            {/* 제안 버튼들 */}
-            <div className="w-full">
-              <div className="flex flex-wrap gap-3 mb-4">
-                {suggestions.map((suggestion, index) => {
-                  const Icon = suggestion.icon;
-                  const isExpanded = expandedCategory === suggestion.text;
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => setExpandedCategory(isExpanded ? null : suggestion.text)}
-                      className={`flex items-center space-x-2 px-4 py-2 ${effectiveTheme === "light" ? "bg-gray-50 border-gray-300 hover:border-gray-400" : "bg-[#2a2a2a] border-gray-700 hover:border-gray-600"} border rounded-lg transition-colors`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span className="text-sm">{suggestion.text}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* 확장된 질문 목록 */}
-              {expandedCategory && (
-                <div className="space-y-2 animate-slideDown">
-                  {suggestions
-                    .find((s) => s.text === expandedCategory)
-                    ?.questions.map((q, qIndex) => (
-                      <button
-                        key={qIndex}
-                        onClick={() => handleQuestionClick(q)}
-                        className={`w-full group flex items-center justify-between px-5 py-4 ${effectiveTheme === "light" ? "bg-gray-50 border-gray-300 hover:border-gray-400" : "bg-[#2a2a2a] border-gray-700 hover:border-gray-600"} border rounded-lg transition-all text-left`}
-                      >
-                        <span className={`text-sm ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-200"} pr-4`}>{q}</span>
-                        <ArrowUpRight className="w-4 h-4 flex-shrink-0 text-gray-500 group-hover:text-[#20808D] transition-colors" />
-                      </button>
-                    ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* 오른쪽: 일러스트레이션 영역 */}
-          <div className={`relative h-96 flex items-center justify-center ${effectiveTheme === "light" ? "bg-gray-100" : "bg-[#1a1a1a]"} rounded-lg pt-24`}>
-            <Image
-              src="/image/cat.png"
-              alt="Cat"
-              width={300}
-              height={300}
-              className="object-contain"
-            />
           </div>
         </div>
       </div>
 
       {/* Partners Section */}
-      <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#212121]"} py-12`}>
+      <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#0a0a0a]"} py-12`}>
         <div className="max-w-7xl mx-auto px-6">
           {/* Header */}
           <div className="text-center mb-12">
-            <p className="text-[#20808D] text-2xl font-semibold mb-4" style={{ fontFamily: "'TikTok Sans', sans-serif" }}>{currentContent.partners.subtitle}</p>
-            <h2 className={`text-3xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} mb-6`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
+            <h2 className="text-3xl font-normal text-white mb-6" style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>
               {currentContent.partners.title}
             </h2>
           </div>
 
-          {/* 파트너 로고 그리드 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-center max-w-5xl mx-auto">
-            <div className={`flex items-center justify-center h-20 ${effectiveTheme === "light" ? "bg-white border border-gray-200" : "bg-[#2a2a2a]"} rounded-lg p-3 group cursor-pointer`}>
-              <Image
-                src="/image/acvim.png"
-                alt="ACVIM"
-                width={130}
-                height={50}
-                className="object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
-              />
-            </div>
-            <div className={`flex items-center justify-center h-20 ${effectiveTheme === "light" ? "bg-white border border-gray-200" : "bg-[#2a2a2a]"} rounded-lg p-3 group cursor-pointer`}>
-              <Image
-                src="/image/annual reviews.png"
-                alt="Annual Reviews"
-                width={130}
-                height={50}
-                className="object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
-              />
-            </div>
-            <div className={`flex items-center justify-center h-20 ${effectiveTheme === "light" ? "bg-white border border-gray-200" : "bg-[#2a2a2a]"} rounded-lg p-3 group cursor-pointer`}>
-              <Image
-                src="/image/frontiers.png"
-                alt="Frontiers"
-                width={130}
-                height={50}
-                className="object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
-              />
-            </div>
-            <div className={`flex items-center justify-center h-20 ${effectiveTheme === "light" ? "bg-white border border-gray-200" : "bg-[#2a2a2a]"} rounded-lg p-3 group cursor-pointer`}>
-              <Image
-                src="/image/BMC.png"
-                alt="BMC"
-                width={130}
-                height={50}
-                className="object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
-              />
+          {/* 파트너 로고 무한 스크롤 */}
+          <div className="relative overflow-hidden">
+            <div className="flex animate-scroll">
+              {/* 첫 번째 세트 */}
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/acvim.png"
+                  alt="ACVIM"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/annual reviews.png"
+                  alt="Annual Reviews"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/frontiers.png"
+                  alt="Frontiers"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/BMC.png"
+                  alt="BMC"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/acvim.png"
+                  alt="ACVIM"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/annual reviews.png"
+                  alt="Annual Reviews"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/frontiers.png"
+                  alt="Frontiers"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/BMC.png"
+                  alt="BMC"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+
+              {/* 두 번째 세트 (무한 스크롤을 위한 복사본) */}
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/acvim.png"
+                  alt="ACVIM"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/annual reviews.png"
+                  alt="Annual Reviews"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/frontiers.png"
+                  alt="Frontiers"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/BMC.png"
+                  alt="BMC"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/acvim.png"
+                  alt="ACVIM"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/annual reviews.png"
+                  alt="Annual Reviews"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/frontiers.png"
+                  alt="Frontiers"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex items-center justify-center h-20 bg-transparent rounded-lg p-3 min-w-[200px]">
+                <Image
+                  src="/image/BMC.png"
+                  alt="BMC"
+                  width={130}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
             </div>
           </div>
 
           {/* Footnote */}
           <div className="text-right mt-6">
-            <p className="text-xs text-gray-500" style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
+            <p className="text-xs text-gray-500" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
               {currentContent.partners.footnote}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#1a1a1a]"} py-20`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            {/* 왼쪽: 비디오 */}
-            <div className={`relative rounded-2xl overflow-hidden ${effectiveTheme === "light" ? "bg-gray-50 border-gray-200" : "bg-[#0d1117] border-gray-800"} border shadow-2xl`}>
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-auto"
-              >
-                <source src="/image/video_feature1.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-
-            {/* 오른쪽: 텍스트 */}
-            <div className="space-y-6">
-              <h2 className={`text-3xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
-                {currentContent.features.title}
-              </h2>
-              <p className={`text-xl ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} leading-relaxed`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
-                {currentContent.features.description}
-              </p>
-              <button
-                onClick={() => router.push('/features')}
-                className="flex items-center space-x-2 text-[#20808D] hover:text-[#2a9fad] transition-colors group"
-              >
-                <span className="text-lg font-medium">{currentContent.features.link}</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* New Carousel Section */}
+      {/* New Platform Section */}
       <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#0a0a0a]"} py-32`}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="space-y-16">
-            {/* Title and Description - Left Aligned */}
-            <div className="max-w-3xl">
-              <h2 className={`text-3xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} mb-6`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
-                {currentContent.carousel.title}
-              </h2>
-              <p className={`text-lg ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} leading-relaxed`}>
-                {currentContent.carousel.description}
-              </p>
-            </div>
-
-            {/* Content Card Container */}
-            <div className={`rounded-2xl border ${effectiveTheme === "light" ? "bg-white border-gray-200" : "bg-[#1a1a1a] border-gray-800"} shadow-xl p-6 md:p-8`}>
-              <CarouselContent effectiveTheme={effectiveTheme} slides={currentContent.carousel.slides} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Features2 Section */}
-      <div className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#1a1a1a]"} py-20`}>
-        <div className="max-w-7xl mx-auto px-6">
-          {/* Header */}
-          <div className="mb-8">
-            <h2 className={`text-3xl font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
-              {currentContent.features2.title}
+          {/* Title - Center Aligned */}
+          <div className="text-center mb-16">
+            <h2
+              className={`text-2xl md:text-3xl ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}
+              style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}
+            >
+              Augment All of Your Work on<br />One Integrated, Secure Platform
             </h2>
           </div>
 
-          {/* 3 Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1 */}
-            <div className={`${effectiveTheme === "light" ? "bg-white border-gray-200 hover:border-gray-300" : "bg-[#1a1a1a] border-gray-800 hover:border-gray-700"} rounded-xl p-6 border transition-colors flex flex-col`}>
-              <div className="flex-1">
-                <h3 className={`text-base ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} mb-3`}>
-                  {currentContent.features2.cards[0].title}
-                </h3>
-                <p className={`text-base ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} leading-relaxed mb-4`}>
-                  {currentContent.features2.cards[0].description}
-                </p>
-                <div className="h-[28px]"></div>
-              </div>
+          {/* Feature Cards Container */}
+          <div className="space-y-32">
+            {/* Feature Card 1 - Image Left */}
+            <div className={`rounded-lg overflow-hidden shadow-2xl ${effectiveTheme === "light" ? "border border-gray-200" : "border border-gray-800"}`}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[600px]">
+                {/* Left: Image Placeholder */}
+                <div className={`${effectiveTheme === "light" ? "bg-gray-100" : "bg-gray-900"} flex items-center justify-center`}>
+                  <div className={`text-lg ${effectiveTheme === "light" ? "text-gray-400" : "text-gray-600"}`}>
+                    Image Placeholder
+                  </div>
+                </div>
 
-              {/* Image */}
-              <div className={`mt-6 w-full h-64 rounded-lg overflow-hidden border ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
-                <Image
-                  src="/image/paper.png"
-                  alt="Veterinary Research Papers"
-                  width={400}
-                  height={256}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div className={`${effectiveTheme === "light" ? "bg-white border-gray-200 hover:border-gray-300" : "bg-[#1a1a1a] border-gray-800 hover:border-gray-700"} rounded-xl p-6 border transition-colors flex flex-col`}>
-              <div className="flex-1">
-                <h3 className={`text-base ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} mb-3`}>
-                  {currentContent.features2.cards[1].title}
-                </h3>
-                <p className={`text-base ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} leading-relaxed mb-4`}>
-                  {currentContent.features2.cards[1].description}
-                </p>
-                <div className="h-[28px]"></div>
-              </div>
-
-              {/* Image */}
-              <div className={`mt-6 w-full h-64 rounded-lg overflow-hidden border ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
-                <Image
-                  src="/image/vets.jpeg"
-                  alt="Veterinarians at work"
-                  width={400}
-                  height={256}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className={`${effectiveTheme === "light" ? "bg-white border-gray-200 hover:border-gray-300" : "bg-[#1a1a1a] border-gray-800 hover:border-gray-700"} rounded-xl p-6 border transition-colors flex flex-col`}>
-              <div className="flex-1">
-                <h3 className={`text-base ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} mb-3`}>
-                  {currentContent.features2.cards[2].title}
-                </h3>
-                <p className={`text-base ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} leading-relaxed mb-4`}>
-                  {currentContent.features2.cards[2].description}
-                </p>
-                <button
-                  onClick={() => router.push('/mission')}
-                  className="flex items-center space-x-2 text-[#4DB8C4] hover:text-[#6dccd7] transition-colors group"
+                {/* Right: Description with light blue background */}
+                <div
+                  className="p-8 md:p-12 flex flex-col justify-center"
+                  style={{ backgroundColor: effectiveTheme === "light" ? "#F0F8FF" : "#0A1628" }}
                 >
-                  <span className="text-sm font-medium">{currentContent.features2.cards[2].link}</span>
-                  <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </button>
+                  <div className="mb-4">
+                    <span className="text-base font-normal text-white">
+                      Assistant
+                    </span>
+                  </div>
+                  <h3
+                    className={`text-3xl md:text-4xl font-normal mb-4 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}
+                    style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}
+                  >
+                    Tailored to Your Expertise
+                  </h3>
+                  <p className={`text-sm md:text-base mb-6 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>
+                    Delegate complex tasks in natural language to your domain-specific personal assistant.
+                  </p>
+                  <button className={`flex items-center transition-colors ${effectiveTheme === "light" ? "text-gray-400 hover:text-gray-500" : "text-gray-400 hover:text-gray-300"}`}>
+                    <span className="font-normal">Explore Assistant</span>
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </button>
+                </div>
               </div>
+            </div>
 
-              {/* Image */}
-              <div className={`mt-6 w-full h-64 rounded-lg overflow-hidden border ${effectiveTheme === "light" ? "border-gray-200" : "border-gray-800"}`}>
-                <Image
-                  src="/image/welfare.webp"
-                  alt="Animal Welfare"
-                  width={400}
-                  height={256}
-                  className="w-full h-full object-cover"
-                />
+            {/* Feature Card 2 - Image Right */}
+            <div className={`rounded-lg overflow-hidden shadow-2xl ${effectiveTheme === "light" ? "border border-gray-200" : "border border-gray-800"}`}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[600px]">
+                {/* Left: Description with light blue background */}
+                <div
+                  className="p-8 md:p-12 flex flex-col justify-center"
+                  style={{ backgroundColor: effectiveTheme === "light" ? "#F0F8FF" : "#0A1628" }}
+                >
+                  <div className="mb-4">
+                    <span className="text-base font-normal text-white">
+                      Feature
+                    </span>
+                  </div>
+                  <h3
+                    className={`text-3xl md:text-4xl font-normal mb-4 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}
+                    style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}
+                  >
+                    Advanced Analytics
+                  </h3>
+                  <p className={`text-sm md:text-base mb-6 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>
+                    Gain insights from comprehensive data analysis and reporting tools designed for veterinary professionals.
+                  </p>
+                  <button className={`flex items-center transition-colors ${effectiveTheme === "light" ? "text-gray-400 hover:text-gray-500" : "text-gray-400 hover:text-gray-300"}`}>
+                    <span className="font-normal">Learn More</span>
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Right: Image Placeholder */}
+                <div className={`${effectiveTheme === "light" ? "bg-gray-100" : "bg-gray-900"} flex items-center justify-center`}>
+                  <div className={`text-lg ${effectiveTheme === "light" ? "text-gray-400" : "text-gray-600"}`}>
+                    Image Placeholder
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature Card 3 - Image Left */}
+            <div className={`rounded-lg overflow-hidden shadow-2xl ${effectiveTheme === "light" ? "border border-gray-200" : "border border-gray-800"}`}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[600px]">
+                {/* Left: Image Placeholder */}
+                <div className={`${effectiveTheme === "light" ? "bg-gray-100" : "bg-gray-900"} flex items-center justify-center`}>
+                  <div className={`text-lg ${effectiveTheme === "light" ? "text-gray-400" : "text-gray-600"}`}>
+                    Image Placeholder
+                  </div>
+                </div>
+
+                {/* Right: Description with light blue background */}
+                <div
+                  className="p-8 md:p-12 flex flex-col justify-center"
+                  style={{ backgroundColor: effectiveTheme === "light" ? "#F0F8FF" : "#0A1628" }}
+                >
+                  <div className="mb-4">
+                    <span className="text-base font-normal text-white">
+                      Integration
+                    </span>
+                  </div>
+                  <h3
+                    className={`text-3xl md:text-4xl font-normal mb-4 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}
+                    style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}
+                  >
+                    Seamless Workflow
+                  </h3>
+                  <p className={`text-sm md:text-base mb-6 ${effectiveTheme === "light" ? "text-gray-700" : "text-gray-300"}`}>
+                    Integrate with your existing practice management systems for a unified experience.
+                  </p>
+                  <button className={`flex items-center transition-colors ${effectiveTheme === "light" ? "text-gray-400 hover:text-gray-500" : "text-gray-400 hover:text-gray-300"}`}>
+                    <span className="font-normal">View Integrations</span>
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Blog Section */}
-      <div className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#0a0a0a]"} py-20`}>
+      {/* Quantifiable Impact Section */}
+      <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#0a0a0a]"} py-10`}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            {/* Left: Header */}
-            <div className="lg:col-span-3">
-              <h2 className={`text-3xl font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} sticky top-8`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
-                {currentContent.blog.title}
-              </h2>
+          {/* Title */}
+          <div className="text-center mb-20">
+            <h2
+              className={`text-2xl md:text-3xl font-normal ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`}
+              style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}
+            >
+              Quantifiable Impact
+            </h2>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+            {/* Stat 1 */}
+            <div className="text-center py-12 relative">
+              <div className={`text-4xl md:text-5xl font-normal mb-6 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>
+                700
+              </div>
+              <p className={`text-base md:text-lg font-normal ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-300"}`}>
+                Leading law firms and<br />enterprises
+              </p>
+              {/* Short divider */}
+              <div className={`hidden md:block absolute right-0 top-1/2 -translate-y-1/2 h-24 w-px ${effectiveTheme === "light" ? "bg-gray-300" : "bg-gray-700"}`}></div>
             </div>
 
-            {/* Right: Blog Posts */}
-            <div className="lg:col-span-9">
-              <div className="space-y-4">
-                {isLoadingBlogs ? (
-                  // Loading state
-                  <div className="space-y-4">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className={`${effectiveTheme === "light" ? "bg-gray-50 border-gray-200" : "bg-[#0d0d0d] border-gray-800"} rounded-xl p-6 border animate-pulse`}>
-                        <div className={`h-6 ${effectiveTheme === "light" ? "bg-gray-200" : "bg-gray-800"} rounded w-3/4 mb-2`}></div>
-                        <div className={`h-4 ${effectiveTheme === "light" ? "bg-gray-200" : "bg-gray-800"} rounded w-full mb-1`}></div>
-                        <div className={`h-4 ${effectiveTheme === "light" ? "bg-gray-200" : "bg-gray-800"} rounded w-2/3 mb-3`}></div>
-                        <div className={`h-3 ${effectiveTheme === "light" ? "bg-gray-200" : "bg-gray-800"} rounded w-1/4`}></div>
-                      </div>
-                    ))}
-                  </div>
-                ) : blogPosts.length > 0 ? (
-                  // Display actual blog posts
-                  blogPosts.map((post) => (
-                    <div
-                      key={post.id}
-                      onClick={() => router.push(`/blog/${post.slug}`)}
-                      className={`group cursor-pointer ${effectiveTheme === "light" ? "bg-gray-50 hover:bg-gray-100 border-gray-200 hover:border-gray-300" : "bg-[#0d0d0d] hover:bg-[#151515] border-gray-800 hover:border-gray-700"} rounded-xl p-6 border transition-all duration-200`}
-                    >
-                      <h3 className={`text-lg font-semibold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} mb-2 group-hover:text-[#4DB8C4] transition-colors`}>
-                        {post.title}
-                      </h3>
-                      {post.subtitle && (
-                        <p className={`${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"} mb-3 leading-relaxed text-sm`}>
-                          {post.subtitle}
-                        </p>
-                      )}
-                      <p className={`text-xs ${effectiveTheme === "light" ? "text-gray-500" : "text-gray-500"}`}>
-                        {post.category} · {post.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  // No posts found
-                  <div className={`${effectiveTheme === "light" ? "bg-gray-50 border-gray-200" : "bg-[#0d0d0d] border-gray-800"} rounded-xl p-6 border text-center`}>
-                    <p className={`${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"}`}>{currentContent.blog.noPosts}</p>
-                  </div>
-                )}
+            {/* Stat 2 */}
+            <div className="text-center py-12 relative">
+              <div className={`text-4xl md:text-5xl font-normal mb-6 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>
+                50
               </div>
+              <p className={`text-base md:text-lg font-normal ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-300"}`}>
+                of AmLaw 100 firms on Harvey
+              </p>
+              {/* Short divider */}
+              <div className={`hidden md:block absolute right-0 top-1/2 -translate-y-1/2 h-24 w-px ${effectiveTheme === "light" ? "bg-gray-300" : "bg-gray-700"}`}></div>
+            </div>
 
-              {/* View More Link */}
-              <div className="mt-10">
-                <button
-                  onClick={() => router.push('/blog')}
-                  className="flex items-center space-x-2 text-[#4DB8C4] hover:text-[#6dccd7] transition-colors group"
-                >
-                  <span className="text-base font-medium">{currentContent.blog.viewMore}</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
+            {/* Stat 3 */}
+            <div className="text-center py-12">
+              <div className={`text-4xl md:text-5xl font-normal mb-6 ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>
+                74k+
+              </div>
+              <p className={`text-base md:text-lg font-normal ${effectiveTheme === "light" ? "text-gray-600" : "text-gray-300"}`}>
+                Lawyers using Harvey
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Solutions Section */}
+      <SolutionsSection effectiveTheme={effectiveTheme} />
+
+      {/* Enterprise Features Section */}
+      <div className="bg-[#0a0a0a] py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Title */}
+          <div className="text-center mb-16">
+            <h2
+              className="text-white text-3xl md:text-4xl font-normal"
+              style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}
+            >
+              Unlock Professional Class AI For Your Firm
+            </h2>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Feature 1: Enterprise-Grade Security */}
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-12 h-12 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="text-white text-base font-normal mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                Enterprise-Grade Security
+              </h3>
+              <p className="text-gray-400 text-sm" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                Robust, industry-standard protection with zero training on your data.
+              </p>
+            </div>
+
+            {/* Feature 2: Agentive Workflows */}
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-12 h-12 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="text-white text-base font-normal mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                Agentive Workflows
+              </h3>
+              <p className="text-gray-400 text-sm" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                Produce expert-quality work product for complex workflows, with no prompting required.
+              </p>
+            </div>
+
+            {/* Feature 3: Domain-Specific Models */}
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-12 h-12 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="text-white text-base font-normal mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                Domain-Specific Models
+              </h3>
+              <p className="text-gray-400 text-sm" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                High-performing custom models built for complex professional work.
+              </p>
+            </div>
+
+            {/* Feature 4: 24/7 Customer Support */}
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-12 h-12 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="text-white text-base font-normal mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                24/7 Customer Support
+              </h3>
+              <p className="text-gray-400 text-sm" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                White glove support to resolve issues and maximize your Harvey experience.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Blog Section - Insights */}
+      <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#0a0a0a]"} py-20`}>
+        <div className="max-w-[1600px] mx-auto px-6">
+          <div className="flex flex-col lg:flex-row gap-12 items-start">
+            {/* Left: Header */}
+            <div className="lg:w-56 lg:ml-8 flex-shrink-0">
+              <h2
+                className={`text-4xl md:text-5xl font-normal ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} mb-2`}
+                style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}
+              >
+                {currentContent.blog.title}
+              </h2>
+              <button
+                onClick={() => router.push('/blog')}
+                className={`text-sm ${effectiveTheme === "light" ? "text-gray-600 hover:text-gray-900" : "text-gray-400 hover:text-white"} transition-colors flex items-center space-x-1`}
+              >
+                <span>{currentContent.blog.viewMore}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Right: Blog Cards */}
+            <div className="flex-1">
+              {isLoadingBlogs ? (
+                // Loading state
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="rounded-2xl overflow-hidden animate-pulse">
+                      <div className={`${effectiveTheme === "light" ? "bg-gray-200" : "bg-gray-800"} h-64`}></div>
+                      <div className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#1a1a1a]"} p-6`}>
+                        <div className={`h-6 ${effectiveTheme === "light" ? "bg-gray-200" : "bg-gray-800"} rounded w-3/4 mb-3`}></div>
+                        <div className={`h-4 ${effectiveTheme === "light" ? "bg-gray-200" : "bg-gray-800"} rounded w-1/2`}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : blogPosts.length > 0 ? (
+                // Display actual blog posts
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {blogPosts.slice(0, 3).map((post, index) => {
+                    // Different background colors for each card
+                    const cardColors = [
+                      { bg: "#1a3d2e", text: "white" }, // Dark green
+                      { bg: "#d97736", text: "white" }, // Orange
+                      { bg: "#d4e89e", text: "#1a1a1a" }, // Light yellow-green
+                    ];
+                    const color = cardColors[index % cardColors.length];
+
+                    return (
+                      <div
+                        key={post.id}
+                        onClick={() => router.push(`/blog/${post.slug}`)}
+                        className="group cursor-pointer"
+                      >
+                        {/* Image/Preview Area */}
+                        <div
+                          className="w-full aspect-[4/3] flex items-center justify-center p-8 rounded-sm shadow-lg overflow-hidden"
+                          style={{ backgroundColor: color.bg }}
+                        >
+                          {post.imageUrl ? (
+                            <Image
+                              src={post.imageUrl}
+                              alt={post.title}
+                              width={400}
+                              height={300}
+                              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+                            />
+                          ) : (
+                            <div className="text-center transition-transform duration-500 group-hover:scale-110" style={{ color: color.text }}>
+                              <h3 className="text-xl md:text-2xl font-normal mb-4" style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>
+                                {post.title.length > 40 ? post.title.substring(0, 40) + "..." : post.title}
+                              </h3>
+                              {post.subtitle && (
+                                <p className="text-sm opacity-90" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                                  {post.subtitle.length > 60 ? post.subtitle.substring(0, 60) + "..." : post.subtitle}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Content Area - Transparent Background */}
+                        <div className="p-6 bg-transparent max-w-md">
+                          <h3 className={`text-base font-normal ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} mb-3 group-hover:text-[#4DB8C4] transition-colors`} style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                            {post.title}
+                          </h3>
+                          {/* Badge for Category */}
+                          <span className={`inline-block px-3 py-1 text-xs font-normal rounded-full ${effectiveTheme === "light" ? "bg-gray-200 text-gray-700" : "bg-gray-800 text-gray-300"}`}>
+                            {post.category}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                // No posts found
+                <div className={`${effectiveTheme === "light" ? "bg-gray-50 border-gray-200" : "bg-[#0d0d0d] border-gray-800"} rounded-xl p-12 border text-center`}>
+                  <p className={`${effectiveTheme === "light" ? "text-gray-600" : "text-gray-400"}`}>{currentContent.blog.noPosts}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Testimonial Section */}
+      <div className="py-20" style={{ backgroundColor: "#A8C5E3" }}>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Image */}
+            <div className="flex justify-center lg:justify-start">
+              <div className="w-11/12">
+                <div className="bg-gray-300 aspect-[4/5] rounded flex items-center justify-center">
+                  <span className="text-gray-500 text-sm">Image Placeholder</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Quote */}
+            <div className="flex flex-col justify-center">
+              <blockquote className="text-black text-xl md:text-2xl font-normal mb-6 leading-relaxed" style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>
+                "When it comes to AI and technology, it's all about learning by doing. You won't figure everything out right away, but the more you engage with it, the more opportunities you'll see."
+              </blockquote>
+              <div className="text-black">
+                <p className="font-medium text-base" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                  Thomas Lambert
+                </p>
+                <p className="text-sm text-black/70" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                  General Counsel, Ryer
+                </p>
               </div>
             </div>
           </div>
@@ -962,9 +1236,9 @@ export default function LandingPage() {
       </div>
 
       {/* FAQ Section */}
-      <div className={`${effectiveTheme === "light" ? "bg-gray-50" : "bg-[#1a1a1a]"} py-24`}>
+      <div className={`${effectiveTheme === "light" ? "bg-white" : "bg-[#0a0a0a]"} py-24`}>
         <div className="max-w-5xl mx-auto px-6">
-          <h2 className={`text-3xl md:text-4xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} mb-12`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
+          <h2 className={`text-3xl md:text-4xl font-normal ${effectiveTheme === "light" ? "text-gray-900" : "text-white"} mb-12`} style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>
             {currentContent.faq.title}
           </h2>
 
@@ -977,40 +1251,26 @@ export default function LandingPage() {
       </div>
 
       {/* Banner Section */}
-      <div className={`${effectiveTheme === "light" ? "bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50" : "bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a]"} py-32`}>
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="flex items-center justify-center gap-4 mb-16">
-            <Image
-              src="/image/logo_candidate1 복사본.png"
-              alt="Ruleout Logo"
-              width={48}
-              height={48}
-              className="object-contain"
-            />
-            <h2 className={`text-4xl md:text-5xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-white"}`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
-              {currentContent.banner.title}
-            </h2>
-          </div>
-          <button
-            onClick={() => setShowLoginModal(true)}
-            className="group relative px-8 py-3 bg-white text-black text-base font-semibold rounded-full hover:bg-[#4DB8C4] hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-[#4DB8C4]/20 overflow-hidden"
+      <div className="bg-[#0a0a0a] py-20">
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <h2
+            className="text-white text-2xl md:text-3xl font-normal max-w-2xl"
+            style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}
           >
-            <span className="relative z-10 flex items-center justify-center space-x-2">
-              <span>{currentContent.banner.button}</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-            </span>
+            {currentContent.banner.title}
+          </h2>
+          <button
+            onClick={() => router.push('/login')}
+            className="bg-white text-black px-8 py-4 rounded-lg text-base font-normal hover:bg-gray-100 transition-colors"
+            style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
+          >
+            {currentContent.banner.button}
           </button>
         </div>
       </div>
 
       {/* Footer */}
       <Footer />
-
-      {/* 로그인 모달 */}
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-      />
     </div>
   );
 }

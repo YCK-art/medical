@@ -9,7 +9,6 @@ import HistoryView from "../components/HistoryView";
 import CollectionsView from "../components/CollectionsView";
 import ProjectDetailView from "../components/ProjectDetailView";
 import LoginModal from "../components/LoginModal";
-import RecordingsSidebar from "../components/RecordingsSidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { addConversationToProject } from "@/lib/projectService";
 
@@ -26,28 +25,22 @@ function HomeContent() {
   }, [user, router]);
   // 모바일에서는 기본적으로 사이드바 닫힘
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<"home" | "chat" | "history" | "collections" | "projectDetail" | "visit" | "visitRecording">("home");
+  const [currentView, setCurrentView] = useState<"home" | "chat" | "history" | "collections" | "projectDetail">("home");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [isRecordingsSidebarOpen, setIsRecordingsSidebarOpen] = useState(false);
-  const [selectedRecording, setSelectedRecording] = useState<any | null>(null);
 
   // 데스크톱에서는 사이드바를 기본적으로 열림 상태로 설정
-  // New Visit 모드에서는 사이드바 자동 토글 비활성화
   useEffect(() => {
     const handleResize = () => {
-      // New Visit 모드가 아닐 때만 자동 토글
-      if (currentView !== "visit" && currentView !== "visitRecording") {
-        if (window.innerWidth >= 768) {
-          // md breakpoint
-          setIsSidebarOpen(true);
-        } else {
-          setIsSidebarOpen(false);
-        }
+      if (window.innerWidth >= 768) {
+        // md breakpoint
+        setIsSidebarOpen(true);
+      } else {
+        setIsSidebarOpen(false);
       }
     };
 
@@ -56,7 +49,7 @@ function HomeContent() {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [currentView]);
+  }, []);
 
 
   // URL 파라미터 확인 및 페이지 상태 복원
@@ -87,12 +80,7 @@ function HomeContent() {
     const savedProjectId = localStorage.getItem("currentProjectId");
 
     if (savedView) {
-      // "visit" 또는 "visitRecording"이 저장되어 있으면 "home"으로 대체 (디폴트는 새 채팅)
-      if (savedView === "visit" || savedView === "visitRecording") {
-        setCurrentView("home");
-      } else {
-        setCurrentView(savedView as any);
-      }
+      setCurrentView(savedView as any);
     }
     if (savedConversationId && savedConversationId !== "null") {
       setCurrentConversationId(savedConversationId);
@@ -126,16 +114,6 @@ function HomeContent() {
     setCurrentView("home");
     setCurrentQuestion("");
     setCurrentConversationId(null);
-  };
-
-  const handleNewVisit = () => {
-    // 녹음 관련 상태 초기화
-    setSelectedRecording(null);
-    setIsRecordingsSidebarOpen(false);
-    setCurrentQuestion("");
-    setCurrentConversationId(null);
-    // 항상 visit으로 설정 (이미 visit이거나 visitRecording이어도 상관없음)
-    setCurrentView("visit");
   };
 
   const handleSelectChat = (conversationId: string) => {
@@ -195,42 +173,13 @@ function HomeContent() {
         currentConversationId={currentConversationId}
         currentView={currentView}
         onNewChat={handleNewChat}
-        onNewVisit={handleNewVisit}
         onSelectChat={handleSelectChat}
         onShowHistory={handleShowHistory}
         onShowCollections={handleShowCollections}
         refreshKey={sidebarRefreshKey}
         onShowLoginModal={() => setShowLoginModal(true)}
       />
-      {currentView === "visit" || currentView === "visitRecording" ? (
-        <>
-          <ChatView
-            initialQuestion=""
-            conversationId={null}
-            onNewQuestion={handleNewChat}
-            onConversationCreated={handleConversationCreated}
-            onTitleUpdated={handleTitleUpdated}
-            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-            onToggleRecordingsSidebar={() => setIsRecordingsSidebarOpen(!isRecordingsSidebarOpen)}
-            isVisitMode={true}
-            isSidebarOpen={isSidebarOpen}
-            isRecordingsSidebarOpen={isRecordingsSidebarOpen}
-            selectedRecording={selectedRecording}
-          />
-          <RecordingsSidebar
-            isOpen={isRecordingsSidebarOpen}
-            onClose={() => setIsRecordingsSidebarOpen(false)}
-            refreshKey={sidebarRefreshKey}
-            selectedRecordingId={selectedRecording?.id || null}
-            onSelectRecording={(recording) => {
-              console.log('📋 Selected recording:', recording);
-              setSelectedRecording(recording);
-              // 녹음을 선택하면 currentView를 "visitRecording"으로 변경하여 New Visit 하이라이트 제거
-              setCurrentView("visitRecording");
-            }}
-          />
-        </>
-      ) : currentView === "home" ? (
+      {currentView === "home" ? (
         <MainContent
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}

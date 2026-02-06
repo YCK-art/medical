@@ -21,6 +21,22 @@ const pretendard = localFont({
   preload: true,
 });
 
+// HedvigLettersSerif 폰트 최적화
+const hedvigLettersSerif = localFont({
+  src: '../public/fonts/HedvigLettersSerif-Regular-VariableFont_opsz.ttf',
+  variable: '--font-hedvig-letters-serif',
+  display: 'swap',
+  preload: true,
+});
+
+// Helvetica 폰트 최적화
+const helvetica = localFont({
+  src: '../public/fonts/Helvetica.ttf',
+  variable: '--font-helvetica',
+  display: 'swap',
+  preload: true,
+});
+
 export const metadata: Metadata = {
   title: "Ruleout",
   description: "Empower veterinarians to make faster, smarter decisions",
@@ -41,7 +57,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`antialiased ${pretendard.variable} ${notoSerif.variable}`}>
+      <body className={`antialiased ${pretendard.variable} ${notoSerif.variable} ${hedvigLettersSerif.variable} ${helvetica.variable}`}>
         <AuthProvider>
           <LanguageProvider>
             <ThemeProvider>{children}</ThemeProvider>

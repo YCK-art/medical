@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { PanelLeft, Clock, FolderOpen, User, ArrowUpCircle, Settings, ChevronRight, SquarePen, MoreHorizontal, Edit2, FolderPlus, Trash2, ExternalLink, Mic } from "lucide-react";
+import { PanelLeft, Clock, FolderOpen, User, ArrowUpCircle, Settings, ChevronRight, SquarePen, MoreHorizontal, Edit2, FolderPlus, Trash2, ExternalLink } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getUserConversations, deleteConversation, updateConversationTitle } from "@/lib/chatService";
@@ -16,9 +16,8 @@ interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   currentConversationId: string | null;
-  currentView: "home" | "chat" | "history" | "collections" | "projectDetail" | "visit" | "visitRecording";
+  currentView: "home" | "chat" | "history" | "collections" | "projectDetail";
   onNewChat: () => void;
-  onNewVisit?: () => void;
   onSelectChat: (conversationId: string) => void;
   onShowHistory: () => void;
   onShowCollections: () => void;
@@ -26,7 +25,7 @@ interface SidebarProps {
   onShowLoginModal: () => void;
 }
 
-export default function Sidebar({ isOpen, onToggle, currentConversationId, currentView, onNewChat, onNewVisit, onSelectChat, onShowHistory, onShowCollections, refreshKey, onShowLoginModal }: SidebarProps) {
+export default function Sidebar({ isOpen, onToggle, currentConversationId, currentView, onNewChat, onSelectChat, onShowHistory, onShowCollections, refreshKey, onShowLoginModal }: SidebarProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showLearnMoreSubmenu, setShowLearnMoreSubmenu] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -50,7 +49,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
     English: {
       newChat: "New Chat",
       history: "History",
-      newVisit: "New Visit",
       collections: "Collections",
       recentChats: "Recent Chats",
       noHistory: "No chat history",
@@ -73,7 +71,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
     한국어: {
       newChat: "새 채팅",
       history: "기록",
-      newVisit: "새 진료",
       collections: "컬렉션",
       recentChats: "최근 채팅",
       noHistory: "채팅 기록이 없습니다",
@@ -96,7 +93,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
     日本語: {
       newChat: "新しいチャット",
       history: "履歴",
-      newVisit: "新しい診療",
       collections: "コレクション",
       recentChats: "最近のチャット",
       noHistory: "チャット履歴がありません",
@@ -280,7 +276,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
       <div
         className={`${
           isOpen ? "w-64" : "w-12"
-        } transition-[width] duration-300 ease-in-out bg-[#1a1a1a] border-r border-gray-700 flex flex-col overflow-hidden
+        } transition-[width] duration-300 ease-in-out bg-[#0a0a0a] border-r border-gray-700 flex flex-col overflow-hidden
         md:relative fixed inset-y-0 left-0 z-50
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         md:${isOpen ? "w-64" : "w-12"}`}
@@ -330,18 +326,6 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
               {currentContent.collections}
             </span>
           </button>
-
-          <button
-            onClick={onNewVisit || onNewChat}
-            className={`group relative flex items-center justify-start px-2 py-2 rounded-lg transition-colors ${
-              currentView === 'visit' || currentView === 'visitRecording' ? 'bg-gray-700' : 'hover:bg-gray-700'
-            }`}
-          >
-            <Mic className="w-4 h-4 flex-shrink-0 group-hover:text-[#4DB8C4] transition-colors" />
-            <span className={`absolute left-10 whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-              {currentContent.newVisit}
-            </span>
-          </button>
         </nav>
 
         {isOpen && (
@@ -364,7 +348,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                     >
                       <div
                         className={`relative flex items-center px-2 py-2 rounded-lg cursor-pointer transition-colors ${
-                          currentConversationId === conversation.id && currentView === 'chat' ? 'bg-gray-700' : 'hover:bg-gray-700'
+                          currentConversationId === conversation.id && currentView === 'chat' ? 'bg-[#1a2f32]' : 'hover:bg-[#1a2f32]'
                         }`}
                         onClick={() => onSelectChat(conversation.id)}
                       >
@@ -377,7 +361,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                           </div>
                           {/* Fade gradient - 3개점 아이콘이 보일 때만 표시 */}
                           {hoveredConversation === conversation.id && (
-                            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-700 to-transparent pointer-events-none"></div>
+                            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#1a2f32] to-transparent pointer-events-none"></div>
                           )}
                         </div>
 
@@ -415,7 +399,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
                       {activeDropdown === conversation.id && (
                         <div
                           ref={(el) => { dropdownRefs.current[conversation.id] = el; }}
-                          className={`absolute right-2 bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg z-50 min-w-[180px] ${
+                          className={`absolute right-2 bg-[#0a0a0a] rounded-lg border border-gray-700 shadow-lg z-50 min-w-[180px] ${
                             dropdownPosition[conversation.id] === 'top'
                               ? 'bottom-full mb-1'
                               : 'top-full mt-1'
@@ -493,7 +477,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
             {/* 프로필 드롭다운 메뉴 (위쪽으로 나타남) */}
             {showProfileMenu && (
               <div
-                className="fixed bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg overflow-hidden w-56"
+                className="fixed bg-[#0a0a0a] rounded-lg border border-gray-700 shadow-lg overflow-hidden w-56"
                 style={{
                   left: profileMenuRef.current ? `${profileMenuRef.current.getBoundingClientRect().left}px` : 'auto',
                   bottom: profileMenuRef.current ? `${window.innerHeight - profileMenuRef.current.getBoundingClientRect().top + 8}px` : 'auto',
@@ -579,7 +563,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="group relative flex items-center justify-start w-full px-2 py-2 rounded-lg hover:bg-gray-700 transition-colors"
             >
-              <div className="group-hover:ring-2 group-hover:ring-[#4DB8C4] rounded-full transition-all">
+              <div className="rounded-full transition-all">
                 {renderProfileAvatar()}
               </div>
               <span className={`absolute left-10 whitespace-nowrap text-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
@@ -631,7 +615,7 @@ export default function Sidebar({ isOpen, onToggle, currentConversationId, curre
               setShowLearnMoreSubmenu(false);
             }, 150);
           }}
-          className="fixed bg-[#2a2a2a] rounded-lg border border-gray-700 shadow-lg min-w-[180px] z-[10000]"
+          className="fixed bg-[#0a0a0a] rounded-lg border border-gray-700 shadow-lg min-w-[180px] z-[10000]"
           style={{
             left: learnMoreRef.current ? `${learnMoreRef.current.getBoundingClientRect().right}px` : 'auto',
             bottom: learnMoreRef.current ? `${window.innerHeight - learnMoreRef.current.getBoundingClientRect().bottom}px` : 'auto'

@@ -19,9 +19,9 @@ export default function MissionPage() {
   const content = {
     English: {
       heroText: "For the Animals We Love",
-      futureTitle: "The Future of Care is Compassionate",
-      futureSubtitle: "We aim to build a world where animals live healthier lives, supported by veterinarians empowered with instant, evidence-based knowledge.",
-      learnMore: "Learn More",
+      futureTitle: "The Future of Care Is Compassionate",
+      futureSubtitle: "Ruleout exists to empower veterinarians with instant, evidence-based knowledge at the moment clinical decisions matter most.",
+      learnMore: "Join Us",
       loginTitle: "Log in or Sign up",
       loginSubtitle: "Choose your work email.",
       whyNeeded: "Why is this needed?",
@@ -30,13 +30,13 @@ export default function MissionPage() {
       continueApple: "Continue with Apple",
       continueEmail: "Continue with Email",
       or: "or",
-      missionParagraph1: "Essential veterinary knowledge is expanding at an overwhelming pace. Hundreds of thousands of research papers, guidelines, and clinical documents are published across the world, yet most of this information remains fragmented, difficult to search, and inaccessible at the moment of real clinical need. Veterinarians are expected to keep up with all of it while managing demanding caseloads and making life-critical decisions under pressure. And the animals receiving care cannot explain their symptoms or advocate for themselves when something goes wrong.",
-      missionParagraph2: "Ruleout was created to confront this challenge.",
-      missionParagraph2Sub: "By bringing trusted research, global guidelines, and real clinical evidence into one intelligent platform, we make it possible for veterinarians to access the best knowledge instantly and apply it with confidence. No searching across dozens of sources. No guessing. Just clear, reliable information that supports better outcomes.",
-      missionParagraph3: "We believe that when veterinarians have the tools they need, animals live healthier and safer lives. Families gain more time with the companions they love. Communities become more compassionate. And the world we share grows stronger for every species that lives on this planet with us.",
-      missionParagraph4: "Ruleout exists for people who understand that protecting animals is not only a medical responsibility but a shared human commitment. We support the veterinarians who carry this responsibility every day and the caregivers who want the best for their companions.",
-      missionParagraph5: "If you believe in a future where science is accessible to every clinic, where compassionate care is strengthened by technology, and where animals receive the quality of life they deserve, we invite you to join us. Together, we can elevate veterinary medicine, improve countless lives, and help build a healthier planet for every living being that calls it ",
-      missionParagraph5Bold: "home."
+      missionParagraph1: "Veterinary medicine is evolving at an unprecedented pace. Thousands of research papers, guidelines, and clinical recommendations are published every year across the world. Yet much of this knowledge remains scattered, difficult to search, and inaccessible during real clinical workflows. Veterinarians are expected to synthesize this growing body of evidence while managing heavy caseloads and making high-stakes decisions under pressure. Meanwhile, the animals they care for cannot explain their symptoms, question decisions, or advocate for themselves.",
+      missionParagraph2: "Ruleout was created to close this gap.",
+      missionParagraph2Sub: "By unifying trusted research, global veterinary guidelines, and clinically relevant evidence into a single intelligent platform, Ruleout enables veterinarians to access reliable knowledge instantly and apply it with confidence. We do not replace clinical judgment — we strengthen it. We surface evidence clearly, indicate its source and recency, and make uncertainty visible when consensus is evolving.",
+      missionParagraph3: "We believe that better access to evidence leads to better decisions, safer care, and improved outcomes for animals. When veterinarians are supported by the best available knowledge, families gain more time with the companions they love, and clinical practice becomes more humane, consistent, and resilient.",
+      missionParagraph4: "Ruleout is built for those who understand that protecting animals is not only a medical responsibility, but a professional and ethical commitment. We stand with the veterinarians who carry this responsibility every day, and we are committed to building tools that respect their expertise while elevating the standard of care across the profession.",
+      missionParagraph5: "If you believe in a future where veterinary medicine is guided by accessible science, where technology reinforces — not replaces — professional judgment, and where animals receive the quality of care they deserve, we invite you to join us.",
+      missionParagraph5Bold: ""
     },
     한국어: {
       heroText: "우리가 사랑하는 동물들을 위하여",
@@ -119,47 +119,15 @@ export default function MissionPage() {
       {/* Toolbar */}
       <Toolbar onLoginClick={handleLogin} />
 
-      {/* Hero Section with Full-width Image */}
-      <div className="relative w-full h-[75vh] mt-16">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <Image
-            src="/image/safari3.jpg"
-            alt="Safari background"
-            fill
-            className="object-cover"
-            priority
-          />
-          {/* Dark overlay for better text readability */}
-          <div className="absolute inset-0 bg-black/40"></div>
-        </div>
-
-        {/* Overlay Text */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center px-6">
-            <h1
-              className="text-5xl md:text-6xl font-bold text-white"
-              style={{
-                fontFamily: "'Reddit Sans', sans-serif",
-                textShadow: "0 0 30px rgba(0, 0, 0, 0.8), 0 0 60px rgba(0, 0, 0, 0.6), 0 4px 20px rgba(0, 0, 0, 0.9)"
-              }}
-            >
-              {displayedText}
-              <span className="animate-pulse">|</span>
-            </h1>
-          </div>
-        </div>
-      </div>
-
-      {/* Second Section - Mission Content */}
-      <div className={effectiveTheme === "light" ? "bg-white" : "bg-white"}>
+      {/* Mission Content Section */}
+      <div className="bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto px-6 py-20 pb-4">
           {/* Text Content */}
           <div className="mb-16">
-            <h2 className={`text-4xl md:text-5xl font-bold ${effectiveTheme === "light" ? "text-gray-900" : "text-black"} mb-6`} style={{ fontFamily: "'TikTok Sans', sans-serif" }}>
+            <h2 className="text-4xl md:text-5xl font-normal text-white mb-6" style={{ fontFamily: "var(--font-hedvig-letters-serif), serif" }}>
               {t.futureTitle}
             </h2>
-            <p className={`text-xl ${effectiveTheme === "light" ? "text-gray-900" : "text-black"} leading-relaxed max-w-4xl`} style={{ fontFamily: language === 'English' ? "'TikTok Sans', sans-serif" : "'Pretendard', sans-serif" }}>
+            <p className="text-xl text-gray-300 leading-relaxed max-w-4xl" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
               {t.futureSubtitle}
             </p>
           </div>
@@ -167,7 +135,7 @@ export default function MissionPage() {
           {/* Image */}
           <div className="relative w-full h-[700px] rounded-2xl overflow-hidden">
             <Image
-              src="/image/animals.jpg"
+              src="/image/animals-Photoroom.png"
               alt="Animals"
               fill
               className="object-contain"
@@ -177,33 +145,33 @@ export default function MissionPage() {
       </div>
 
       {/* Third Section - Our Mission */}
-      <div className={effectiveTheme === "light" ? "bg-white" : "bg-white"}>
+      <div className="bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto px-6 pt-2 pb-20">
           <div className="max-w-4xl">
-            <p className={`text-xl ${effectiveTheme === "light" ? "text-gray-900" : "text-black"} leading-relaxed mb-8`} style={{ fontFamily: "'Pretendard', sans-serif" }}>
+            <p className="text-xl text-gray-300 leading-relaxed mb-8" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
               {t.missionParagraph1}
             </p>
 
-            <p className={`text-xl ${effectiveTheme === "light" ? "text-gray-900" : "text-black"} leading-relaxed mb-8`} style={{ fontFamily: "'Pretendard', sans-serif" }}>
+            <p className="text-xl text-gray-300 leading-relaxed mb-8" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
               <strong>{t.missionParagraph2}</strong>
               <br />
               {t.missionParagraph2Sub}
             </p>
 
-            <p className={`text-xl ${effectiveTheme === "light" ? "text-gray-900" : "text-black"} leading-relaxed mb-8`} style={{ fontFamily: "'Pretendard', sans-serif" }}>
+            <p className="text-xl text-gray-300 leading-relaxed mb-8" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
               {t.missionParagraph3}
             </p>
 
-            <p className={`text-xl ${effectiveTheme === "light" ? "text-gray-900" : "text-black"} leading-relaxed mb-8`} style={{ fontFamily: "'Pretendard', sans-serif" }}>
+            <p className="text-xl text-gray-300 leading-relaxed mb-8" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
               {t.missionParagraph4}
             </p>
 
-            <p className={`text-xl ${effectiveTheme === "light" ? "text-gray-900" : "text-black"} leading-relaxed mb-8`} style={{ fontFamily: "'Pretendard', sans-serif" }}>
+            <p className="text-xl text-gray-300 leading-relaxed mb-8" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
               {t.missionParagraph5}<em><strong>{t.missionParagraph5Bold}</strong></em>
             </p>
 
             {/* Learn More Button */}
-            <button className={`px-8 py-3 ${effectiveTheme === "light" ? "bg-gray-900 hover:bg-gray-800" : "bg-black hover:bg-gray-800"} text-white rounded-full transition-colors font-medium`}>
+            <button className="px-8 py-3 bg-white text-black hover:bg-gray-200 rounded-full transition-colors font-medium" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
               {t.learnMore}
             </button>
           </div>

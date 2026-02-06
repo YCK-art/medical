@@ -1,102 +1,122 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, BookOpen, Shield, Briefcase, HelpCircle, Target, Menu, X } from "lucide-react";
+import { ChevronDown, BookOpen, Briefcase, HelpCircle, Menu, X, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { US, KR, JP } from 'country-flag-icons/react/3x2';
 
 interface ToolbarProps {
-  onLoginClick: () => void;
+  onLoginClick?: () => void;
   onMenuClick?: (menu: string) => void;
 }
 
-export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
+type MenuKey = "resources" | null;
+
+export default function Toolbar({ onLoginClick }: ToolbarProps) {
   const router = useRouter();
   const { effectiveTheme } = useTheme();
-  const { language } = useLanguage();
-  const [isResourcesOpen, setIsResourcesOpen] = useState(false);
-  const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
+  const { language, setLanguage } = useLanguage();
+  const [activeMenu, setActiveMenu] = useState<MenuKey>(null);
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
 
   const content = {
     English: {
-      // features: "Features",
-      // enterprise: "Enterprise",
+      feature: "Feature",
       mission: "Mission",
       pricing: "Pricing",
       resources: "Resources",
-      contactSales: "Contact Sales",
-      getStarted: "Get Started",
+      login: "Log in",
       resourceItems: [
-        { id: "blog", icon: BookOpen, label: "Blog", description: "Latest news and updates", column: 1 },
-        { id: "careers", icon: Briefcase, label: "Careers", description: "Join our team", column: 1 },
-        // { id: "security", icon: Shield, label: "Security", description: "Trust and compliance", column: 2 },
-        { id: "support", icon: HelpCircle, label: "Support", description: "Get help anytime", column: 2 },
-      ]
+        { id: "blog", icon: BookOpen, label: "Blog", description: "Explore the latest insights, research updates, and veterinary medicine innovations from our team and community" },
+        { id: "careers", icon: Briefcase, label: "Careers", description: "Join our mission to transform veterinary care. Discover open positions and opportunities to make an impact" },
+        { id: "support", icon: HelpCircle, label: "Support", description: "Get expert assistance whenever you need it. Our support team is here to help you succeed" },
+      ],
+      imageArea: {
+        title: "Explore Our Resources",
+        description: "Discover insights, updates, and opportunities to join our team and community."
+      }
     },
     한국어: {
-      // features: "기능",
-      // enterprise: "기업",
+      feature: "기능",
       mission: "미션",
       pricing: "요금제",
       resources: "리소스",
-      contactSales: "영업팀 문의",
-      getStarted: "시작하기",
+      login: "로그인",
       resourceItems: [
-        { id: "blog", icon: BookOpen, label: "블로그", description: "최신 뉴스 및 업데이트", column: 1 },
-        { id: "careers", icon: Briefcase, label: "채용", description: "우리 팀에 합류하세요", column: 1 },
-        // { id: "security", icon: Shield, label: "보안", description: "신뢰와 규정 준수", column: 2 },
-        { id: "support", icon: HelpCircle, label: "지원", description: "언제든지 도움을 받으세요", column: 2 },
-      ]
+        { id: "blog", icon: BookOpen, label: "블로그", description: "최신 인사이트, 연구 업데이트, 수의학 혁신에 대한 우리 팀과 커뮤니티의 이야기를 확인하세요" },
+        { id: "careers", icon: Briefcase, label: "채용", description: "수의학 케어를 혁신하는 미션에 동참하세요. 열린 포지션과 임팩트를 만들 기회를 찾아보세요" },
+        { id: "support", icon: HelpCircle, label: "지원", description: "필요할 때 언제든지 전문가의 도움을 받으세요. 우리 지원팀이 여러분의 성공을 돕습니다" },
+      ],
+      imageArea: {
+        title: "리소스 탐색",
+        description: "인사이트, 업데이트, 그리고 우리 팀과 커뮤니티에 참여할 기회를 발견하세요."
+      }
     },
     日本語: {
-      // features: "機能",
-      // enterprise: "エンタープライズ",
+      feature: "機能",
       mission: "ミッション",
       pricing: "料金",
       resources: "リソース",
-      contactSales: "営業に問い合わせ",
-      getStarted: "始める",
+      login: "ログイン",
       resourceItems: [
-        { id: "blog", icon: BookOpen, label: "ブログ", description: "最新のニュースと更新情報", column: 1 },
-        { id: "careers", icon: Briefcase, label: "採用", description: "私たちのチームに参加", column: 1 },
-        // { id: "security", icon: Shield, label: "セキュリティ", description: "信頼とコンプライアンス", column: 2 },
-        { id: "support", icon: HelpCircle, label: "サポート", description: "いつでもサポート", column: 2 },
-      ]
+        { id: "blog", icon: BookOpen, label: "ブログ", description: "最新のインサイト、研究アップデート、獣医学のイノベーションについて、チームとコミュニティからの情報をご覧ください" },
+        { id: "careers", icon: Briefcase, label: "採用", description: "獣医療を変革するミッションに参加してください。オープンポジションとインパクトを生み出す機会を見つけましょう" },
+        { id: "support", icon: HelpCircle, label: "サポート", description: "必要なときにいつでも専門家のサポートを受けられます。サポートチームが成功をお手伝いします" },
+      ],
+      imageArea: {
+        title: "リソースを探索",
+        description: "インサイト、アップデート、そしてチームとコミュニティに参加する機会を見つけてください。"
+      }
     }
   };
 
   const currentContent = content[language as keyof typeof content];
   const resourceItems = currentContent.resourceItems;
 
-  const handleMouseEnter = () => {
-    if (closeTimeout) {
-      clearTimeout(closeTimeout);
-      setCloseTimeout(null);
-    }
-    setIsResourcesOpen(true);
+  const handleMouseEnter = (menu: MenuKey) => {
+    setActiveMenu(menu);
   };
 
   const handleMouseLeave = () => {
-    const timeout = setTimeout(() => {
-      setIsResourcesOpen(false);
-    }, 200);
-    setCloseTimeout(timeout);
+    setActiveMenu(null);
+  };
+
+  const handleLocaleChange = (newLocale: 'English' | '한국어' | '日本語') => {
+    setLanguage(newLocale);
+    setIsLanguageOpen(false);
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+    setIsMobileResourcesOpen(false);
+  };
+
+  const toggleMobileSubmenu = () => {
+    setIsMobileResourcesOpen(!isMobileResourcesOpen);
   };
 
   return (
-    <>
-      <nav className={`fixed top-0 left-0 right-0 border-b backdrop-blur-md z-50 ${
-        effectiveTheme === 'light'
-          ? 'border-gray-200 bg-white/80'
-          : 'border-gray-800 bg-[#1a1a1a]/80'
-      }`}>
+    <div onMouseLeave={handleMouseLeave}>
+      {/* Top Banner */}
+      <div className="bg-gray-900">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <p className="text-center text-white text-[11px] sm:text-[13px] flex items-center justify-center gap-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+            <span>2025 Veterinary Literature Review</span>
+            <ArrowRight className="w-3 h-3" />
+          </p>
+        </div>
+      </div>
+
+      {/* Main Navbar */}
+      <nav className="bg-[#0a0a0a] relative">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            {/* 로고 */}
+            {/* Logo */}
             <div
               className="flex items-center gap-[7px] cursor-pointer"
               onClick={() => router.push('/')}
@@ -113,91 +133,100 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
               }`}>Ruleout</span>
             </div>
 
-            {/* Navigation Menu */}
-            <div className="hidden md:flex items-center space-x-8">
-              {/* <button
-                onClick={() => router.push('/features')}
-                className={`transition-colors ${
-                  effectiveTheme === 'light'
-                    ? 'text-gray-900 hover:text-[#20808D]'
-                    : 'text-gray-300 hover:text-[#4DB8C4]'
-                }`}
+            {/* Center Navigation */}
+            <div className="hidden md:flex items-center space-x-8" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+              <button
+                onClick={() => router.push('/feature')}
+                className="text-sm text-gray-300 hover:text-white transition-colors"
+                onMouseEnter={() => setActiveMenu(null)}
               >
-                <span>{currentContent.features}</span>
-              </button> */}
+                {currentContent.feature}
+              </button>
               <button
                 onClick={() => router.push('/mission')}
-                className={`transition-colors ${
-                  effectiveTheme === 'light'
-                    ? 'text-gray-900 hover:text-[#20808D]'
-                    : 'text-gray-300 hover:text-[#4DB8C4]'
-                }`}
+                className="text-sm text-gray-300 hover:text-white transition-colors"
+                onMouseEnter={() => setActiveMenu(null)}
               >
-                <span>{currentContent.mission}</span>
+                {currentContent.mission}
               </button>
-              {/* <button
-                onClick={() => router.push('/enterprise')}
-                className={`transition-colors ${
-                  effectiveTheme === 'light'
-                    ? 'text-gray-900 hover:text-[#20808D]'
-                    : 'text-gray-300 hover:text-[#4DB8C4]'
-                }`}
-              >
-                <span>{currentContent.enterprise}</span>
-              </button> */}
               <button
                 onClick={() => router.push('/pricing')}
-                className={`transition-colors ${
-                  effectiveTheme === 'light'
-                    ? 'text-gray-900 hover:text-[#20808D]'
-                    : 'text-gray-300 hover:text-[#4DB8C4]'
-                }`}
+                className="text-sm text-gray-300 hover:text-white transition-colors"
+                onMouseEnter={() => setActiveMenu(null)}
               >
-                <span>{currentContent.pricing}</span>
+                {currentContent.pricing}
               </button>
               <div
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-                className="relative"
+                className="relative flex items-center"
+                onMouseEnter={() => handleMouseEnter("resources")}
               >
-                <button className={`flex items-center space-x-1 transition-colors ${
-                  effectiveTheme === 'light'
-                    ? 'text-gray-900 hover:text-[#20808D]'
-                    : 'text-gray-300 hover:text-[#4DB8C4]'
-                }`}>
-                  <span>{currentContent.resources}</span>
-                  <ChevronDown className="w-4 h-4" />
+                <button
+                  className={`flex items-center text-sm transition-colors ${
+                    activeMenu === "resources"
+                      ? "text-white"
+                      : "text-gray-300 hover:text-white"
+                  }`}
+                >
+                  {currentContent.resources}
+                  <ChevronDown className={`ml-1 w-4 h-4 transition-transform ${
+                    activeMenu === "resources" ? "rotate-180" : ""
+                  }`} />
                 </button>
-                {/* 드롭다운과 버튼 사이의 gap을 채우는 보이지 않는 영역 */}
-                {isResourcesOpen && (
-                  <div className="absolute left-0 right-0 h-4" style={{ top: '100%' }} />
+              </div>
+            </div>
+
+            {/* Right side - Login & Language */}
+            <div className="hidden md:flex items-center space-x-4">
+              <button
+                onClick={() => router.push('/login')}
+                className="text-sm text-gray-300 hover:text-white transition-colors"
+                style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
+              >
+                {currentContent.login}
+              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setIsLanguageOpen(!isLanguageOpen)}
+                  className="flex items-center space-x-1 text-sm text-gray-300 hover:text-white transition-colors"
+                  style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
+                >
+                  <span>{language === 'English' ? 'EN' : language === '한국어' ? 'KO' : 'JP'}</span>
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+                {isLanguageOpen && (
+                  <div className="absolute right-0 mt-2 w-32 bg-[#0a0a0a] border border-gray-800 rounded-lg shadow-lg overflow-hidden z-[60]">
+                    <button
+                      onClick={() => handleLocaleChange('English')}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors flex items-center space-x-3"
+                      style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
+                    >
+                      <US className="w-5 h-4" />
+                      <span>EN</span>
+                    </button>
+                    <button
+                      onClick={() => handleLocaleChange('한국어')}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors flex items-center space-x-3"
+                      style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
+                    >
+                      <KR className="w-5 h-4" />
+                      <span>KO</span>
+                    </button>
+                    <button
+                      onClick={() => handleLocaleChange('日本語')}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors flex items-center space-x-3"
+                      style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
+                    >
+                      <JP className="w-5 h-4" />
+                      <span>JP</span>
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* Right Buttons - Desktop */}
-            <div className="hidden md:flex items-center space-x-4">
-              <button
-                onClick={() => window.open('https://calendly.com/d/ctf4-n6s-3yp/ruleout-enterprise', '_blank')}
-                className={`px-4 py-2 transition-colors border rounded-lg ${
-                  effectiveTheme === 'light'
-                    ? 'text-gray-700 hover:text-gray-900 border-gray-300 hover:border-gray-400'
-                    : 'text-gray-300 hover:text-white border-gray-700 hover:border-gray-600'
-                }`}
-              >
-                {currentContent.contactSales}
-              </button>
-              <button
-                onClick={onLoginClick}
-                className="px-4 py-2 bg-[#20808D] text-white rounded-lg hover:bg-[#1a6b77] transition-colors"
-              >
-                {currentContent.getStarted}
-              </button>
-            </div>
-
-            {/* Hamburger Menu Button - Mobile */}
+            {/* Mobile Hamburger Button */}
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={toggleMobileMenu}
               className={`md:hidden p-2 ${
                 effectiveTheme === 'light' ? 'text-gray-900' : 'text-white'
               }`}
@@ -206,190 +235,23 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
             </button>
           </div>
         </div>
-      </nav>
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
+        {/* Full-width Dropdown */}
         <div
-          className={`fixed top-[65px] left-0 right-0 bottom-0 z-40 md:hidden overflow-y-auto ${
-            effectiveTheme === 'light' ? 'bg-white' : 'bg-[#1a1a1a]'
+          className={`absolute left-0 right-0 bg-[#0a0a0a] shadow-xl z-50 transition-all duration-300 ease-in-out ${
+            activeMenu
+              ? "opacity-100 visible translate-y-0"
+              : "opacity-0 invisible -translate-y-2"
           }`}
+          onMouseEnter={() => activeMenu && setActiveMenu(activeMenu)}
         >
-          <div className="px-6 py-4 space-y-4">
-            {/* Mobile Menu Items */}
-            {/* <button
-              onClick={() => {
-                router.push('/features');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full text-left py-3 px-4 rounded-lg transition-colors ${
-                effectiveTheme === 'light'
-                  ? 'text-gray-900 hover:bg-gray-100'
-                  : 'text-white hover:bg-[#2a2a2a]'
-              }`}
-            >
-              {currentContent.features}
-            </button> */}
-
-            <button
-              onClick={() => {
-                router.push('/mission');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full text-left py-3 px-4 rounded-lg transition-colors ${
-                effectiveTheme === 'light'
-                  ? 'text-gray-900 hover:bg-gray-100'
-                  : 'text-white hover:bg-[#2a2a2a]'
-              }`}
-            >
-              {currentContent.mission}
-            </button>
-
-            {/* <button
-              onClick={() => {
-                router.push('/enterprise');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full text-left py-3 px-4 rounded-lg transition-colors ${
-                effectiveTheme === 'light'
-                  ? 'text-gray-900 hover:bg-gray-100'
-                  : 'text-white hover:bg-[#2a2a2a]'
-              }`}
-            >
-              {currentContent.enterprise}
-            </button> */}
-
-            <button
-              onClick={() => {
-                router.push('/pricing');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full text-left py-3 px-4 rounded-lg transition-colors ${
-                effectiveTheme === 'light'
-                  ? 'text-gray-900 hover:bg-gray-100'
-                  : 'text-white hover:bg-[#2a2a2a]'
-              }`}
-            >
-              {currentContent.pricing}
-            </button>
-
-            {/* Resources Dropdown in Mobile */}
-            <div>
-              <button
-                onClick={() => setIsMobileResourcesOpen(!isMobileResourcesOpen)}
-                className={`w-full flex items-center justify-between py-3 px-4 rounded-lg transition-colors ${
-                  effectiveTheme === 'light'
-                    ? 'text-gray-900 hover:bg-gray-100'
-                    : 'text-white hover:bg-[#2a2a2a]'
-                }`}
-              >
-                <span>{currentContent.resources}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${isMobileResourcesOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isMobileResourcesOpen && (
-                <div className={`mt-2 space-y-2 pl-4 ${effectiveTheme === 'light' ? 'border-l-2 border-gray-200' : 'border-l-2 border-gray-700'}`}>
-                  {resourceItems.map((item, index) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          if (item.id === "blog") {
-                            router.push('/blog');
-                          } else if (item.id === "careers") {
-                            router.push('/careers');
-                          } else if (item.id === "security") {
-                            router.push('/security');
-                          } else if (item.id === "mission") {
-                            router.push('/mission');
-                          }
-                          setIsMobileMenuOpen(false);
-                          setIsMobileResourcesOpen(false);
-                        }}
-                        className={`w-full flex items-center space-x-3 py-3 px-4 rounded-lg transition-colors text-left ${
-                          effectiveTheme === 'light'
-                            ? 'hover:bg-gray-100'
-                            : 'hover:bg-[#2a2a2a]'
-                        }`}
-                      >
-                        <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
-                          effectiveTheme === 'light' ? 'bg-[#20808D]/10' : 'bg-[#20808D]/20'
-                        }`}>
-                          <Icon className="w-4 h-4 text-[#20808D]" />
-                        </div>
-                        <div>
-                          <div className={`text-sm font-medium ${
-                            effectiveTheme === 'light' ? 'text-gray-900' : 'text-white'
-                          }`}>
-                            {item.label}
-                          </div>
-                          <div className={`text-xs ${
-                            effectiveTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
-                          }`}>
-                            {item.description}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Divider */}
-            <div className={`border-t ${effectiveTheme === 'light' ? 'border-gray-200' : 'border-gray-800'} my-4`}></div>
-
-            {/* Mobile Action Buttons */}
-            <button
-              onClick={() => {
-                window.open('https://calendly.com/d/ctf4-n6s-3yp/ruleout-enterprise', '_blank');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full px-4 py-3 transition-colors border rounded-lg ${
-                effectiveTheme === 'light'
-                  ? 'text-gray-700 hover:text-gray-900 border-gray-300 hover:border-gray-400'
-                  : 'text-gray-300 hover:text-white border-gray-700 hover:border-gray-600'
-              }`}
-            >
-              {currentContent.contactSales}
-            </button>
-
-            <button
-              onClick={() => {
-                onLoginClick();
-                setIsMobileMenuOpen(false);
-              }}
-              className="w-full px-4 py-3 bg-[#20808D] text-white rounded-lg hover:bg-[#1a6b77] transition-colors"
-            >
-              {currentContent.getStarted}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Dropdown Menu - 툴바 외부에서 렌더링 */}
-      {isResourcesOpen && (
-        <div
-          className="fixed left-0 right-0 z-40 animate-fadeIn"
-          style={{ top: '57px' }}
-        >
-          <div
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            className={`border-t shadow-2xl ${
-              effectiveTheme === 'light'
-                ? 'bg-white border-gray-200'
-                : 'bg-[#1a1a1a] border-gray-800'
-            }`}
-          >
-            <div className="max-w-7xl mx-auto px-6 py-10">
-              <div className="flex gap-x-4 justify-center max-w-4xl mx-auto">
-                {/* Column 1: Blog, Careers */}
-                <div className="flex flex-col gap-y-3 flex-1">
-                  {resourceItems.filter(item => item.column === 1).map((item, index) => {
-                    const Icon = item.icon;
-                    return (
+          {activeMenu && (
+            <div className="max-w-4xl mx-auto px-6 py-8">
+              <div className="flex justify-center gap-8">
+                {/* Left side - Menu Items */}
+                <div className="w-[320px]">
+                  <div className="space-y-4">
+                    {resourceItems.map((item, index) => (
                       <button
                         key={index}
                         onClick={() => {
@@ -398,119 +260,190 @@ export default function Toolbar({ onLoginClick, onMenuClick }: ToolbarProps) {
                           } else if (item.id === "careers") {
                             router.push('/careers');
                           }
+                          setActiveMenu(null);
                         }}
-                        className={`flex items-center space-x-3 p-3 rounded-lg transition-colors text-left group ${
-                          effectiveTheme === 'light'
-                            ? 'hover:bg-gray-100'
-                            : 'hover:bg-[#252525]'
-                        }`}
+                        className="block group w-full text-left"
                       >
-                        <div className="flex-shrink-0 w-12 h-12 bg-[#20808D]/10 rounded-lg flex items-center justify-center group-hover:bg-[#20808D]/20 transition-colors">
-                          <Icon className="w-5 h-5 text-[#20808D]" />
-                        </div>
-                        <div>
-                          <h3 className={`font-semibold text-sm mb-0.5 transition-colors ${
-                            effectiveTheme === 'light'
-                              ? 'text-gray-900 group-hover:text-[#20808D]'
-                              : 'text-white group-hover:text-[#4DB8C4]'
-                          }`}>
+                        <div className="p-4 rounded-lg transition-colors">
+                          <h3 className="text-sm font-medium text-white group-hover:text-[#4DB8C4] transition-colors mb-1" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                             {item.label}
                           </h3>
-                          <p className={`text-sm ${
-                            effectiveTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
-                          }`}>
+                          <p className="text-xs text-gray-400 leading-relaxed" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                             {item.description}
                           </p>
                         </div>
                       </button>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
 
-                {/* Column 2: Security, Support */}
-                <div className="flex flex-col gap-y-3 flex-1">
-                  {resourceItems.filter(item => item.column === 2).map((item, index) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          if (item.id === "security") {
-                            router.push('/security');
-                          }
-                        }}
-                        className={`flex items-center space-x-3 p-3 rounded-lg transition-colors text-left group ${
-                          effectiveTheme === 'light'
-                            ? 'hover:bg-gray-100'
-                            : 'hover:bg-[#252525]'
-                        }`}
-                      >
-                        <div className="flex-shrink-0 w-12 h-12 bg-[#20808D]/10 rounded-lg flex items-center justify-center group-hover:bg-[#20808D]/20 transition-colors">
-                          <Icon className="w-5 h-5 text-[#20808D]" />
-                        </div>
-                        <div>
-                          <h3 className={`font-semibold text-sm mb-0.5 transition-colors ${
-                            effectiveTheme === 'light'
-                              ? 'text-gray-900 group-hover:text-[#20808D]'
-                              : 'text-white group-hover:text-[#4DB8C4]'
-                          }`}>
-                            {item.label}
-                          </h3>
-                          <p className={`text-sm ${
-                            effectiveTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
-                          }`}>
-                            {item.description}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Column 3: Mission */}
-                <div className="flex flex-col gap-y-3 flex-1">
-                  {resourceItems.filter(item => item.column === 3).map((item, index) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          if (item.id === "mission") {
-                            router.push('/mission');
-                          }
-                        }}
-                        className={`flex items-center space-x-3 p-3 rounded-lg transition-colors text-left group ${
-                          effectiveTheme === 'light'
-                            ? 'hover:bg-gray-100'
-                            : 'hover:bg-[#252525]'
-                        }`}
-                      >
-                        <div className="flex-shrink-0 w-12 h-12 bg-[#20808D]/10 rounded-lg flex items-center justify-center group-hover:bg-[#20808D]/20 transition-colors">
-                          <Icon className="w-5 h-5 text-[#20808D]" />
-                        </div>
-                        <div>
-                          <h3 className={`font-semibold text-sm mb-0.5 transition-colors ${
-                            effectiveTheme === 'light'
-                              ? 'text-gray-900 group-hover:text-[#20808D]'
-                              : 'text-white group-hover:text-[#4DB8C4]'
-                          }`}>
-                            {item.label}
-                          </h3>
-                          <p className={`text-sm ${
-                            effectiveTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
-                          }`}>
-                            {item.description}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
+                {/* Right side - Image Placeholder */}
+                <div className="w-[360px]">
+                  <div className="h-full bg-gray-900 rounded-lg relative overflow-hidden p-6 flex flex-col justify-end min-h-[280px]">
+                    <div className="text-left">
+                      <h3 className="text-white font-semibold text-base mb-2">
+                        {currentContent.imageArea.title}
+                      </h3>
+                      <p className="text-gray-300 text-xs leading-relaxed">
+                        {currentContent.imageArea.description}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+          )}
+        </div>
+      </nav>
+
+      {/* Mobile Menu Overlay */}
+      <div
+        className={`fixed inset-0 bg-[#0a0a0a] z-50 md:hidden transition-transform duration-300 ${
+          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Mobile Menu Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+            <div
+              className="flex items-center gap-[7px] cursor-pointer"
+              onClick={() => {
+                router.push('/');
+                setIsMobileMenuOpen(false);
+              }}
+            >
+              <Image
+                src="/image/logo_candidate1 복사본.png"
+                alt="Ruleout Logo"
+                width={28}
+                height={28}
+                className="object-contain"
+              />
+              <span className="text-xl font-semibold text-white">Ruleout</span>
+            </div>
+            <button
+              onClick={toggleMobileMenu}
+              className="text-white p-2"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Mobile Menu Items */}
+          <div className="flex-1 px-6 pt-8 overflow-y-auto">
+            <nav className="space-y-2">
+              <button
+                onClick={() => {
+                  router.push('/feature');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="block w-full text-left py-3 text-white text-lg hover:text-gray-300 transition-colors"
+              >
+                {currentContent.feature}
+              </button>
+
+              <button
+                onClick={() => {
+                  router.push('/mission');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="block w-full text-left py-3 text-white text-lg hover:text-gray-300 transition-colors"
+              >
+                {currentContent.mission}
+              </button>
+
+              <button
+                onClick={() => {
+                  router.push('/pricing');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="block w-full text-left py-3 text-white text-lg hover:text-gray-300 transition-colors"
+              >
+                {currentContent.pricing}
+              </button>
+
+              {/* Resources Menu */}
+              <div>
+                <button
+                  onClick={toggleMobileSubmenu}
+                  className="flex items-center justify-between w-full py-3 text-white text-lg"
+                >
+                  {currentContent.resources}
+                  <ChevronDown className={`w-5 h-5 transition-transform ${
+                    isMobileResourcesOpen ? "rotate-180" : ""
+                  }`} />
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-out ${
+                    isMobileResourcesOpen
+                      ? "max-h-[800px] opacity-100"
+                      : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div className="pb-6 space-y-5 pl-4">
+                    {resourceItems.map((item, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          if (item.id === "blog") {
+                            router.push('/blog');
+                          } else if (item.id === "careers") {
+                            router.push('/careers');
+                          }
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="block group w-full text-left"
+                      >
+                        <h3 className="text-white font-medium group-hover:text-gray-300 transition-colors">
+                          {item.label}
+                        </h3>
+                        <p className="text-gray-500 text-sm mt-1 leading-relaxed">
+                          {item.description}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </nav>
+          </div>
+
+          {/* Mobile Menu Bottom Buttons */}
+          <div className="px-6 py-8 space-y-3 border-t border-gray-800">
+            <button
+              onClick={() => {
+                router.push('/login');
+                setIsMobileMenuOpen(false);
+              }}
+              className="block w-full py-3 text-center text-white border border-gray-600 rounded-md text-sm font-medium hover:bg-gray-800 transition-colors"
+            >
+              {currentContent.login}
+            </button>
+            {/* Language Selector in Mobile */}
+            <div className="flex justify-center gap-4">
+              {([
+                { code: 'English' as const, label: 'EN' },
+                { code: '한국어' as const, label: 'KO' },
+                { code: '日本語' as const, label: 'JP' }
+              ]).map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => {
+                    handleLocaleChange(lang.code);
+                  }}
+                  className={`text-sm transition-colors ${
+                    language === lang.code
+                      ? "text-white"
+                      : "text-gray-500 hover:text-white"
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 }

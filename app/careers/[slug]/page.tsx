@@ -411,14 +411,14 @@ Your expertise will directly improve the quality of care for thousands of animal
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] text-white">
+      <div className="min-h-screen bg-[#0a0a0a] text-white">
         <Toolbar onLoginClick={handleLogin} />
         <div className="max-w-6xl mx-auto px-6 py-24 pt-32">
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-4">Job Not Found</h1>
             <button
               onClick={() => router.push('/careers')}
-              className="px-6 py-3 bg-[#20808D] text-white rounded-lg hover:bg-[#1a6b77] transition-colors"
+              className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
             >
               Back to Careers
             </button>
@@ -429,34 +429,35 @@ Your expertise will directly improve the quality of care for thousands of animal
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] text-white">
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Toolbar */}
       <Toolbar onLoginClick={handleLogin} />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-24 pt-32">
-        {/* Submit Message */}
-        {submitMessage && (
-          <div className={`mb-8 p-4 rounded-lg ${
-            submitMessage.type === 'success'
-              ? 'bg-green-900/20 border border-green-500/50 text-green-300'
-              : 'bg-red-900/20 border border-red-500/50 text-red-300'
-          }`}>
-            {submitMessage.text}
-          </div>
-        )}
-
+      <div className="max-w-7xl mx-auto px-6 py-8 pt-24">
         {/* Back Button */}
         <button
           onClick={() => router.push('/careers')}
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8"
+          style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
         >
           <ArrowLeft className="w-5 h-5" />
           <span>{t.backToCareers}</span>
         </button>
 
+        {/* Submit Message */}
+        {submitMessage && (
+          <div className={`mb-6 p-4 rounded-lg ${
+            submitMessage.type === 'success'
+              ? 'bg-green-900/20 border border-green-500/50 text-green-300'
+              : 'bg-red-900/20 border border-red-500/50 text-red-300'
+          }`} style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+            {submitMessage.text}
+          </div>
+        )}
+
         {/* Job Title */}
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold text-white mb-12" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
           {job.title}
         </h1>
 
@@ -466,23 +467,23 @@ Your expertise will directly improve the quality of care for thousands of animal
           <div className="lg:col-span-1">
             <div className="space-y-6 sticky top-32">
               <div>
-                <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2">{t.location}</h3>
-                <p className="text-white">{job.location}</p>
+                <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{t.location}</h3>
+                <p className="text-white" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{job.location}</p>
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2">{t.employmentType}</h3>
-                <p className="text-white">{job.employmentType}</p>
+                <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{t.employmentType}</h3>
+                <p className="text-white" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{job.employmentType}</p>
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2">{t.locationType}</h3>
-                <p className="text-white">{job.locationType}</p>
+                <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{t.locationType}</h3>
+                <p className="text-white" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{job.locationType}</p>
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2">{t.department}</h3>
-                <p className="text-white">{job.department}</p>
+                <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{t.department}</h3>
+                <p className="text-white" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{job.department}</p>
               </div>
             </div>
           </div>
@@ -498,10 +499,11 @@ Your expertise will directly improve the quality of care for thousands of animal
                     ? "text-white"
                     : "text-gray-400 hover:text-gray-300"
                 }`}
+                style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
               >
                 {t.overview}
                 {activeTab === "overview" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4DB8C4]"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900"></div>
                 )}
               </button>
               <button
@@ -511,10 +513,11 @@ Your expertise will directly improve the quality of care for thousands of animal
                     ? "text-white"
                     : "text-gray-400 hover:text-gray-300"
                 }`}
+                style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
               >
                 {t.application}
                 {activeTab === "application" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4DB8C4]"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900"></div>
                 )}
               </button>
             </div>
@@ -524,27 +527,27 @@ Your expertise will directly improve the quality of care for thousands of animal
               <div className="space-y-8">
                 {/* About Section */}
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-4">{t.aboutRuleout}</h2>
-                  <p className="text-gray-300 leading-relaxed whitespace-pre-line">
+                  <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{t.aboutRuleout}</h2>
+                  <p className="text-gray-300 leading-relaxed whitespace-pre-line" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                     {job.overview.about}
                   </p>
                 </div>
 
                 {/* Role Section */}
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-4">{t.aboutRole}</h2>
-                  <p className="text-gray-300 leading-relaxed whitespace-pre-line">
+                  <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{t.aboutRole}</h2>
+                  <p className="text-gray-300 leading-relaxed whitespace-pre-line" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                     {job.overview.role}
                   </p>
                 </div>
 
                 {/* Good Fit Section */}
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-4">{t.goodFit}</h2>
+                  <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{t.goodFit}</h2>
                   <ul className="space-y-3">
                     {job.overview.fit.map((item: string, index: number) => (
-                      <li key={index} className="flex items-start gap-3 text-gray-300">
-                        <span className="text-[#4DB8C4] mt-1">•</span>
+                      <li key={index} className="flex items-start gap-3 text-gray-300" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                        <span className="text-gray-900 mt-1">•</span>
                         <span>{item}</span>
                       </li>
                     ))}
@@ -553,11 +556,11 @@ Your expertise will directly improve the quality of care for thousands of animal
 
                 {/* Compensation Section */}
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-4">{t.compensation}</h2>
+                  <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{t.compensation}</h2>
                   <ul className="space-y-3">
                     {job.overview.compensation.map((item: string, index: number) => (
-                      <li key={index} className="flex items-start gap-3 text-gray-300">
-                        <span className="text-[#4DB8C4] mt-1">•</span>
+                      <li key={index} className="flex items-start gap-3 text-gray-300" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
+                        <span className="text-gray-900 mt-1">•</span>
                         <span>{item}</span>
                       </li>
                     ))}
@@ -571,7 +574,8 @@ Your expertise will directly improve the quality of care for thousands of animal
                       setActiveTab("application");
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="px-8 py-3 bg-[#20808D] text-white font-medium rounded-lg hover:bg-[#1a6b77] transition-colors"
+                    className="px-8 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                    style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
                   >
                     {t.applyForPosition}
                   </button>
@@ -579,10 +583,10 @@ Your expertise will directly improve the quality of care for thousands of animal
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
-                <h2 className="text-2xl font-bold text-white mb-6">Application</h2>
+                <h2 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>Application</h2>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                     {t.fullName} *
                   </label>
                   <input
@@ -591,12 +595,13 @@ Your expertise will directly improve the quality of care for thousands of animal
                     value={formData.fullName}
                     onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                     className="w-full px-4 py-3 bg-[#252525] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#20808D] transition-colors"
+                    style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
                     placeholder="Your full name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                     {t.email} *
                   </label>
                   <input
@@ -605,12 +610,13 @@ Your expertise will directly improve the quality of care for thousands of animal
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                     className="w-full px-4 py-3 bg-[#252525] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#20808D] transition-colors"
+                    style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
                     placeholder="your.email@example.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                     {t.phone}
                   </label>
                   <input
@@ -618,12 +624,13 @@ Your expertise will directly improve the quality of care for thousands of animal
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
                     className="w-full px-4 py-3 bg-[#252525] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#20808D] transition-colors"
+                    style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
                     placeholder="+82 10-1234-5678"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                     {t.resume} *
                   </label>
                   <input
@@ -641,18 +648,18 @@ Your expertise will directly improve the quality of care for thousands of animal
                       className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center hover:border-[#20808D] transition-colors cursor-pointer"
                     >
                       <Upload className="w-8 h-8 text-gray-500 mx-auto mb-3" />
-                      <p className="text-gray-400">{t.uploadPrompt}</p>
-                      <p className="text-sm text-gray-500 mt-2">{t.fileTypes}</p>
+                      <p className="text-gray-400" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{t.uploadPrompt}</p>
+                      <p className="text-sm text-gray-500 mt-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{t.fileTypes}</p>
                     </div>
                   ) : (
                     <div className="flex items-center justify-between p-4 bg-[#252525] border border-gray-700 rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-[#20808D]/20 rounded">
-                          <Upload className="w-5 h-5 text-[#4DB8C4]" />
+                          <Upload className="w-5 h-5 text-gray-900" />
                         </div>
                         <div>
-                          <p className="text-white font-medium">{resumeFile.name}</p>
-                          <p className="text-sm text-gray-400">
+                          <p className="text-white font-medium" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>{resumeFile.name}</p>
+                          <p className="text-sm text-gray-400" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                             {(resumeFile.size / 1024 / 1024).toFixed(2)} MB
                           </p>
                         </div>
@@ -669,7 +676,7 @@ Your expertise will directly improve the quality of care for thousands of animal
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                     {t.coverLetter}
                   </label>
                   <textarea
@@ -677,12 +684,13 @@ Your expertise will directly improve the quality of care for thousands of animal
                     value={formData.coverLetter}
                     onChange={(e) => setFormData({...formData, coverLetter: e.target.value})}
                     className="w-full px-4 py-3 bg-[#252525] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#20808D] transition-colors resize-none"
+                    style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
                     placeholder="Tell us why you're interested in this position..."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                     {t.linkedin}
                   </label>
                   <input
@@ -690,12 +698,13 @@ Your expertise will directly improve the quality of care for thousands of animal
                     value={formData.linkedin}
                     onChange={(e) => setFormData({...formData, linkedin: e.target.value})}
                     className="w-full px-4 py-3 bg-[#252525] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#20808D] transition-colors"
+                    style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
                     placeholder="https://linkedin.com/in/yourprofile"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: "var(--font-helvetica), sans-serif" }}>
                     {t.portfolio}
                   </label>
                   <input
@@ -703,6 +712,7 @@ Your expertise will directly improve the quality of care for thousands of animal
                     value={formData.portfolio}
                     onChange={(e) => setFormData({...formData, portfolio: e.target.value})}
                     className="w-full px-4 py-3 bg-[#252525] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#20808D] transition-colors"
+                    style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
                     placeholder="https://github.com/yourusername"
                   />
                 </div>
@@ -713,9 +723,10 @@ Your expertise will directly improve the quality of care for thousands of animal
                     disabled={!isFormValid() || isSubmitting}
                     className={`px-8 py-3 font-medium rounded-lg transition-colors ${
                       isFormValid() && !isSubmitting
-                        ? 'bg-[#20808D] text-white hover:bg-[#1a6b77] cursor-pointer'
+                        ? 'bg-gray-900 text-white hover:bg-gray-800 cursor-pointer'
                         : 'bg-gray-700 text-gray-400 cursor-not-allowed'
                     }`}
+                    style={{ fontFamily: "var(--font-helvetica), sans-serif" }}
                   >
                     {isSubmitting ? t.submitting : t.submitApplication}
                   </button>

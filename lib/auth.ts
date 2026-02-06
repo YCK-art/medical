@@ -176,6 +176,9 @@ export const requestSignInLink = async (email: string) => {
   }
 };
 
+// Alias for convenience (매직 링크 발송)
+export { requestSignInLink as sendMagicLink };
+
 // 이메일 링크로 로그인 완료 (인증 링크 클릭 후)
 export const completeEmailLinkSignIn = async (emailLink: string) => {
   try {
