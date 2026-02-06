@@ -29,14 +29,6 @@ const hedvigLettersSerif = localFont({
   preload: true,
 });
 
-// Helvetica 폰트 최적화
-const helvetica = localFont({
-  src: '../public/fonts/Helvetica.ttf',
-  variable: '--font-helvetica',
-  display: 'swap',
-  preload: true,
-});
-
 export const metadata: Metadata = {
   title: "Ruleout",
   description: "Empower veterinarians to make faster, smarter decisions",
@@ -57,7 +49,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`antialiased ${pretendard.variable} ${notoSerif.variable} ${hedvigLettersSerif.variable} ${helvetica.variable}`}>
+      <body className={`antialiased ${pretendard.variable} ${notoSerif.variable} ${hedvigLettersSerif.variable}`}>
         <AuthProvider>
           <LanguageProvider>
             <ThemeProvider>{children}</ThemeProvider>
