@@ -232,7 +232,7 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
 
           {/* 검색 입력창 */}
           <form onSubmit={handleSubmit} className="w-full mb-6">
-            <div className="flex items-center bg-[#2a2a2a] rounded-2xl border border-gray-700 px-6 pr-2 py-3">
+            <div className="flex items-center bg-[#2a2a2a] rounded-3xl px-6 pr-2 py-3">
               <textarea
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
@@ -275,7 +275,7 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
                   <button
                     key={index}
                     onClick={() => setExpandedCategory(isExpanded ? null : suggestion.text)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg hover:border-gray-600 transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 bg-[#2a2a2a] rounded-lg transition-colors"
                   >
                     <Icon className="w-4 h-4" />
                     <span className="text-sm">{suggestion.text}</span>
@@ -293,7 +293,7 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
                   <button
                     key={qIndex}
                     onClick={() => onQuestionSubmit(q)}
-                    className="w-full group flex items-center justify-between px-5 py-4 bg-[#2a2a2a] border border-gray-700 rounded-lg hover:border-gray-600 transition-all text-left"
+                    className="w-full group flex items-center justify-between px-5 py-4 bg-[#2a2a2a] rounded-lg transition-all text-left"
                   >
                     <span className="text-sm text-gray-200 pr-4">{q}</span>
                     <ArrowUpRight className="w-4 h-4 flex-shrink-0 text-gray-500 group-hover:text-[#20808D] transition-colors" />
@@ -313,8 +313,8 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
           )}
         </div>
 
-        {/* 데스크톱: 기존 레이아웃 (위로 밀리는 형태) */}
-        <div className="hidden md:flex md:flex-col md:items-center md:justify-center md:w-full md:max-w-3xl md:pt-64">
+        {/* 데스크톱: 세로 중앙 정렬 레이아웃 */}
+        <div className="hidden md:flex md:flex-col md:items-center md:w-full md:max-w-3xl" style={{ paddingTop: '338px' }}>
           {/* 로고 */}
           <div className="mb-8 flex items-center space-x-2">
             <Image
@@ -332,7 +332,7 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
 
           {/* 검색 입력창 */}
           <form onSubmit={handleSubmit} className="w-full mb-6">
-            <div className="flex items-center bg-[#2a2a2a] rounded-2xl border border-gray-700 px-6 pr-2 py-3">
+            <div className="flex items-center bg-[#2a2a2a] rounded-3xl px-6 pr-2 py-3">
               <textarea
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
@@ -375,7 +375,7 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
                   <button
                     key={index}
                     onClick={() => setExpandedCategory(isExpanded ? null : suggestion.text)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg hover:border-gray-600 transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 bg-[#2a2a2a] rounded-lg transition-colors"
                   >
                     <Icon className="w-4 h-4" />
                     <span className="text-sm">{suggestion.text}</span>
@@ -393,7 +393,7 @@ export default function MainContent({ isSidebarOpen, onToggleSidebar, onQuestion
                   <button
                     key={qIndex}
                     onClick={() => onQuestionSubmit(q)}
-                    className="w-full group flex items-center justify-between px-5 py-4 bg-[#2a2a2a] border border-gray-700 rounded-lg hover:border-gray-600 transition-all text-left"
+                    className="w-full group flex items-center justify-between px-5 py-4 bg-[#2a2a2a] rounded-lg transition-all text-left"
                   >
                     <span className="text-sm text-gray-200 pr-4">{q}</span>
                     <ArrowUpRight className="w-4 h-4 flex-shrink-0 text-gray-500 group-hover:text-[#20808D] transition-colors" />
